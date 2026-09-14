@@ -1,6 +1,13 @@
-# Game Design Document
+# Hellgate World — Game Design Document
 
-AR mobile territory-conquest game. Unity. Pokémon GO-style world map + RTS base-building loop.
+Post-apocalyptic AR mobile territory-conquest game. Unity. Pokémon GO-style world map + RTS base-building loop.
+
+## Setting
+
+- Tone: post-apocalypse. Hellgates have opened across the real world; demons pour through.
+- Reference point: *Hellgate: London* (demon invasion of a real city), scaled to the whole inhabited world.
+- Three human factions fight each other **and** the demon incursion over the ruins of real places.
+- Names, lore, and visual style: **defined later**. Faction labels below are working names.
 
 ## Overview
 
@@ -9,11 +16,12 @@ AR mobile territory-conquest game. Unity. Pokémon GO-style world map + RTS base
 | Platform | Mobile (iOS / Android) |
 | Engine | Unity, AR Foundation |
 | Genre | AR location-based + RTS |
+| Theme | Post-apocalyptic demon invasion |
 | Session type | Persistent world, asynchronous multiplayer |
 | Authority | Server-authoritative simulation; client is renderer + intent |
 | Data model | Interest-scoped streaming (client never holds global state) |
 | Coverage | Anywhere people live: city, suburb, village, rural |
-| Factions | 3 |
+| Factions | 3 playable + 1 NPC (demons) |
 | Core loop | Conquer → Generate points → Build army → Attack/Defend |
 
 ## Core Loop
@@ -31,6 +39,9 @@ flowchart TD
     H -->|no| D
     I --> B
     F --> D
+    X[Hellgate opens: demons spawn] --> Y[Demons attack owned buildings]
+    Y --> H
+    F --> Y
 ```
 
 ## World & Map
@@ -57,22 +68,24 @@ Target: playable anywhere people live — dense city, suburb, village, rural. Pl
 
 Server computes local density per tile; game constants derive from it. Constants are **server-side**, so the client cannot tamper with them.
 
+**Conquest radius is fixed and global.** It does not scale with density — the player must physically stand near a building everywhere, city or countryside. Normalization happens through income and content, not reach.
+
 ```
-density(tile)    = buildings(tile) / area(tile)
-conquest_radius  = clamp(k / sqrt(density), r_min, r_max)
-scarcity_bonus   = clamp((d_ref / density)^a, 1.0, bonus_max)
-points/tick      = base_rate(kind) × volume_multiplier × scarcity_bonus
+density(tile)   = buildings(tile) / area(tile)
+scarcity_bonus  = clamp((d_ref / density)^a, 1.0, bonus_max)
+points/tick     = base_rate(kind) × volume_multiplier × scarcity_bonus
 ```
 
-| Parameter | Dense area | Sparse area |
-|---|---|---|
-| Conquest radius | Small (~20 m) | Large (~200 m+) |
-| Point rate | Baseline | Scarcity bonus |
-| Ownable buildings per player | Lower cap | Higher cap |
-| Unit travel speed | Real-scale | Boosted (longer street distances) |
-| Interest radius (streaming) | Small | Large |
+| Parameter | Dense area | Sparse area | Scales with density? |
+|---|---|---|---|
+| Conquest radius | Fixed | Fixed | **No** |
+| Point rate | Baseline | Scarcity bonus | Yes |
+| Ownable buildings per player | Lower cap | Higher cap | Yes |
+| Unit travel speed | Real-scale | Boosted (longer street distances) | Yes |
+| Interest radius (streaming) | Small | Large | Yes |
+| Hellgate spawn rate | Baseline | Baseline (player-driven) | No — see Demons |
 
-Balance target: comparable points-per-session and comparable targets-in-reach regardless of location.
+Balance target: comparable points-per-session regardless of location. A rural player reaches fewer buildings; income per building and demon events compensate, not a wider reach.
 
 ### Data Coverage Fallback
 
@@ -104,7 +117,7 @@ flowchart TD
 
 - Faction balance evaluated **per region**, not globally — a rural region must not be permanently locked by whichever faction arrived first.
 - Sparse regions: longer unit travel, proportionally cheaper units, so the RTS loop stays reachable for a solo player.
-- Low-population regions have few or no nearby opponents; the loop needs a PvE pressure source to stay active (see Open Questions).
+- Low-population regions have few or no nearby human opponents; **demons (Faction 4) supply the pressure** so the loop runs solo.
 
 ## Building Ownership
 
@@ -112,7 +125,7 @@ flowchart TD
 
 | Condition | Requirement |
 |---|---|
-| Proximity | User within conquest radius — density-scaled, ~20 m dense to ~200 m rural |
+| Proximity | User within conquest radius — **fixed global value**, identical everywhere |
 | Target state | Neutral only (not owned by another faction) |
 | Action | Player-initiated conquer action, may include a timer/minigame |
 
@@ -188,6 +201,7 @@ sequenceDiagram
 - Units vs. building: reduce building HP; building has defenders (garrisoned units) as first line.
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
 - Destroyed ≠ deleted: building persists, conquerable again.
+- Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
 
 ## Building State Machine
 
@@ -196,7 +210,7 @@ stateDiagram-v2
     [*] --> Neutral
     Neutral --> Owned: Conquered by player
     Owned --> Owned: Points generation, garrison
-    Owned --> Contested: Enemy unit attacks
+    Owned --> Contested: Enemy faction or demon attacks
     Contested --> Owned: Defenders repel attack
     Contested --> Neutral: HP reaches 0
     Neutral --> [*]
@@ -285,27 +299,83 @@ sequenceDiagram
 
 ## Factions
 
-| Faction | Identity | Unit theme (example) |
-|---|---|---|
-| Faction A | TBD | TBD |
-| Faction B | TBD | TBD |
-| Faction C | TBD | TBD |
+Four factions: three playable, one server-controlled. Working names — final names, lore, and visual style **defined later**.
 
-- Player selects faction on onboarding; permanent or season-locked (TBD).
+| # | Working name | Type | Concept direction |
+|---|---|---|---|
+| 1 | Soldats | Playable | Military remnant; conventional force |
+| 2 | Science | Playable | Tech / research survivors |
+| 3 | Religious | Playable | Faith order; anti-demon zealots |
+| 4 | Demons | **NPC / PvE** | Hell incursion; server-controlled |
+
+- Player picks one of the three playable factions on onboarding; permanent or season-locked (TBD).
 - Faction determines unit roster, visual theme, factory models.
-- Asymmetric balance target: no faction strictly dominant across all building types/terrain densities.
+- Asymmetric balance target: no faction strictly dominant across all building kinds or region densities.
+- Demons are never playable and hold no territory permanently.
+
+```mermaid
+flowchart TD
+    S[Soldats] <--> SC[Science]
+    SC <--> R[Religious]
+    R <--> S
+    D[Demons NPC] --> S
+    D --> SC
+    D --> R
+```
+
+## Faction 4: Demons (PvE)
+
+Server-controlled threat. Hostile to all three playable factions equally. Primary purpose: guarantee content everywhere, including regions with no nearby human opponents.
+
+| Property | Value |
+|---|---|
+| Control | Server AI; never playable |
+| Spawn source | Hellgates opening at semi-random real-world positions |
+| Targets | Any owned building (any faction), player units, gate surroundings |
+| Territory | Destroys buildings; does **not** hold ownership (buildings revert to Neutral) |
+| Reward | Points / loot for killing demons and closing gates |
+
+### Hellgates
+
+- Spawn semi-randomly, weighted by **player presence**, not building density — every active player gets reachable events regardless of where they live.
+- Emit demon waves on a timer until closed.
+- Closed by destroying the gate: player units, on-site AR action, or both.
+- Unclosed gates escalate: larger waves, wider threat radius, higher reward.
+- Rare high-tier gates act as regional events, drawing multiple players and factions.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Dormant
+    Dormant --> Open: Spawn trigger
+    Open --> Escalated: Timer expires uncontested
+    Escalated --> Open: Waves cleared
+    Open --> Closed: Gate destroyed
+    Escalated --> Closed: Gate destroyed
+    Closed --> [*]
+```
+
+### Design Effects
+
+| Effect | Consequence |
+|---|---|
+| Density-independent content | Rural players always have something to fight |
+| Common enemy | Three factions may temporarily converge on one gate |
+| Territory churn | Demon-destroyed buildings return to Neutral, reopening conquest |
+| Defense value | Makes garrisoning owned buildings useful even with no human threat nearby |
 
 ## Open Questions
 
 ### Gameplay
 
-- Conquest radius value.
 - Points payout: passive tick vs. manual collection visit.
 - Unit cap per building / per player.
-- PvE pressure source for low-population regions (neutral decay, hostile NPC units, or none).
-- Density normalization constants: `k`, `r_min`, `r_max`, `d_ref`, `a`, `bonus_max`.
+- Fixed conquest radius value.
+- Density normalization constants: `d_ref`, `a`, `bonus_max`.
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
-- Faction identity, lore, unit rosters.
+- Faction names, lore, visual style, unit rosters (deferred by decision).
+- Hellgate spawn weighting, cadence, escalation curve, and reward scale.
+- Whether demons can temporarily occupy a building or only destroy it.
+- Whether cross-faction cooperation at a gate is explicit (shared objective) or incidental.
 
 ### Technical
 
