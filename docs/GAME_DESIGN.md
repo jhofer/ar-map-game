@@ -12,6 +12,7 @@ AR mobile territory-conquest game. Unity. Pokémon GO-style world map + RTS base
 | Session type | Persistent world, asynchronous multiplayer |
 | Authority | Server-authoritative simulation; client is renderer + intent |
 | Data model | Interest-scoped streaming (client never holds global state) |
+| Coverage | Anywhere people live: city, suburb, village, rural |
 | Factions | 3 |
 | Core loop | Conquer → Generate points → Build army → Attack/Defend |
 
@@ -35,10 +36,75 @@ flowchart TD
 ## World & Map
 
 - Real-world map data drives building placement (OSM or equivalent building footprints).
+- Where footprints are missing, targets are synthesized from POI or road data (see Coverage & Density).
 - Buildings rendered as 3D models on the map, positioned at real GPS coordinates.
 - Avatar position = user's live GPS location.
 - AR view: camera overlay shows buildings/units when user is physically near them.
 - Map view: top-down/3D map for macro strategy, out of AR range.
+
+## Coverage & Density
+
+Target: playable anywhere people live — dense city, suburb, village, rural. Play quality must not depend on where the player lives.
+
+| Environment | Targets in walking range | Risk |
+|---|---|---|
+| City core | Hundreds | Visual clutter, trivial conquest, streaming load |
+| Suburb | Tens | Baseline case |
+| Village / rural | Few | Loop stalls, nothing to conquer |
+| Uninhabited (ocean, desert, forest) | None | Out of scope — no play expected |
+
+### Density Normalization
+
+Server computes local density per tile; game constants derive from it. Constants are **server-side**, so the client cannot tamper with them.
+
+```
+density(tile)    = buildings(tile) / area(tile)
+conquest_radius  = clamp(k / sqrt(density), r_min, r_max)
+scarcity_bonus   = clamp((d_ref / density)^a, 1.0, bonus_max)
+points/tick      = base_rate(kind) × volume_multiplier × scarcity_bonus
+```
+
+| Parameter | Dense area | Sparse area |
+|---|---|---|
+| Conquest radius | Small (~20 m) | Large (~200 m+) |
+| Point rate | Baseline | Scarcity bonus |
+| Ownable buildings per player | Lower cap | Higher cap |
+| Unit travel speed | Real-scale | Boosted (longer street distances) |
+| Interest radius (streaming) | Small | Large |
+
+Balance target: comparable points-per-session and comparable targets-in-reach regardless of location.
+
+### Data Coverage Fallback
+
+Map data quality varies by country and region. Cascade per tile until a conquerable target exists.
+
+```mermaid
+flowchart TD
+    T[Tile] --> A{Building footprints?}
+    A -->|yes| U1[Use real geometry]
+    A -->|no| B{POI / address points?}
+    B -->|yes| U2[Synthesize building at point]
+    B -->|no| C{Road network?}
+    C -->|yes| U3[Generate nodes at junctions]
+    C -->|no| X[Mark tile unplayable]
+```
+
+| Source | Provides | Used when |
+|---|---|---|
+| Building footprints (OSM) | Geometry, volume, kind | Preferred |
+| POI / address points | Position, kind; synthetic volume | No footprints |
+| Road network nodes | Position only; generic kind | No POI data |
+| None | — | Uninhabited; no play |
+
+- Missing height → estimate from kind + regional defaults (level-count heuristic).
+- Missing kind → classify from tags / POI category; default to House.
+- Synthetic targets are marked as such server-side; they may carry reduced value to discourage farming low-quality regions.
+
+### Regional Play
+
+- Faction balance evaluated **per region**, not globally — a rural region must not be permanently locked by whichever faction arrived first.
+- Sparse regions: longer unit travel, proportionally cheaper units, so the RTS loop stays reachable for a solo player.
+- Low-population regions have few or no nearby opponents; the loop needs a PvE pressure source to stay active (see Open Questions).
 
 ## Building Ownership
 
@@ -46,14 +112,14 @@ flowchart TD
 
 | Condition | Requirement |
 |---|---|
-| Proximity | User within conquest radius (e.g. 20–50m) of building |
+| Proximity | User within conquest radius — density-scaled, ~20 m dense to ~200 m rural |
 | Target state | Neutral only (not owned by another faction) |
 | Action | Player-initiated conquer action, may include a timer/minigame |
 
 ### Points Generation
 
 ```
-points/tick = base_rate(building_kind) × volume_multiplier(building)
+points/tick = base_rate(building_kind) × volume_multiplier(building) × scarcity_bonus(tile)
 ```
 
 | Building kind | Rarity | Relative point rate |
@@ -66,6 +132,7 @@ points/tick = base_rate(building_kind) × volume_multiplier(building)
 
 - Volume multiplier scales with building footprint × estimated height (from map data).
 - Points accrue while building is owned, paid out per tick (e.g. every 60s) or on collection.
+- `scarcity_bonus` normalizes rural income against city income (see Coverage & Density).
 
 ## RTS Sub-Loop
 
@@ -235,6 +302,9 @@ sequenceDiagram
 - Conquest radius value.
 - Points payout: passive tick vs. manual collection visit.
 - Unit cap per building / per player.
+- PvE pressure source for low-population regions (neutral decay, hostile NPC units, or none).
+- Density normalization constants: `k`, `r_min`, `r_max`, `d_ref`, `a`, `bonus_max`.
+- Whether synthetic (non-footprint) targets carry reduced value, and by how much.
 - Faction identity, lore, unit rosters.
 
 ### Technical
@@ -246,3 +316,5 @@ sequenceDiagram
 - Street graph storage and routing engine (prebuilt contraction hierarchies vs. on-demand A*).
 - Offline/reconnect behavior: state reconciliation after client gap.
 - Server sharding strategy by geography, and cross-shard unit movement.
+- Density recomputation cadence: static precompute vs. periodic refresh as map data updates.
+- Global map-data ingestion pipeline: coverage auditing, per-region quality scoring.
