@@ -10,6 +10,8 @@ AR mobile territory-conquest game. Unity. Pokémon GO-style world map + RTS base
 | Engine | Unity, AR Foundation |
 | Genre | AR location-based + RTS |
 | Session type | Persistent world, asynchronous multiplayer |
+| Authority | Server-authoritative simulation; client is renderer + intent |
+| Data model | Interest-scoped streaming (client never holds global state) |
 | Factions | 3 |
 | Core loop | Conquer → Generate points → Build army → Attack/Defend |
 
@@ -87,25 +89,29 @@ Unlocked by accumulated points. Applies per-building, anchored to that building'
 - Units move along real street routes (road graph from map data).
 - Attack orders compute shortest/fastest path via street network to target building.
 - Travel time is real-time or scaled; affects tactical timing (reinforcement races).
+- **Server-side only.** Client sends intent (`Attack(targetId)`), never a path. See [Architecture](#architecture).
 
 ```mermaid
 sequenceDiagram
-    participant P as Player
-    participant F as Factory
-    participant U as Unit
-    participant N as Street Network
+    participant C as Client
+    participant S as Server (authoritative)
+    participant N as Street Graph
     participant T as Target Building
 
-    P->>F: Queue unit
-    F->>U: Spawn unit
-    P->>U: Order: Attack(T)
-    U->>N: Request path to T
-    N-->>U: Route (street graph)
-    U->>T: Move along route
-    U->>T: Engage on arrival
-    T-->>T: HP reduced
+    C->>S: Order: Attack(targetId)
+    S->>S: Validate: ownership, cost, unit exists
+    S->>N: Compute route (street graph)
+    N-->>S: Route + ETA
+    S-->>C: Unit state: route, ETA
+    loop Simulation tick
+        S->>S: Advance unit along route
+        S-->>C: Delta (only if in client's interest area)
+    end
+    S->>T: Engage on arrival
+    S->>S: Resolve combat, reduce HP
     alt Building destroyed
-        T->>T: State: Owned -> Neutral
+        S->>T: State: Owned -> Neutral
+        S-->>C: Broadcast to subscribers of tile
     end
 ```
 
@@ -129,6 +135,87 @@ stateDiagram-v2
     Neutral --> [*]
 ```
 
+## Architecture
+
+World-scale persistent simulation. Two hard constraints drive the design:
+
+| Constraint | Consequence |
+|---|---|
+| World-scale data volume | Client streams only its interest area, never the global state |
+| Cheat resistance | Server is authoritative for all simulation; client renders and sends intent |
+
+### Authority Split
+
+| Concern | Owner | Notes |
+|---|---|---|
+| Ownership / conquest | Server | Validates GPS proximity server-side |
+| Points generation | Server | Accrual computed from server clock, not client |
+| Unit spawning / cost | Server | Rejects orders exceeding point balance |
+| Pathfinding | Server | Street-graph routing; client never submits paths |
+| Unit movement | Server | Tick-advanced; client interpolates between deltas |
+| Combat resolution | Server | Deterministic, server clock |
+| Rendering / AR / input | Client | Presentation and intent only |
+
+Rule: **client sends intent, server sends state.** Any client message asserting an outcome is rejected.
+
+```mermaid
+flowchart LR
+    subgraph Client["Client (Unity)"]
+        I[Input / AR] --> IN[Intent messages]
+        ST[Local state cache] --> R[Render + interpolate]
+    end
+    subgraph Server["Server (authoritative)"]
+        V[Validate] --> SIM[Simulation tick]
+        SIM --> DB[(World state)]
+        SIM --> IM[Interest manager]
+    end
+    IN -->|Order, Conquer, Build| V
+    IM -->|State deltas, scoped| ST
+```
+
+### Spatial Streaming
+
+- World partitioned into a fixed spatial grid (tiles / geohash / H3 cells).
+- Client subscribes to tiles covering its **interest area**: current GPS position + radius, plus tiles containing its own assets.
+- Server pushes deltas only for subscribed tiles. Unsubscribed world state is never sent.
+- Subscription updates on movement: enter/leave tiles as the player moves.
+
+| Layer | Streamed | Source |
+|---|---|---|
+| Building geometry (3D) | On tile enter, cached locally | Static map data, CDN |
+| Street graph | Server-side only | Not shipped to client |
+| Ownership / HP / points | Delta per tick | Live, server |
+| Units in interest area | Delta per tick | Live, server |
+| Units outside interest area | Not sent | — |
+
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant IM as Interest Manager
+    participant W as World State
+
+    C->>IM: Position update (GPS)
+    IM->>IM: Compute tile set (radius + owned assets)
+    IM->>C: Unsubscribe: exited tiles
+    IM->>W: Subscribe: entered tiles
+    W-->>C: Snapshot of entered tiles
+    loop Simulation tick
+        W-->>IM: Changed entities
+        IM-->>C: Deltas, filtered to subscribed tiles
+    end
+```
+
+### Anti-Cheat
+
+| Vector | Mitigation |
+|---|---|
+| GPS spoofing | Server-side plausibility: speed between fixes, jump detection, platform attestation |
+| Forged orders | Server validates ownership, proximity, and point balance on every order |
+| Client-computed paths | Client cannot submit paths; routing is server-only |
+| Injected combat results | Combat resolved on server tick; client results ignored |
+| State scraping | Interest scoping limits visibility to the player's own area |
+| Replay / speed hacks | Server clock authoritative for accrual, build times, movement |
+
 ## Factions
 
 | Faction | Identity | Unit theme (example) |
@@ -143,10 +230,19 @@ stateDiagram-v2
 
 ## Open Questions
 
-- Conquest radius and anti-spoofing (GPS spoof prevention).
+### Gameplay
+
+- Conquest radius value.
 - Points payout: passive tick vs. manual collection visit.
 - Unit cap per building / per player.
-- PvP unit combat: real-time vs. resolved server-side simulation.
 - Faction identity, lore, unit rosters.
+
+### Technical
+
+- Spatial index choice: geohash vs. H3 vs. fixed grid; tile size vs. interest radius.
+- Simulation tick rate, and whether distant regions tick lazily (on-demand catch-up) vs. continuously.
+- Transport: WebSocket vs. QUIC; delta encoding format.
 - Building data source and licensing (OSM buildings, height estimation).
-- Server authority model for ownership/combat resolution.
+- Street graph storage and routing engine (prebuilt contraction hierarchies vs. on-demand A*).
+- Offline/reconnect behavior: state reconciliation after client gap.
+- Server sharding strategy by geography, and cross-shard unit movement.
