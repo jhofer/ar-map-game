@@ -271,6 +271,7 @@ The avatar is the player's body on the map. Progression is **personal**: it trav
 | Currency | Essence (working name) |
 | XP source | Demon kills, gate closures |
 | Progression | Avatar level + gear slots |
+| Gear slots | 3: ranged weapon, melee weapon, armor set |
 | Weapons | Demon drops only |
 | Armor | Crafted at a Workshop |
 | Stats | Randomly rolled on both |
@@ -304,19 +305,31 @@ flowchart LR
 
 Two acquisition paths, both with **randomly rolled stats**. This is the endless-chase layer: no item is terminal, so the demon loop never runs out of reason to run.
 
-| Slot class | Acquisition | Source | Sink |
-|---|---|---|---|
-| Weapon | **Drop only** | Demon kills, gate rewards | — |
-| Armor | **Craft only** | Workshop at an owned building | Essence + materials |
+#### Slots
+
+**Three slots, fixed.** A full loadout is 2 drops + 1 craft.
+
+| # | Slot | Class | Acquisition | Source | Sink |
+|---|---|---|---|---|---|
+| 1 | Ranged weapon | Weapon | **Drop only** | Demon kills, gate rewards | — |
+| 2 | Melee weapon | Weapon | **Drop only** | Demon kills, gate rewards | — |
+| 3 | Armor set | Armor | **Craft only** | Workshop at an owned building | Essence + materials |
+
+- Armor is one **set** piece, not separate head/chest/legs — keeps the mobile inventory small and the craft target singular.
+- Both weapons are equipped at once; the player switches between them in combat.
+- Two weapon slots imply combat has a range dimension: ranged for approach and kiting, melee for close quarters.
+- No trinket, consumable, or cosmetic slots in scope.
+
+#### Acquisition
 
 - Materials drop from demons; Essence pays the craft cost.
-- Every roll is independent: crafting the same armor twice yields different stats.
+- Every roll is independent: crafting the same armor set twice yields different stats.
 - Higher-tier gates raise base-item tier and rarity odds, not just drop volume.
 - **All rolls are server-side.** The client never generates or reveals stats before the server commits them (see Anti-Cheat).
 
 ```mermaid
 flowchart LR
-    D[Demon kill] --> W[Weapon drop]
+    D[Demon kill] --> W[Weapon drop: ranged or melee]
     D --> M[Materials]
     D --> E[Essence]
     M --> C[Workshop craft]
@@ -327,7 +340,7 @@ flowchart LR
     P --> D
 ```
 
-Roll model (sketch):
+#### Roll Model
 
 ```
 item = base_template(tier) + rarity(tier) + affixes(rarity) + affix_values(range)
@@ -347,7 +360,8 @@ item = base_template(tier) + rarity(tier) + affixes(rarity) + affix_values(range
 | No terminal item | A better roll always exists → gates stay worth running |
 | Armor crafting | Unbounded Essence sink; late-game avatars never cap out |
 | Weapon drop-only | Ties weapon progress directly to gate tier and risk |
-| Split paths | Neither pure grinding nor pure crafting covers a full build |
+| Split paths | Neither pure grinding nor pure crafting covers all 3 slots |
+| Two weapon slots | Doubles the drop chase without widening the inventory |
 
 ### Avatar in RTS Combat
 
@@ -558,8 +572,9 @@ stateDiagram-v2
 - Avatar defeat penalty: cooldown length, durability or Essence cost.
 - Whether avatar level gating of unit tiers is hard (locked) or soft (cost scaling).
 - Whether the avatar can solo low-tier gates without units, and at which level.
-- Gear slot count and rarity tier count.
-- Affix pool: which stats roll, and which are weapon- vs. armor-only.
+- Rarity tier count and affix count per tier.
+- Affix pool: which stats roll on weapons vs. armor, and whether ranged and melee share a pool.
+- Whether ranged and melee are freely switchable in combat or carry a swap cost.
 - Whether crafted armor can be re-rolled, and at what Essence cost.
 - Trading: whether gear is bound to the player or tradeable between players.
 - Power-gap control: how far random gear may separate two players in RTS hero combat.
