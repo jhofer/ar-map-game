@@ -311,7 +311,7 @@ Four factions: three playable, one server-controlled. Working names — final na
 - Player picks one of the three playable factions on onboarding; permanent or season-locked (TBD).
 - Faction determines unit roster, visual theme, factory models.
 - Asymmetric balance target: no faction strictly dominant across all building kinds or region densities.
-- Demons are never playable and hold no territory permanently.
+- Demons are never playable and never hold territory.
 
 ```mermaid
 flowchart TD
@@ -332,7 +332,7 @@ Server-controlled threat. Hostile to all three playable factions equally. Primar
 | Control | Server AI; never playable |
 | Spawn source | Hellgates opening at semi-random real-world positions |
 | Targets | Any owned building (any faction), player units, gate surroundings |
-| Territory | Destroys buildings; does **not** hold ownership (buildings revert to Neutral) |
+| Territory | **None.** Demons destroy buildings only; never occupy or own them |
 | Reward | Points / loot for killing demons and closing gates |
 
 ### Hellgates
@@ -342,6 +342,7 @@ Server-controlled threat. Hostile to all three playable factions equally. Primar
 - Closed by destroying the gate: player units, on-site AR action, or both.
 - Unclosed gates escalate: larger waves, wider threat radius, higher reward.
 - Rare high-tier gates act as regional events, drawing multiple players and factions.
+- No shared objective, shared reward, or truce mechanic: players remain hostile to rival factions at a gate.
 
 ```mermaid
 stateDiagram-v2
@@ -359,9 +360,14 @@ stateDiagram-v2
 | Effect | Consequence |
 |---|---|
 | Density-independent content | Rural players always have something to fight |
-| Common enemy | Three factions may temporarily converge on one gate |
+| Incidental convergence | Factions may meet at a gate; cooperation is emergent, never mechanical |
 | Territory churn | Demon-destroyed buildings return to Neutral, reopening conquest |
 | Defense value | Makes garrisoning owned buildings useful even with no human threat nearby |
+
+**Rules, decided:**
+
+- Demons never occupy buildings. Destruction only → building reverts to Neutral and is reconquerable by any player faction.
+- Faction cooperation at gates is **incidental only**. No alliance system, no shared credit, no suspended PvP.
 
 ## Open Questions
 
@@ -374,8 +380,6 @@ stateDiagram-v2
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
 - Faction names, lore, visual style, unit rosters (deferred by decision).
 - Hellgate spawn weighting, cadence, escalation curve, and reward scale.
-- Whether demons can temporarily occupy a building or only destroy it.
-- Whether cross-faction cooperation at a gate is explicit (shared objective) or incidental.
 
 ### Technical
 
