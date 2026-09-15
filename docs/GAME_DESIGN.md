@@ -720,6 +720,8 @@ stateDiagram-v2
 
 Full technical architecture — client/server split, map data pipeline, spatial streaming, scaling, framework and cost evaluation — lives in [ARCHITECTURE.md](ARCHITECTURE.md).
 
+Background for developers without geodata/game-server experience: [GRUNDLAGEN.md](GRUNDLAGEN.md) (German).
+
 Design-relevant summary:
 
 | Concern | Rule |

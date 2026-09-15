@@ -4,6 +4,8 @@ System architecture for the game described in [GAME_DESIGN.md](GAME_DESIGN.md). 
 
 Scope: high-level structure and technology decisions. Not per-loop mechanics, not API schemas.
 
+> **Prerequisite reading.** No background in maps, geodata, tiles, spatial indexes or authoritative game servers? Read [GRUNDLAGEN.md](GRUNDLAGEN.md) first (German) — it explains every concept used here in terms of business-application equivalents. Chapter pointers appear throughout this document as *Grundlagen:* links.
+
 > Pricing figures: checked 2026-09. Verify before committing — vendor terms change.
 
 ## Constraints
@@ -95,6 +97,8 @@ Consequence: the planet-sized part of the problem is a **file-serving problem**,
 
 ## Map Component Evaluation
 
+*Grundlagen: [Kacheln](GRUNDLAGEN.md#4-kacheln-tiles-pagination-für-die-welt), [Geodatenquellen](GRUNDLAGEN.md#3-geodaten-quellen-modell-lizenz), [Rendering](GRUNDLAGEN.md#9-rendering-im-unity-client).*
+
 The game does not need a map — it needs **buildings as simulation entities**. Ownership, HP, and points attach to a specific building the server also knows about. That requirement eliminates most map SDKs: a rendering SDK draws its own geometry from its own IDs, which the server cannot reference or validate.
 
 | Option | 3D buildings | Stable IDs shared with server | Cost model | Maintenance risk | Verdict |
@@ -124,6 +128,8 @@ Fallback for a fast prototype: Mapbox Unity SDK for visuals with a server-owned 
 
 ## Map Data Pipeline
 
+*Grundlagen: [Koordinaten](GRUNDLAGEN.md#1-koordinaten-und-projektionen), [Geodaten](GRUNDLAGEN.md#3-geodaten-quellen-modell-lizenz), [Kacheln](GRUNDLAGEN.md#4-kacheln-tiles-pagination-für-die-welt).*
+
 Batch job, offline, versioned. Runs per region on ingest and on data refresh — never in the request path.
 
 ```mermaid
@@ -151,6 +157,8 @@ flowchart LR
 - Ingest is regional, on demand: ship the cities you have players in first. Planet ingest is a cost decision, not a prerequisite.
 
 ## Streaming & Interest Management
+
+*Grundlagen: [Räumliche Indizes](GRUNDLAGEN.md#5-räumliche-indizes), [Streaming und Interest Management](GRUNDLAGEN.md#7-streaming-und-interest-management).*
 
 ### Spatial Index
 
@@ -232,6 +240,8 @@ The client never reconciles simulation state — it discards and re-snapshots. T
 
 ## Backend Architecture
 
+*Grundlagen: [Autoritativer Server und Tick](GRUNDLAGEN.md#8-autoritativer-server-und-tick), [PostGIS](GRUNDLAGEN.md#6-räumliche-abfragen-mit-postgis), [Routing](GRUNDLAGEN.md#10-routing-auf-strassengraphen).*
+
 ### Components
 
 | Component | Responsibility | State | Scales by |
@@ -295,6 +305,8 @@ Gateways are stateless with respect to the world and can scale independently of 
 
 ## Transport & Protocol
 
+*Grundlagen: [Snapshot und Delta](GRUNDLAGEN.md#7-streaming-und-interest-management).*
+
 | Option | Fit | Verdict |
 |---|---|---|
 | WebSocket over TLS | Works everywhere, proxy/CDN friendly, mobile-tested | **Chosen** |
@@ -327,6 +339,8 @@ Rationale for custom over a game backend framework:
 Use OSS Nakama alongside the sim only if social/commodity features are wanted before they are worth writing. Keep it optional and behind the gateway.
 
 ## Scaling Model
+
+*Grundlagen: [Grössenordnungen](GRUNDLAGEN.md#11-grössenordnungen).*
 
 | Dimension | Grows with | Mitigation |
 |---|---|---|
@@ -392,6 +406,8 @@ Marginal cost per active player at stage 2–3: roughly **€0.05–0.15/month**
 | Per-seat editor licences | Not applicable at this revenue | Unity Personal |
 
 ## Anti-Cheat
+
+*Grundlagen: [GPS in der Praxis](GRUNDLAGEN.md#2-gps-in-der-praxis).*
 
 Moved from the design doc; unchanged in substance.
 
