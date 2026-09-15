@@ -24,6 +24,7 @@ Post-apocalyptic AR mobile territory-conquest game. Unity. Pokémon GO-style wor
 | Factions | 3 playable + 1 NPC (demons) |
 | Loops | 3: Territory (AR) + RTS + RPG |
 | Currencies | 2, non-convertible: Points (territory), Essence (demons) |
+| Combat | Auto-attack, tower-defense style; no twitch input |
 | Goal | Occupy and hold territory |
 
 ## Core Loop
@@ -316,8 +317,8 @@ Two acquisition paths, both with **randomly rolled stats**. This is the endless-
 | 3 | Armor set | Armor | **Craft only** | Workshop at an owned building | Essence + materials |
 
 - Armor is one **set** piece, not separate head/chest/legs — keeps the mobile inventory small and the craft target singular.
-- Both weapons are equipped at once; the player switches between them in combat.
-- Two weapon slots imply combat has a range dimension: ranged for approach and kiting, melee for close quarters.
+- Both weapons are equipped at once. The server picks per attack by target distance — **the player never switches manually** (see Combat).
+- Loadout is a build decision, not a combat action: choose which range bands to cover.
 - No trinket, consumable, or cosmetic slots in scope.
 
 #### Acquisition
@@ -361,11 +362,12 @@ item = base_template(tier) + rarity(tier) + affixes(rarity) + affix_values(range
 | Armor crafting | Unbounded Essence sink; late-game avatars never cap out |
 | Weapon drop-only | Ties weapon progress directly to gate tier and risk |
 | Split paths | Neither pure grinding nor pure crafting covers all 3 slots |
-| Two weapon slots | Doubles the drop chase without widening the inventory |
+| Two weapon slots | Doubles the drop chase without widening the inventory or adding input |
 
 ### Avatar in RTS Combat
 
-- Avatar may accompany owned units; acts as a hero unit with its own stats and gear.
+- Avatar acts as a hero unit with its own stats and gear, but **cannot be sent anywhere**: it sits at the player's real GPS position and auto-attacks what comes in range.
+- Contributing to a battle means physically being near it.
 - Presence is optional — the RTS loop runs asynchronously without the player on site.
 - Avatar defeat: knocked out, not deleted. Cooldown before re-entry; no gear loss (TBD whether a durability or Essence cost applies).
 
@@ -378,12 +380,77 @@ item = base_template(tier) + rarity(tier) + affixes(rarity) + affix_values(range
 
 ## Combat
 
-- Units vs. units: engage when paths intersect or on arrival at contested building.
-- Units vs. building: reduce building HP; building has defenders (garrisoned units) as first line.
+Design target: **simple, glanceable, no twitch input.** Closer to tower defense than to an action game. Nothing in combat requires aiming, dodging, or fast taps — the phone can be in a pocket.
+
+| Property | Rule |
+|---|---|
+| Input during combat | None — everything auto-attacks |
+| Avatar position | **Locked to the player's real GPS position**; not movable in-game |
+| Avatar targeting | Auto-attacks any hostile in range |
+| Weapon selection | Automatic by target distance — melee close, ranged far |
+| Unit movement | Along street routes to the ordered target |
+| Unit targeting | Auto-engage hostiles on arrival or when paths cross |
+| Resolution | Server-side simulation tick |
+
+### Tower-Defense Shape
+
+The three actors map onto tower-defense roles:
+
+| Actor | Role | Mobility |
+|---|---|---|
+| Demon waves | Creeps | Path toward gates and buildings |
+| Units / turrets | Towers | Placed by the RTS loop; units path, turrets are static |
+| Avatar | Mobile tower | Moves only when the **player physically moves** |
+
+```mermaid
+flowchart LR
+    G[Hellgate] --> W[Demon wave paths to target]
+    W --> T[Target building]
+    U[Owned units] -->|auto-engage| W
+    R[Turrets] -->|auto-engage| W
+    AV[Avatar at player GPS] -->|auto-attack in range| W
+    W -->|reduce HP| T
+```
+
+### Engagement Rules
+
+- Units vs. units: engage when paths intersect or on arrival at a contested building.
+- Units vs. building: reduce building HP; garrisoned units are the first line.
+- Avatar vs. anything hostile in range: continuous auto-attack, no player action.
+- Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
 - Destroyed ≠ deleted: building persists, conquerable again.
-- Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
-- Avatar may participate directly as a hero unit (see RPG Sub-Loop); combat resolution stays server-side.
+
+### Weapon Range Bands
+
+Both weapons are always equipped. The server picks per attack; the player never switches manually.
+
+| Target distance | Weapon used |
+|---|---|
+| Within melee band | Melee weapon |
+| Beyond melee, within ranged band | Ranged weapon |
+| Beyond ranged band | No attack |
+
+Consequence: weapon choice is a **build decision, not a combat action**. A loadout is tuned by which bands the player wants covered and by the rolled stats, not by reaction.
+
+### Speed Lock
+
+| Condition | Effect |
+|---|---|
+| Sustained speed **> 30 km/h** | Avatar cannot attack |
+
+- Speed derived **server-side** from the GPS fix sequence; the client does not report it.
+- Purpose: safety (no play while driving) and anti-cheat (no drive-by farming).
+- Units, turrets, and buildings are unaffected — only the avatar is disabled.
+- Attack re-enables once sustained speed drops below the threshold.
+
+```mermaid
+stateDiagram-v2
+    [*] --> Active
+    Active --> Locked: Sustained speed > 30 km/h
+    Locked --> Active: Sustained speed below threshold
+    Locked --> Locked: Attacks suppressed
+```
 
 ## Building State Machine
 
@@ -418,6 +485,7 @@ World-scale persistent simulation. Two hard constraints drive the design:
 | Unit movement | Server | Tick-advanced; client interpolates between deltas |
 | Combat resolution | Server | Deterministic, server clock |
 | Loot and craft rolls | Server | RNG never runs on the client |
+| Avatar speed / speed lock | Server | Derived from GPS fix sequence, not client-reported |
 | Rendering / AR / input | Client | Presentation and intent only |
 
 Rule: **client sends intent, server sends state.** Any client message asserting an outcome is rejected.
@@ -474,6 +542,7 @@ sequenceDiagram
 | Vector | Mitigation |
 |---|---|
 | GPS spoofing | Server-side plausibility: speed between fixes, jump detection, platform attestation |
+| Drive-by farming | Speed lock: avatar cannot attack above 30 km/h sustained |
 | Forged orders | Server validates ownership, proximity, and point balance on every order |
 | Client-computed paths | Client cannot submit paths; routing is server-only |
 | Injected combat results | Combat resolved on server tick; client results ignored |
@@ -572,9 +641,12 @@ stateDiagram-v2
 - Avatar defeat penalty: cooldown length, durability or Essence cost.
 - Whether avatar level gating of unit tiers is hard (locked) or soft (cost scaling).
 - Whether the avatar can solo low-tier gates without units, and at which level.
+- Melee and ranged band distances, and whether they overlap.
+- Speed-lock hysteresis: sustain window before locking and before unlocking.
+- Whether conquest and crafting are also speed-locked, or only attacking.
+- Passenger case: a passenger in a car is locked out identically — accepted, or mitigated.
 - Rarity tier count and affix count per tier.
 - Affix pool: which stats roll on weapons vs. armor, and whether ranged and melee share a pool.
-- Whether ranged and melee are freely switchable in combat or carry a swap cost.
 - Whether crafted armor can be re-rolled, and at what Essence cost.
 - Trading: whether gear is bound to the player or tradeable between players.
 - Power-gap control: how far random gear may separate two players in RTS hero combat.
