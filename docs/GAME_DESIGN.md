@@ -22,7 +22,9 @@ Post-apocalyptic AR mobile territory-conquest game. Unity. Pokémon GO-style wor
 | Data model | Interest-scoped streaming (client never holds global state) |
 | Coverage | Anywhere people live: city, suburb, village, rural |
 | Factions | 3 playable + 1 NPC (demons) |
-| Core loop | Conquer → Generate points → Build army → Attack/Defend |
+| Loops | 3: Territory (AR) + RTS + RPG |
+| Currencies | 2, non-convertible: Points (territory), Essence (demons) |
+| Goal | Occupy and hold territory |
 
 ## Core Loop
 
@@ -30,10 +32,10 @@ Post-apocalyptic AR mobile territory-conquest game. Unity. Pokémon GO-style wor
 flowchart TD
     A[Explore real world map] --> B[Approach neutral building]
     B --> C[Conquer: claim ownership]
-    C --> D[Building generates points over time]
-    D --> E[Spend points: build factories, train units]
+    C --> D[Building generates Points]
+    D --> E[Spend Points: factories, units]
     E --> F[Units defend owned buildings]
-    E --> G[Units attack enemy/neutral buildings]
+    E --> G[Units attack rival buildings/units]
     G --> H{Building destroyed?}
     H -->|yes| I[Building becomes neutral]
     H -->|no| D
@@ -42,7 +44,71 @@ flowchart TD
     X[Hellgate opens: demons spawn] --> Y[Demons attack owned buildings]
     Y --> H
     F --> Y
+    A --> J[Fight demons at gate]
+    Y --> J
+    J --> K[Earn Essence and XP]
+    K --> L[Avatar level and gear]
+    L --> J
+    L --> G
+    L --> F
 ```
+
+## Game Loops & Currencies
+
+Three loops, two currencies. No loop is self-sufficient; each feeds the others.
+
+| # | Loop | Activity | Currency earned | Serves |
+|---|---|---|---|---|
+| 1 | Territory (AR) | Walk to buildings, conquer them | Points | Income base |
+| 2 | RTS | Build factories, train units, take and hold ground | — (spends Points) | Occupation goal |
+| 3 | RPG | Slay demons, close hellgates | Essence + XP | Avatar power |
+
+### Currencies
+
+| Currency | Working name | Source | Spent on |
+|---|---|---|---|
+| Territory | **Points** | Owned buildings, per tick | Factories, units, defenses |
+| Demon | **Essence** | Demon kills, gate closures | Avatar levels, gear, crafting |
+
+**Rule: no conversion between currencies.** Points cannot buy gear; Essence cannot buy units. Each loop must be played for its own reward — this is what keeps all three active.
+
+### Synergy
+
+```mermaid
+flowchart LR
+    subgraph L1["1. Territory (AR)"]
+        T1[Conquer buildings]
+        T2[Points income]
+        T1 --> T2
+    end
+    subgraph L2["2. RTS"]
+        R1[Factories and units]
+        R2[Take and hold ground]
+        R1 --> R2
+    end
+    subgraph L3["3. RPG"]
+        P1[Slay demons, close gates]
+        P2[Essence, levels, gear]
+        P1 --> P2
+    end
+    T2 --> R1
+    R2 --> T1
+    R2 --> P1
+    P2 --> P1
+    P2 --> R1
+    D[Demons destroy buildings] --> T1
+```
+
+| From | To | Link |
+|---|---|---|
+| Territory | RTS | Points fund factories, units, defenses |
+| RTS | Territory | Units take and hold buildings |
+| RTS | RPG | Units escort the avatar and absorb waves at high-tier gates |
+| RPG | RPG | Better gear makes higher-tier gates survivable → more Essence |
+| RPG | RTS | Avatar level unlocks unit/structure tiers; avatar fights alongside units |
+| Demons | Territory | Destroyed buildings revert to Neutral → new conquest targets |
+
+Design rule: **territory is the win condition; the RPG loop is the personal power that makes holding it possible.**
 
 ## World & Map
 
@@ -157,6 +223,7 @@ Unlocked by accumulated points. Applies per-building, anchored to that building'
 |---|---|---|
 | Factory | Produces units | Points threshold |
 | Wall/Turret (optional) | Passive defense | Points threshold |
+| Workshop (optional) | Gear crafting / repair from Essence | Points threshold |
 
 ### Units
 
@@ -195,6 +262,55 @@ sequenceDiagram
     end
 ```
 
+## RPG Sub-Loop (Avatar)
+
+The avatar is the player's body on the map. Progression is **personal**: it travels with the player and is never lost when territory falls.
+
+| Element | Detail |
+|---|---|
+| Currency | Essence (working name) |
+| XP source | Demon kills, gate closures |
+| Progression | Avatar level + gear slots |
+| Gear source | Demon drops, gate rewards, crafting at owned buildings |
+| Persistence | Survives loss of all buildings and units |
+| Scope | Single avatar per player; no alts |
+
+### What Avatar Power Buys
+
+| Affects | Effect |
+|---|---|
+| Demon combat | Higher-tier gates become survivable → more Essence |
+| RTS combat | Avatar joins attacks and defense as a hero unit |
+| Tech access | Level gates higher unit and structure tiers |
+| Survivability | Defeat penalty reduced (see below) |
+
+```mermaid
+flowchart LR
+    G[Gate encounter] --> K[Kill demons]
+    K --> E[Essence + XP]
+    E --> L[Level up]
+    E --> Q[Gear]
+    L --> P[Higher avatar power]
+    Q --> P
+    P --> G
+    P --> R[Hero unit in RTS combat]
+    L --> T[Unlock unit / structure tiers]
+    T --> R
+```
+
+### Avatar in RTS Combat
+
+- Avatar may accompany owned units; acts as a hero unit with its own stats and gear.
+- Presence is optional — the RTS loop runs asynchronously without the player on site.
+- Avatar defeat: knocked out, not deleted. Cooldown before re-entry; no gear loss (TBD whether a durability or Essence cost applies).
+
+### Loop Separation
+
+- Essence buys **only** avatar progression. Points buy **only** army and structures.
+- A player who ignores demons fields an army but a weak avatar: cannot clear high-tier gates, locked out of upper tech tiers.
+- A player who ignores territory has a strong avatar but no income: cannot field or sustain an army, cannot hold ground.
+- Holding territory remains the win condition; the avatar is the tool, not the goal.
+
 ## Combat
 
 - Units vs. units: engage when paths intersect or on arrival at contested building.
@@ -202,6 +318,7 @@ sequenceDiagram
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
 - Destroyed ≠ deleted: building persists, conquerable again.
 - Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
+- Avatar may participate directly as a hero unit (see RPG Sub-Loop); combat resolution stays server-side.
 
 ## Building State Machine
 
@@ -325,7 +442,7 @@ flowchart TD
 
 ## Faction 4: Demons (PvE)
 
-Server-controlled threat. Hostile to all three playable factions equally. Primary purpose: guarantee content everywhere, including regions with no nearby human opponents.
+**The common enemy.** Demons are hostile to all three playable factions and allied with none — the shared threat the setting is built on. Server-controlled. Design purpose: anchor the lore, drive the RPG loop, and guarantee content everywhere, including regions with no nearby human opponents.
 
 | Property | Value |
 |---|---|
@@ -333,7 +450,7 @@ Server-controlled threat. Hostile to all three playable factions equally. Primar
 | Spawn source | Hellgates opening at semi-random real-world positions |
 | Targets | Any owned building (any faction), player units, gate surroundings |
 | Territory | **None.** Demons destroy buildings only; never occupy or own them |
-| Reward | Points / loot for killing demons and closing gates |
+| Reward | **Essence + XP + gear** — never Points (see Game Loops & Currencies) |
 
 ### Hellgates
 
@@ -341,8 +458,9 @@ Server-controlled threat. Hostile to all three playable factions equally. Primar
 - Emit demon waves on a timer until closed.
 - Closed by destroying the gate: player units, on-site AR action, or both.
 - Unclosed gates escalate: larger waves, wider threat radius, higher reward.
-- Rare high-tier gates act as regional events, drawing multiple players and factions.
-- No shared objective, shared reward, or truce mechanic: players remain hostile to rival factions at a gate.
+- Rare high-tier gates act as regional events, drawing multiple players and factions against the common enemy.
+- Gate and demon rewards pay **Essence**, never Points — the demon loop funds the avatar, not the army.
+- Common enemy in lore and targeting, but **no alliance mechanic**: no shared objective, shared credit, or truce. Rival players stay hostile to each other at a gate.
 
 ```mermaid
 stateDiagram-v2
@@ -360,14 +478,17 @@ stateDiagram-v2
 | Effect | Consequence |
 |---|---|
 | Density-independent content | Rural players always have something to fight |
-| Incidental convergence | Factions may meet at a gate; cooperation is emergent, never mechanical |
+| Common enemy | All three factions face the same threat; convergence at gates is emergent, never mechanical |
+| Drives the RPG loop | Sole source of Essence, XP, and gear |
 | Territory churn | Demon-destroyed buildings return to Neutral, reopening conquest |
 | Defense value | Makes garrisoning owned buildings useful even with no human threat nearby |
 
 **Rules, decided:**
 
+- Demons are the **common enemy**: hostile to all three factions, allied with none, never playable.
 - Demons never occupy buildings. Destruction only → building reverts to Neutral and is reconquerable by any player faction.
 - Faction cooperation at gates is **incidental only**. No alliance system, no shared credit, no suspended PvP.
+- Demon rewards are **Essence only**. No Points from demons; no Essence from buildings.
 
 ## Open Questions
 
@@ -379,7 +500,12 @@ stateDiagram-v2
 - Density normalization constants: `d_ref`, `a`, `bonus_max`.
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
 - Faction names, lore, visual style, unit rosters (deferred by decision).
-- Hellgate spawn weighting, cadence, escalation curve, and reward scale.
+- Hellgate spawn weighting, cadence, escalation curve, and Essence reward scale.
+- Avatar defeat penalty: cooldown length, durability or Essence cost.
+- Whether avatar level gating of unit tiers is hard (locked) or soft (cost scaling).
+- Gear model: slots, rarity tiers, crafting vs. drop-only.
+- Whether the avatar can solo low-tier gates without units, and at which level.
+- Currency sink balance: Essence sinks must scale, or late-game avatars cap out.
 
 ### Technical
 
