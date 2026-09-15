@@ -1,28 +1,30 @@
 # Hellgate World — Game Design Document
 
-Post-apocalyptic AR mobile territory-conquest game. Unity. Pokémon GO-style world map + RTS base-building loop.
+Post-apocalyptic location-based mobile territory-conquest game. Unity. Pokémon GO-style world map + RTS base-building loop. **Map view only — no camera AR.**
 
 ## Setting
 
 - Tone: post-apocalypse. Hellgates have opened across the real world; demons pour through.
 - Reference point: *Hellgate: London* (demon invasion of a real city), scaled to the whole inhabited world.
 - Three human factions fight each other **and** the demon incursion over the ruins of real places.
-- Names, lore, and visual style: **defined later**. Faction labels below are working names.
+- Visual style: **stylized low-poly** — see [Art Direction](#art-direction).
+- Names and lore: **defined later**. Faction labels below are working names.
 
 ## Overview
 
 | Property | Value |
 |---|---|
 | Platform | Mobile (iOS / Android) |
-| Engine | Unity, AR Foundation |
-| Genre | AR location-based + RTS |
+| Engine | Unity (no AR Foundation — see [View & Presentation](#view--presentation)) |
+| Genre | Location-based map + RTS |
 | Theme | Post-apocalyptic demon invasion |
+| Art style | Stylized low-poly, *League of Legends*-like — hand-painted, non-photoreal |
 | Session type | Persistent world, asynchronous multiplayer |
 | Authority | Server-authoritative simulation; client is renderer + intent |
 | Data model | Interest-scoped streaming (client never holds global state) |
 | Coverage | Anywhere people live: city, suburb, village, rural |
 | Factions | 3 playable + 1 NPC (demons) |
-| Loops | 3: Territory (AR) + RTS + RPG |
+| Loops | 3: Territory (map) + RTS + RPG |
 | Currencies | 2, non-convertible: Points (territory), Essence (demons) |
 | Combat | Auto-attack, tower-defense style; no twitch input |
 | Goal | Occupy and hold territory |
@@ -174,7 +176,7 @@ Three loops, two currencies. No loop is self-sufficient; each feeds the others.
 
 | # | Loop | Activity | Currency earned | Serves |
 |---|---|---|---|---|
-| 1 | Territory (AR) | Walk to buildings, conquer them | Points | Income base |
+| 1 | Territory (map) | Walk to buildings, conquer them | Points | Income base |
 | 2 | RTS | Build factories, train units, take and hold ground | — (spends Points) | Occupation goal |
 | 3 | RPG | Slay demons, close hellgates | Essence + XP | Avatar power |
 
@@ -191,7 +193,7 @@ Three loops, two currencies. No loop is self-sufficient; each feeds the others.
 
 ```mermaid
 flowchart LR
-    subgraph L1["1. Territory (AR)"]
+    subgraph L1["1. Territory (map)"]
         T1[Conquer buildings]
         T2[Points income]
         T1 --> T2
@@ -231,8 +233,72 @@ Design rule: **territory is the win condition; the RPG loop is the personal powe
 - Where footprints are missing, targets are synthesized from POI or road data (see Coverage & Density).
 - Buildings rendered as 3D models on the map, positioned at real GPS coordinates.
 - Avatar position = user's live GPS location.
-- AR view: camera overlay shows buildings/units when user is physically near them.
-- Map view: top-down/3D map for macro strategy, out of AR range.
+- One view for everything: the world map (see [View & Presentation](#view--presentation)).
+
+## View & Presentation
+
+One view, always the same: a 3D world map with the player's avatar on it, Pokémon GO-style. **Camera AR is out of scope** — decided, not deferred.
+
+| Element | Rule |
+|---|---|
+| Camera | Tilted top-down, locked to the avatar; user may rotate, pitch, zoom |
+| Avatar | Rendered at the user's live GPS position, facing the direction of travel |
+| Buildings | Stylized low-poly models at real coordinates, tinted by owning faction |
+| Units, towers, gates | Rendered on the same map from live state |
+| Interaction ring | Circle around the avatar showing the current action radius |
+| Remote view | Map pans to own assets for orders; conquest-type actions stay radius-gated |
+| HUD | Screen-space overlay: currencies, unit orders, alerts |
+
+### Why No Camera AR
+
+| Reason | Effect |
+|---|---|
+| Battery | Camera + tracking drains a phone in a session; play sessions are long and outdoors |
+| Georeferencing error | Compass and anchor drift misplace world-anchored objects by meters — conquest targets would look wrong |
+| Play posture | Territory, RTS and RPG loops are read-and-tap, not look-around |
+| Safety | Holding a camera up while walking is worse than glancing at a map |
+| Scope | One renderer, one camera, one input model |
+
+### Art Direction
+
+Reference point: *League of Legends* — stylized low-poly geometry with hand-painted texture work, read from a tilted top-down camera. Post-apocalyptic subject matter, **not** a gritty photoreal one.
+
+| Property | Direction |
+|---|---|
+| Geometry | Low-poly; shape carries the read, not mesh density |
+| Texturing | Hand-painted, baked lighting and AO into the albedo; few real-time lights |
+| Colour | Saturated, high-contrast; faction colour is the strongest signal on the map |
+| Silhouette | Readable at map zoom — a unit type is identifiable by outline alone |
+| Scale | Exaggerated: units and towers read larger than real-world proportion against buildings |
+| Damage states | Colour and decal shift, not mesh destruction |
+| Basemap | Stylized ground and streets; never photorealistic imagery |
+
+Why it fits this game:
+
+| Driver | Effect |
+|---|---|
+| Camera is far and tilted | Detail below silhouette level is never seen — no reason to pay for it |
+| Mobile budget | Low poly counts and shared atlases keep draw calls and memory in range |
+| Mass instancing | Hundreds of buildings per view; stylized kits repeat without looking wrong |
+| Real-world data gaps | Stylized buildings tolerate approximated footprints and estimated heights; photoreal does not |
+| Faction readability | Territory ownership must be legible at a glance, at any zoom |
+
+### Map Interaction
+
+```mermaid
+flowchart TD
+    A[Map view centred on avatar] --> B{Target inside interaction ring?}
+    B -->|yes| C[Action buttons enabled: conquer / build / craft / fight]
+    B -->|no| D[Target inspectable only]
+    C --> E[Client sends intent]
+    E --> F[Server validates against its own GPS fix]
+    F --> G[State delta → map updates]
+    D --> H[Pan / zoom, or walk closer]
+    H --> A
+```
+
+- The ring is presentation of a server-side radius, never the rule itself — the server re-checks every intent (see [Presence Rules](#presence-rules)).
+- Unit orders work from the panned-away map; placement and conquest do not.
 
 ## Coverage & Density
 
@@ -777,7 +843,7 @@ flowchart TD
 
 - Spawn semi-randomly, weighted by **player presence**, not building density — every active player gets reachable events regardless of where they live.
 - Emit demon waves on a timer until closed.
-- Closed by destroying the gate: player units, on-site AR action, or both.
+- Closed by destroying the gate: player units, on-site avatar action, or both.
 - Unclosed gates escalate: larger waves, wider threat radius, higher reward.
 - Rare high-tier gates act as regional events, drawing multiple players and factions against the common enemy.
 - Gate and demon rewards pay **Essence**, never Points — the demon loop funds the avatar, not the army.
@@ -839,6 +905,11 @@ stateDiagram-v2
 - Fixed conquest radius value.
 - Density normalization constants: `d_ref`, `a`, `bonus_max`.
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
+- Whether free map panning is limited to subscribed cells or reaches any owned asset.
+- Whether rival avatars are shown on the map at all, and at what range.
+- Building-kit size: how many low-poly building variants per kind before repetition shows.
+- Whether faction ownership reads as a full retexture, an accent colour, or an overlay.
+- Camera zoom band: closest and widest zoom, and whether zoom level changes what is rendered.
 - Faction names, lore, visual style, unit rosters (deferred by decision).
 - Hellgate spawn weighting, cadence, escalation curve, and Essence reward scale.
 - Avatar defeat penalty: cooldown length, durability or Essence cost.

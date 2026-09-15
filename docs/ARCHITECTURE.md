@@ -16,7 +16,7 @@ Scope: high-level structure and technology decisions. Not per-loop mechanics, no
 | C2 | Cheat resistance | Server authoritative for all simulation; client renders and sends intent |
 | C3 | Private project, unknown player count | Cost floor must be near zero; cost scales with active players, not world size |
 | C4 | Solo/small team | Prefer one language, one deployable, managed-free-tier services over ops surface |
-| C5 | Mobile client (Unity, AR) | Battery, intermittent network, background/foreground churn, GPS jitter |
+| C5 | Mobile client (Unity, map view) | Battery, intermittent network, background/foreground churn, GPS jitter |
 | C6 | Asynchronous persistent world | World advances while players are offline — without ticking the whole planet |
 
 C3 and C6 together are the dominant forces: **the world is planet-sized, the simulation is not.** Only regions with recent player presence are live.
@@ -25,7 +25,9 @@ C3 and C6 together are the dominant forces: **the world is planet-sized, the sim
 
 | Area | Decision | Driver |
 |---|---|---|
-| Client engine | Unity 6 LTS + AR Foundation | Given |
+| Client engine | Unity 6 LTS, no AR Foundation | Given — map view only, camera AR out of scope |
+| Client presentation | Single 3D map view, follow camera on the avatar | See [Client Presentation](#client-presentation) |
+| Art style | Stylized low-poly, hand-painted, baked lighting | C5 — mobile budget; see [GAME_DESIGN.md § Art Direction](GAME_DESIGN.md#art-direction) |
 | Map rendering | Custom tile renderer over own geometry tiles | C1, C2, C3 — see [Map Component Evaluation](#map-component-evaluation) |
 | Map data source | Overture Maps (buildings) + OSM (streets, POI) | Open license, global, height attributes, no per-user fee |
 | Static delivery | Immutable versioned tiles on object storage + CDN | Flat cost, offline cache, no per-MAU fee |
@@ -63,7 +65,7 @@ flowchart TB
 
     subgraph Client["Unity Client"]
         NET[Net layer] --> CACHE[Local state cache]
-        CACHE --> REN[Map / AR renderer]
+        CACHE --> REN[Map renderer + avatar]
         TILE[Tile cache on disk] --> REN
     end
 
@@ -114,7 +116,7 @@ The game does not need a map — it needs **buildings as simulation entities**. 
 
 - Server and client consume the **same** building IDs, derived from Overture GERS / OSM IDs.
 - Geometry ships as compact binary tiles (footprint polygon, height, kind, entity ID) — not styled basemap tiles.
-- Renderer: extrude footprints in Unity, swap in authored 3D models per building kind/faction. Art style is post-apocalyptic; photoreal basemaps are the wrong look anyway.
+- Renderer: extrude footprints in Unity, swap in authored low-poly models per building kind/faction. Art style is stylized post-apocalyptic — photoreal basemaps are the wrong look and the wrong cost.
 - Cost decoupled from player count: object storage + CDN, no per-MAU licensing.
 - Cloudflare R2 (zero egress fee) or Backblaze B2 preferred over S3/GCS for the tile bucket.
 
@@ -125,6 +127,78 @@ The game does not need a map — it needs **buildings as simulation entities**. 
 | ODbL attribution/share-alike on OSM-derived data | Attribution screen; keep derived map data separable from game state; Overture attribution rules per source |
 
 Fallback for a fast prototype: Mapbox Unity SDK for visuals with a server-owned entity overlay, replaced before public release. Keep the renderer behind an interface from day one.
+
+## Client Presentation
+
+*Grundlagen: [Rendering im Unity-Client](GRUNDLAGEN.md#9-rendering-im-unity-client), [GPS in der Praxis](GRUNDLAGEN.md#2-gps-in-der-praxis).*
+
+One view: a 3D world map with the player avatar at the GPS position. **AR Foundation is not a dependency** — no camera feed, no plane detection, no world anchors. Rationale is a design decision, see [GAME_DESIGN.md § View & Presentation](GAME_DESIGN.md#view--presentation).
+
+### Client Layers
+
+| Layer | Source | Update |
+|---|---|---|
+| Tile cache | CDN, immutable per data version | On cell enter, disk-cached |
+| Street / ground | Geometry tiles | With tile |
+| Buildings | Geometry tiles, extruded + authored models | With tile; material swap on ownership delta |
+| Live entities (units, towers, gates, avatars) | WebSocket deltas | Per tick |
+| Avatar | Local GPS pipeline | 0.2–1 Hz fix, interpolated per frame |
+| Interaction ring | Server-sent radius constant | On constant change |
+| HUD | Local state cache | Per state change |
+
+Ownership, HP and selection are material/overlay changes on already-loaded meshes — a delta never triggers a tile reload.
+
+### Camera
+
+| Property | Value |
+|---|---|
+| Type | Follow camera, locked to the avatar |
+| Pitch | Tilted top-down, user-adjustable inside a clamped band |
+| Yaw | User rotation; snap-to-north control |
+| Zoom | Clamped band; drives LOD and entity label density |
+| Free pan | Temporary; recentres on the avatar on release or timeout |
+
+Camera state is client-local and never sent to the server. Interest subscription follows the **GPS position**, not the camera — panning does not widen the subscription set.
+
+### Avatar Position Pipeline
+
+```mermaid
+flowchart LR
+    A[OS location fix] --> B{Accuracy under threshold?}
+    B -->|no| A
+    B -->|yes| C[Smoothing filter]
+    C --> D[Clamp to plausible walk speed]
+    D --> E[WGS84 to ENU, local origin]
+    E --> F[Interpolate between fixes]
+    F --> G[Avatar transform + heading]
+    A --> H[PositionFix to server]
+```
+
+- Client-side smoothing is **presentation only**. Every presence check runs against the server's own accepted fix ([Anti-Cheat](#anti-cheat)).
+- Heading comes from course over ground; compass fusion only below walking speed, where course is noise.
+- Floating origin: the ENU origin follows the player and is shifted past a distance threshold.
+
+### Render Budget (mobile target)
+
+| Item | Target |
+|---|---|
+| Draw calls | Low hundreds — GPU instancing per building kind |
+| Buildings in view | Hundreds in a dense core, LOD-reduced beyond the near band |
+| Live entities in view | Tens |
+| Frame rate | 30 fps sustained; the loop has no twitch input |
+| Battery | No camera, no continuous tracking; GPS at 0.2–1 Hz is the main draw |
+
+The low-poly art direction is a budget decision as much as a look:
+
+| Choice | Consequence |
+|---|---|
+| Low triangle counts per asset | Vertex cost stays flat as building density rises |
+| Shared texture atlas per kit | Same material → instancing and batching actually apply |
+| Baked lighting and AO in the albedo | One directional light; no per-pixel light loops on mobile GPUs |
+| Faction colour as material property | Ownership deltas recolour instances, no mesh or atlas swap |
+| No mesh destruction | Damage is a material/decal state — no runtime mesh generation |
+
+Background and foreground churn is a streaming case, not a rendering case — see [Reconnect & Offline](#reconnect--offline).
 
 ## Map Data Pipeline
 
@@ -301,7 +375,7 @@ Gateways are stateless with respect to the world and can scale independently of 
 | Combat | Deterministic region tick; event-driven when no hostiles present |
 | RPG (avatar, gear) | Stateless request/response against economy service; RNG server-side, committed before response |
 | Demons (PvE) | Demon director schedules gates weighted by player presence; wakes regions via timer queue |
-| AR interaction | Client-side presentation; every consequence is an intent message |
+| Map interaction | Client-side presentation; every consequence is an intent message |
 
 ## Transport & Protocol
 
@@ -442,7 +516,7 @@ Moved from the design doc; unchanged in substance.
 
 | Phase | Deliverable | Stack added |
 |---|---|---|
-| P0 | Map pipeline for one city; tiles render in Unity; GPS avatar | Pipeline, tile format, renderer |
+| P0 | Map pipeline for one city; tiles render in Unity; GPS avatar with follow camera | Pipeline, tile format, renderer |
 | P1 | Conquest + points, server-authoritative, one region | Gateway, region actor, Postgres |
 | P2 | Interest streaming across cells; multiple players | Interest manager, deltas, reconnect |
 | P3 | RTS: units, routing, stations, combat tick | Routing service, combat |
@@ -464,6 +538,11 @@ Moved from the design doc; unchanged in substance.
 ## Open Technical Questions
 
 - Tile format: custom binary vs. glTF vs. 3D Tiles; LOD strategy for dense cores.
+- Avatar smoothing filter: low-pass vs. Kalman; tuning per accuracy class.
+- Heading source: GPS course over ground vs. compass fusion at walking speed.
+- Whether the street layer is rendered geometry or a baked basemap texture per tile.
+- Building kit: procedural extrusion with stylized materials vs. authored low-poly models snapped to footprints.
+- Faction recolouring path: material property blocks vs. per-kit texture variants.
 - Interest cell resolution: confirm r9 against real subscription sizes in a dense core.
 - Region resolution: r8 vs. r7 — trade-off between actor count and cross-boundary handoffs.
 - Delta encoding: field-mask deltas vs. full-entity snapshots per changed entity.

@@ -473,13 +473,77 @@ flowchart LR
 | Culling | Nicht Sichtbares gar nicht zeichnen | Vor allem sonst nichts hilft |
 | Extrusion | Grundriss-Polygon × Höhe → Körper | Erzeugt unsere Gebäude-Meshes |
 
-### AR-Besonderheiten
+### Kartenansicht statt Kamera-AR
 
-- AR Foundation liefert die Kamerapose relativ zum **Startpunkt der Session**, nicht zur Erde. Die Verankerung an Weltkoordinaten ist eine eigene Aufgabe.
-- Kompass-/Ausrichtungsfehler auf Mobilgeräten sind gross; Objekte in AR wirken schnell verschoben.
-- AR ist energieintensiv. Die Kartenansicht ist der Normalfall, AR der Nahbereich.
+Das Projekt rendert **eine** Ansicht: eine 3D-Karte mit dem eigenen Avatar darauf (Pokémon-GO-Prinzip). Keine Kamera-AR.
 
-**Im Projekt:** → [ARCHITECTURE.md § Chosen: Custom Tile Pipeline](ARCHITECTURE.md#chosen-custom-tile-pipeline).
+**Analogie:** Eine Navigations-App — bewegter Positionsmarker auf einer Karte, Kamera fest über der eigenen Figur. Kein Kamerabild, keine Weltverankerung.
+
+| Kameraeigenschaft | Bedeutung |
+|---|---|
+| Follow-Kamera | Kamera hängt starr am Avatar und folgt ihm; der Spieler steuert nur Drehung, Neigung, Zoom |
+| Neigung (Pitch) | Schräge Draufsicht — erzeugt räumlichen Eindruck, hält aber die Übersicht |
+| Zoom | Bestimmt sichtbare Fläche und damit LOD-Stufe und Objektzahl pro Bild |
+| Free Pan | Kurzzeitiges Wegschieben der Karte; die Abo-Region folgt weiterhin dem GPS, nicht der Kamera |
+
+Was mit Kamera-AR wegfällt (und warum das den Client vereinfacht):
+
+| AR-Problem | Entfällt, weil |
+|---|---|
+| Kamerapose relativ zum Session-Start, nicht zur Erde | Es gibt keine Kamerapose — die Karte ist georeferenziert |
+| Kompass-/Ausrichtungsfehler versetzen Objekte sichtbar | Objekte stehen auf Kartenkoordinaten |
+| Kamera und Tracking sind energieintensiv | Nur GPS mit 0.2–1 Hz plus Rendering |
+| Zweite Kamera, zweites Eingabemodell | Ein Renderer, eine Kamera, ein Input-Modell |
+
+### Warum Low-Poly eine Kostenentscheidung ist
+
+Der Kunststil des Projekts ist stilisiertes Low-Poly (*League of Legends* als Referenz). Das ist nicht nur Geschmack — es bestimmt, wie viele Objekte ein Mobilgerät gleichzeitig darstellen kann.
+
+**Analogie:** Wie die Wahl eines schlanken Payloads für eine Liste mit 10 000 Zeilen — nicht der Server ist das Limit, sondern das Budget pro Zeile.
+
+| Begriff | Bedeutung | Wirkung |
+|---|---|---|
+| Polycount / Triangle Budget | Dreiecke pro Modell | Bestimmt die Vertex-Kosten pro Bild |
+| Texture Atlas | Viele Texturen in einer Datei | Gleiches Material → Batching und Instancing greifen überhaupt erst |
+| Baked Lighting | Licht und Schattierung in die Textur gerechnet | Spart Echtzeitlichter, die auf Mobilgeräten teuer sind |
+| Material Property Block | Pro-Instanz-Parameter (z. B. Fraktionsfarbe) ohne neues Material | Umfärben bricht das Batching nicht |
+| Silhouette | Umriss eines Objekts | Bei schräger Draufsicht das verlässlichste Erkennungsmerkmal |
+
+**Fallstricke**
+
+| Fehler | Folge |
+|---|---|
+| Pro Gebäudetyp ein eigenes Material | Instancing greift nicht, Draw Calls explodieren |
+| Fraktionsfarbe über Materialkopien lösen | Jede Eroberung erzeugt ein neues Material |
+| Detail investieren, das die Kameradistanz nie zeigt | Kosten ohne sichtbaren Nutzen |
+| Fotorealistischer Anspruch auf approximierten Geodaten | Geschätzte Höhen und grobe Grundrisse fallen sofort auf |
+| Echtzeitschatten für alle Objekte | Sprengt auf Mobilgeräten als Erstes das Frame-Budget |
+
+### Avatar: GPS in Bewegung übersetzen
+
+**Problem:** GPS liefert alle paar Sekunden einen springenden Punkt, die Darstellung braucht 30 Bilder pro Sekunde ohne Zittern.
+
+**Analogie:** Ein Messwert-Chart, das aus wenigen, verrauschten Samples eine ruhige Linie zeichnet — geglättet und zwischen den Stützstellen interpoliert.
+
+| Begriff | Bedeutung |
+|---|---|
+| Glättung (Low-Pass, Kalman-Filter) | Rechnet aus verrauschten Messungen einen ruhigen Verlauf; der Kalman-Filter gewichtet dabei die gemeldete Genauigkeit |
+| Interpolation | Zwischenpositionen zwischen zwei Fixes, damit die Figur läuft statt springt |
+| Dead Reckoning | Fortschreiben der Position aus letzter Position, Richtung und Tempo, wenn kein neuer Fix kommt |
+| Heading / Course over Ground | Blickrichtung der Figur; aus der Bewegungsrichtung zweier Fixes, nicht aus dem Kompass |
+| Floating Origin | Verschieben des lokalen Nullpunkts, wenn sich der Spieler zu weit davon entfernt (siehe oben) |
+
+**Fallstricke**
+
+| Fehler | Folge |
+|---|---|
+| Rohe Fixes direkt auf den Avatar legen | Figur springt und zittert im Stand |
+| Zu starke Glättung | Avatar „klebt" hinter der realen Position, Radiusaktionen fühlen sich verzögert an |
+| Kompass als Blickrichtung beim Gehen | Richtung dreht sich, weil das Gerät in der Hand kippt |
+| Geglättete Client-Position für Spielregeln verwenden | Regeln laufen auf einer erfundenen Position — serverseitiger Fix ist die Wahrheit |
+| Dead Reckoning ohne Abbruch | Die Figur läuft bei GPS-Ausfall ins Nichts weiter |
+
+**Im Projekt:** → [ARCHITECTURE.md § Client Presentation](ARCHITECTURE.md#client-presentation), [ARCHITECTURE.md § Chosen: Custom Tile Pipeline](ARCHITECTURE.md#chosen-custom-tile-pipeline). Die Darstellung ist Präsentation; jede Präsenzregel rechnet gegen den Server-Fix (Kapitel 2).
 
 ---
 
@@ -538,23 +602,30 @@ Daraus folgt die Kostenlogik des Projekts: die grossen Datenmengen sind **statis
 | Attestation | Plattformprüfung, dass eine echte, unmanipulierte App spricht |
 | Backpressure | Rückstau-Schutz bei langsamen Empfängern |
 | CDN | Verteiltes Auslieferungsnetz für statische Dateien |
+| Dead Reckoning | Position fortschreiben aus Richtung und Tempo, wenn kein Messwert vorliegt |
 | Delta | Änderungsnachricht statt Vollzustand |
 | ENU | Lokales Meter-Koordinatensystem (East, North, Up) |
 | Feature | Geoobjekt: Geometrie + Attribute |
+| Floating Origin | Mitwandernder lokaler Nullpunkt gegen Float-Ungenauigkeit |
+| Follow-Kamera | Kamera, die starr am Avatar hängt und ihm folgt |
 | Footprint | Gebäudegrundriss als Polygon |
 | GERS | Stabile Objekt-ID in Overture Maps |
 | GNSS | Oberbegriff für Satellitennavigation (GPS, Galileo, …) |
 | H3 | Hexagonales Zellsystem von Uber |
+| Heading | Blickrichtung des Avatars, aus der Bewegungsrichtung abgeleitet |
 | Interest Area | Abonnierter Weltausschnitt eines Clients |
+| Kalman-Filter | Glättungsverfahren, das Messungen nach ihrer Genauigkeit gewichtet |
 | LOD | Detailstufe abhängig von der Distanz |
 | MVT | Mapbox Vector Tile, Protobuf-Kachelformat |
 | ODbL | Open Database License (OSM) |
 | PMTiles | Einzeldatei-Kachelarchiv mit HTTP-Range-Zugriff |
 | POI | Point of Interest |
+| Polycount | Anzahl Dreiecke eines Modells |
 | PostGIS | Räumliche Erweiterung für PostgreSQL |
 | Region Actor | Zuständiger Simulationsprozess für eine Weltregion |
 | Slippy Map | Übliche Kachelkarte mit XYZ-Schema |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
+| Texture Atlas | Mehrere Texturen in einer Datei, damit ein Material genügt |
 | Tick | Simulationsschritt in festem Takt |
 | WGS84 | Weltweites geodätisches Bezugssystem (GPS-Koordinaten) |
 
@@ -569,7 +640,9 @@ Daraus folgt die Kostenlogik des Projekts: die grossen Datenmengen sind **statis
 | Kapitel 6 — PostGIS | [Components](ARCHITECTURE.md#components) |
 | Kapitel 7 — Streaming | [Message Flow](ARCHITECTURE.md#message-flow), [Wire Budget](ARCHITECTURE.md#wire-budget) |
 | Kapitel 8 — Tick, Autorität | [Region Actors](ARCHITECTURE.md#region-actors), [Transport & Protocol](ARCHITECTURE.md#transport--protocol) |
-| Kapitel 9 — Unity | [Chosen: Custom Tile Pipeline](ARCHITECTURE.md#chosen-custom-tile-pipeline) |
+| Kapitel 9 — Unity, Floating Origin | [Chosen: Custom Tile Pipeline](ARCHITECTURE.md#chosen-custom-tile-pipeline) |
+| Kapitel 9 — Kartenansicht, Kamera, Avatar | [Client Presentation](ARCHITECTURE.md#client-presentation) |
+| Kapitel 9 — Low-Poly, Darstellungskosten | [Client Presentation](ARCHITECTURE.md#client-presentation), [GAME_DESIGN.md § Art Direction](GAME_DESIGN.md#art-direction) |
 | Kapitel 10 — Routing | [Components](ARCHITECTURE.md#components) |
 | Kapitel 11 — Grössenordnungen | [Scaling Model](ARCHITECTURE.md#scaling-model), [Cost Model](ARCHITECTURE.md#cost-model) |
 
@@ -585,4 +658,6 @@ Daraus folgt die Kostenlogik des Projekts: die grossen Datenmengen sind **statis
 | Räumliche Abfragen | [PostGIS Reference](https://postgis.net/docs/reference.html) |
 | OSM-Lizenz | [ODbL / OSM Copyright](https://www.openstreetmap.org/copyright) |
 | Netcode-Grundlagen | [Valve: Source Multiplayer Networking](https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking) |
-| AR-Grundlagen in Unity | [Unity AR Foundation Docs](https://docs.unity3d.com/Packages/com.unity.xr.arfoundation@latest) |
+| Standortdienste auf Mobilgeräten | [Android: Location strategies](https://developer.android.com/develop/sensors-and-location/location/strategies) |
+| Rendering-Kosten auf Mobilgeräten | [Unity: Optimizing graphics performance](https://docs.unity3d.com/Manual/OptimizingGraphicsPerformance.html) |
+| Asset-Budget und Modellierung | [Unity: Art asset best practice guide](https://docs.unity3d.com/Manual/HOWTO-ArtAssetBestPracticeGuide.html) |
