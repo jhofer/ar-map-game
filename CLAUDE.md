@@ -50,17 +50,27 @@ flowchart LR
 
 ## Documentation Set
 
-| File | Content | Language |
-|---|---|---|
-| `docs/GAME_DESIGN.md` | Gameplay rules, entities, loops, balance | English |
-| `docs/ARCHITECTURE.md` | Technical architecture, frameworks, scaling, cost | English |
-| `docs/GRUNDLAGEN.md` | Foundations for developers without geodata / game-server background | **German** |
+Three sets, one topic per file. Index: `docs/README.md`.
 
-Target reader of `GRUNDLAGEN.md`: a developer with a business-application background (web, backend, enterprise) and no knowledge of maps, geodata, tiles, spatial indexes, streaming, or authoritative game servers.
+| Set | Content | Language |
+|---|---|---|
+| `docs/design/` | Gameplay rules, entities, loops, balance | English |
+| `docs/architecture/` | Technical architecture, frameworks, scaling, cost | English |
+| `docs/grundlagen/` | Foundations for developers without geodata / game-server background | **German** |
+
+| Rule | Requirement |
+|---|---|
+| One topic per file | A file covers one subject; each set's `README.md` is its index |
+| Index maintenance | A new file gets a row in its set's `README.md` contents table in the same commit |
+| Nav line | Every non-index file starts with `[← <Set>](README.md)` under its title |
+| Links | Relative paths between files; anchors must match GitHub slug rules |
+| Placement | Gameplay decisions in `design/`, technical decisions in `architecture/`, explanation only in `grundlagen/` |
+
+Target reader of `docs/grundlagen/`: a developer with a business-application background (web, backend, enterprise) and no knowledge of maps, geodata, tiles, spatial indexes, streaming, or authoritative game servers.
 
 ## Rule: Extend the Foundations With Every Change
 
-**Every change to `GAME_DESIGN.md` or `ARCHITECTURE.md` that introduces a concept the target reader does not already know must extend `docs/GRUNDLAGEN.md` in the same commit.**
+**Every change in `docs/design/` or `docs/architecture/` that introduces a concept the target reader does not already know must extend `docs/grundlagen/` in the same commit.**
 
 Trigger test — a new term needs a foundations entry if **any** applies:
 
@@ -89,11 +99,12 @@ flowchart TD
 
 | Step | Location |
 |---|---|
-| 1 | Extend the matching chapter in `GRUNDLAGEN.md`, or add a new one — keep the chapter pattern: Problem → Analogie → Fakten → Fallstricke → Im Projekt |
-| 2 | Add the term to `§ Glossar` |
-| 3 | Add a row to `§ Begriff → Stelle in der Architektur` |
-| 4 | Add or update the `*Grundlagen: …*` pointer line in the affected `ARCHITECTURE.md` section |
-| 5 | Add a source to `§ Weiterführend` if an authoritative reference exists |
+| 1 | Extend the matching chapter file in `docs/grundlagen/`, or add a new one — keep the chapter pattern: Problem → Analogie → Fakten → Fallstricke → Im Projekt |
+| 2 | Add the term to the glossary table in `docs/grundlagen/glossar.md` |
+| 3 | Add a row to `§ Begriff → Stelle in der Architektur` in the same file |
+| 4 | Add or update the `*Grundlagen: …*` pointer line in the affected `docs/architecture/` file |
+| 5 | Add a source to `§ Weiterführend` in `glossar.md` if an authoritative reference exists |
+| 6 | If a new chapter file was added: add it to `docs/grundlagen/README.md` (contents + Lesepfad) |
 
 ### Rules for Foundations Content
 
@@ -107,6 +118,7 @@ flowchart TD
 
 | Check | Command / method |
 |---|---|
-| Internal anchors resolve | Script over all three docs; GitHub slug rules (punctuation dropped, `&` leaves a double hyphen) |
-| Mermaid diagrams render | `npx @mermaid-js/mermaid-cli -i <file> -o <tmp>` |
+| Internal links and anchors resolve | Script over `docs/**/*.md`; relative paths plus GitHub slug rules (punctuation dropped, `&` leaves a double hyphen) |
+| Mermaid diagrams render | `npx @mermaid-js/mermaid-cli -i <file> -o <tmp>` per changed file |
+| Set index is current | Every file in a set appears in that set's `README.md` |
 | No gameplay or architecture rules duplicated into the foundations | Manual review — foundations explain, they do not decide |
