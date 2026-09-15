@@ -64,6 +64,7 @@ Four object types. Everything else in the design is built from these.
 | **Factory** | Player-placed construct that produces units | Placed by player | **Free space only** | Points | No |
 | **Tower** | Player-placed construct, defensive | Placed by player | **On an owned building only** | Points | No |
 | **Unit** | Produced fighter, player-directed | Produced at a factory | Spawns at factory, then moves | Points | **Yes** |
+| **Workshop** | Neutral crafting site | Not placed — derived from real-world POIs | Fixed at its POI | — | No |
 
 ```mermaid
 flowchart LR
@@ -78,6 +79,20 @@ flowchart LR
 - Factory and Tower are complementary: **factories never sit on buildings, towers only ever do.**
 - Buildings are found, not built. Factories and towers are built, not found.
 - Units are the only mobile entity a player owns besides the avatar.
+- Workshops are **never owned by anyone** — see World Sites.
+
+### World Sites
+
+Neutral locations nobody owns. They exist to pull players out into the real world.
+
+| Site | Anchored to | Lifetime | Ownable | Purpose |
+|---|---|---|---|---|
+| **Workshop** | A real-world POI | Permanent | **No** | Armor crafting |
+| **Hellgate** | A spawned position | Temporary, until closed | **No** | Demon source, Essence |
+
+- Both require the player to **physically travel there**. Neither can be used remotely.
+- Both are open to all three factions — shared, never claimed.
+- This is the design's main real-world-interaction driver: the RPG loop cannot be played from the couch.
 
 ### Presence Rules
 
@@ -88,6 +103,8 @@ Physical presence is required to **place** and to **take**, never to **command**
 | Conquer a building | **Yes** |
 | Place a factory | **Yes** |
 | Place a tower | **Yes** |
+| Craft at a workshop | **Yes** |
+| Fight at a hellgate | **Yes** |
 | Give orders to units | **No** — fully remote |
 
 - Rationale: the map is claimed on foot, but an army is directed from anywhere.
@@ -208,6 +225,8 @@ flowchart TD
     C -->|no| X[Mark tile unplayable]
 ```
 
+Workshops draw on the same POI data, so workshop availability varies by region too. Sparse regions need a fallback so the crafting half of the RPG loop stays reachable — see Open Questions.
+
 | Source | Provides | Used when |
 |---|---|---|
 | Building footprints (OSM) | Geometry, volume, kind | Preferred |
@@ -265,11 +284,10 @@ Constructs are placed by the player and cost Points. **Placement always requires
 |---|---|---|---|
 | Factory | **Free space only** — never on a building | Produces units | Points |
 | Tower | **On an owned building only** | Auto-defense + damage shield | Points |
-| Workshop *(proposed)* | On an owned building | Armor crafting from Essence + materials | Points |
 
 - **Free space** = a map position not intersecting any building footprint. Validated server-side.
 - Factory and Tower are complementary and never overlap: factories go in the gaps between buildings, towers go on top of them.
-- Workshop is not part of the confirmed entity set (see Entities); it exists here only to anchor armor crafting.
+- Workshops are **not** constructs — they are neutral world sites (see World Sites).
 
 ### Towers
 
@@ -431,7 +449,7 @@ The avatar is the player's body on the map. Progression is **personal**: it trav
 | Progression | Avatar level + gear slots |
 | Gear slots | 3: ranged weapon, melee weapon, armor set |
 | Weapons | Demon drops only |
-| Armor | Crafted at a Workshop |
+| Armor | Crafted at a Workshop — requires travelling to a real POI |
 | Stats | Randomly rolled on both |
 | Persistence | Survives loss of all buildings and units |
 | Scope | Single avatar per player; no alts |
@@ -471,7 +489,7 @@ Two acquisition paths, both with **randomly rolled stats**. This is the endless-
 |---|---|---|---|---|---|
 | 1 | Ranged weapon | Weapon | **Drop only** | Demon kills, gate rewards | — |
 | 2 | Melee weapon | Weapon | **Drop only** | Demon kills, gate rewards | — |
-| 3 | Armor set | Armor | **Craft only** | Workshop at an owned building | Essence + materials |
+| 3 | Armor set | Armor | **Craft only** | Workshop — a neutral real-world POI | Essence + materials |
 
 - Armor is one **set** piece, not separate head/chest/legs — keeps the mobile inventory small and the craft target singular.
 - Both weapons are equipped at once. The server picks per attack by target distance — **the player never switches manually** (see Combat).
@@ -480,6 +498,7 @@ Two acquisition paths, both with **randomly rolled stats**. This is the endless-
 
 #### Acquisition
 
+- Crafting happens **only at a workshop**, and the player must be standing there. No remote crafting.
 - Materials drop from demons; Essence pays the craft cost.
 - Every roll is independent: crafting the same armor set twice yields different stats.
 - Higher-tier gates raise base-item tier and rarity odds, not just drop volume.
@@ -490,7 +509,7 @@ flowchart LR
     D[Demon kill] --> W[Weapon drop: ranged or melee]
     D --> M[Materials]
     D --> E[Essence]
-    M --> C[Workshop craft]
+    M --> C[Travel to workshop POI and craft]
     E --> C
     C --> A[Armor with random stats]
     W --> P[Avatar power]
@@ -788,6 +807,7 @@ stateDiagram-v2
 | Drives the RPG loop | Sole source of Essence, XP, and gear |
 | Territory churn | Demon-destroyed buildings return to Neutral, reopening conquest |
 | Defense value | Makes garrisoning owned buildings useful even with no human threat nearby |
+| Real-world pull | Gates and workshops both require travel — the RPG loop cannot be played remotely |
 
 **Rules, decided:**
 
@@ -809,7 +829,10 @@ stateDiagram-v2
 - Whether factories can be placed on rival-held ground, or only in neutral / own areas.
 - Factory placement range from the player, and whether it equals the conquest radius.
 - Whether a factory itself can be attacked and destroyed, and what it drops.
-- Whether the Workshop survives as an entity or armor crafting moves onto factories.
+- Which POI categories qualify as workshops, and their density per region.
+- Workshop fallback where POI data is thin — synthesize, or widen the qualifying categories.
+- Whether rival factions can fight at a workshop, or whether it is a no-combat zone.
+- Whether crafting has a per-workshop cooldown, to stop one site being farmed repeatedly.
 - Tower count per building, and whether it scales with building volume.
 - Whether towers repair or must be rebuilt after an attack.
 - Whether towers block conquest of a Neutral building, or only damage to an Owned one.
