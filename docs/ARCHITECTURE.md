@@ -87,7 +87,7 @@ Separating static geometry from live state is the core of the streaming design.
 
 | | Static plane | Live plane |
 |---|---|---|
-| Content | Building footprints, heights, kinds, street rendering data | Ownership, HP, points, units, gates, avatars |
+| Content | Building footprints, heights, kinds, street rendering data, workshop sites | Ownership, HP, points, units, towers, factories, gates, avatars |
 | Transport | HTTPS, CDN-cached | WebSocket, binary deltas |
 | Mutability | Immutable per version | Per tick |
 | Volume | MB per region, cached on device | Bytes per entity per tick |
@@ -230,6 +230,34 @@ flowchart LR
 - Data versions are immutable; tile URLs carry the version (`/v/{dataVersion}/{z}/{x}/{y}.bin`) so CDN caching is unbounded and clients never see torn data.
 - Ingest is regional, on demand: ship the cities you have players in first. Planet ingest is a cost decision, not a prerequisite.
 
+### Tile Payload
+
+What a geometry tile contains — the admission rule is **immutable per data version and identical for every player**.
+
+| Record | Fields | Notes |
+|---|---|---|
+| Header | `dataVersion`, `tileId`, origin, record counts | Origin anchors all tile-local coordinates |
+| Building | `entityId`, footprint ring(s), `height`, `kind`, centroid | `entityId` derived from GERS/OSM — the key the server uses too |
+| Street | polyline, `class`, width class | Rendering only; the routing graph stays server-side |
+| Ground / landuse | polygon, `class` | Optional per region |
+| Workshop site | `siteId`, position, POI category | Static per data version — ships in the tile, not as a live entity |
+
+- Coordinates are tile-local fixed point: `uint16` per axis against the tile origin ≈ 2 cm resolution at z15. No doubles in the payload.
+- Heights are `uint16` in decimetres.
+- Meshes are **not** shipped. The tile carries footprints and classes; the client builds geometry by extrusion and by picking a model from the local low-poly kit (see [Client Presentation](#client-presentation)).
+
+Explicitly **not** in a tile:
+
+| Excluded | Why | Where it lives |
+|---|---|---|
+| Ownership, HP, points rate | Changes per tick, differs per player | Entity delta |
+| Towers, factories | Player-created | Entity delta |
+| Units, demons, avatars | Mobile and player-created | Entity delta |
+| Hellgates | Spawned at runtime | Entity delta |
+| Workshop occupancy (crafting, duel) | Transient state of a static site | Entity delta, keyed by `siteId` |
+
+Consequence: a building's *shape* comes from the CDN once per data version; its *state* comes from the socket. A conquest changes a material property on an already-loaded mesh — it never invalidates a tile.
+
 ## Streaming & Interest Management
 
 *Grundlagen: [Räumliche Indizes](GRUNDLAGEN.md#5-räumliche-indizes), [Streaming und Interest Management](GRUNDLAGEN.md#7-streaming-und-interest-management).*
@@ -262,6 +290,18 @@ subscriptions = kRing(playerCell, k(density))
 - Hard cap on total subscribed cells per session; owned-asset cells are prioritized over radius cells.
 - Owned-asset subscriptions are **notification-scoped** (state changes, attacks), not full detail, when far from the player.
 
+Subscription decides what a client *could* receive; a second filter decides what it *does* receive:
+
+```
+visible = subscribed ∩ (always-visible ∪ inside sight radius of an own asset)
+```
+
+- Always-visible: buildings, streets, workshop sites, building ownership, hellgates.
+- Sight-gated: rival units, factories, towers, demons — see [GAME_DESIGN.md § Visibility](GAME_DESIGN.md#visibility).
+- Rival avatars are never streamed outside a shared site, at any subscription level.
+- The vision set is the union of small radii around a player's own assets; assets are few and mostly static, so it is recomputed only on asset or position change, not per tick.
+- Filtering happens **before** the delta is written. An entity a player cannot see produces no bytes, so a modified client cannot reveal it.
+
 ### Message Flow
 
 ```mermaid
@@ -282,7 +322,9 @@ sequenceDiagram
     R-->>C: CellSnapshot(entities, seq)
     loop Simulation tick
         R-->>IM: Changed entities
+        IM->>IM: Vision filter
         IM-->>C: EntityDelta(seq+1, changed fields only)
+        IM-->>C: RouteSet(entity, path, startTick) on movement change
     end
     C->>G: Intent(Conquer / Build / SetStation)
     G->>R: Validate + apply
@@ -293,12 +335,14 @@ sequenceDiagram
 
 | Item | Size | Frequency |
 |---|---|---|
-| Entity delta (position/HP/state) | 16–40 B | Per changed entity per tick |
+| Entity delta (HP, state, ownership) | 8–24 B | Per changed field set, on change |
+| Route set (moving entity) | 40–200 B | On station change or retarget only |
+| Progress resync | 6–10 B | Per moving entity, every ~5 s |
 | Cell snapshot (urban) | 5–15 KB | On cell enter |
 | Position fix (up) | ~24 B | 0.2–1 Hz |
 | Geometry tile | 10–100 KB | Once per tile per data version |
 
-Steady-state estimate, active combat, ~30 moving entities in view at 2 Hz: **~2 KB/s ≈ 7 MB/h**. Idle play with no combat: under 100 B/s. Mobile-data acceptable.
+Movement is **not** a per-tick cost — see [Entity Streaming](#entity-streaming). Estimate for active combat with ~30 visible entities taking damage at 2 Hz: **under 1 KB/s**. Idle play with units holding stations: well under 100 B/s. Both figures are estimates, to be confirmed against a real region.
 
 ### Reconnect & Offline
 
@@ -311,6 +355,84 @@ Steady-state estimate, active combat, ~30 moving entities in view at 2 Hz: **~2 
 | Client clock | Ignored; all timestamps are server clock |
 
 The client never reconciles simulation state — it discards and re-snapshots. There is no client-side prediction except avatar position, which is GPS-driven and non-authoritative anyway.
+
+## Entity Streaming
+
+*Grundlagen: [Streaming und Interest Management](GRUNDLAGEN.md#7-streaming-und-interest-management), [Autoritativer Server und Tick](GRUNDLAGEN.md#8-autoritativer-server-und-tick).*
+
+How live objects reach the client and how their positions are represented.
+
+### Entity Classes
+
+| Class | Examples | Position | Anchor |
+|---|---|---|---|
+| Static-anchored | Building state, workshop occupancy | From the tile, by `entityId` / `siteId` | Map data |
+| Placed | Factory, tower | Sent once on spawn, never changes | Factory: own position. Tower: `buildingId` + slot |
+| Mobile | Unit, demon, own avatar | Route-based, see below | — |
+| Event | Hellgate | Sent on spawn | Own position |
+
+Placed and event entities carry no geometry — only a kind, an owner and a transform. The mesh comes from the client's low-poly kit.
+
+### Delta Encoding
+
+Field-mask deltas, not full-entity snapshots:
+
+```
+delta = [cellLocalId varint][mask uint16][changed fields…]
+```
+
+| Rule | Detail |
+|---|---|
+| Identity | Cell-local index assigned in the `CellSnapshot`; global IDs only on spawn |
+| Mask | One bit per field; only set fields follow |
+| Granularity | A unit taking damage costs the HP field, nothing else |
+| Ordering | Per-cell sequence number; a gap forces a re-snapshot of that cell |
+| Spawn / despawn | Explicit records, never inferred from a missing delta |
+
+### Movement: Route + Progress
+
+A moving entity is streamed as **a path and a clock**, not as a stream of positions.
+
+| Field | Meaning |
+|---|---|
+| `route` | Polyline of the server-computed street route, quantized like tile coordinates |
+| `speed` | Server constant for the unit type |
+| `startTick` | Server tick at which the entity entered the route |
+| `state` | Moving / Holding / Engaging / Returning |
+
+The client evaluates position locally: `position = route(speed × (now − startTick))`, against the server clock.
+
+| Event | Message |
+|---|---|
+| New station, retarget, blocked | New `route` record |
+| Stop, engage, return | `state` change |
+| Drift control | `progress` resync every ~5 s per moving entity |
+| Death | Despawn record |
+
+Why not per-tick positions:
+
+| Property | Position stream | Route + progress |
+|---|---|---|
+| Cost of a unit walking across a city | Bytes every tick, forever | One route, then ~2 B/s of resync |
+| Motion between ticks | Needs interpolation guesswork | Exact — the path is known |
+| Tick rate visible as stutter | Yes | No |
+| Behaviour during a short network gap | Entity freezes | Entity keeps walking its known route |
+| Server cost | Serialize every mover per tick | Serialize on state change |
+
+Trade-off accepted: the client knows a unit's *planned* path slightly before the unit walks it. That leaks nothing a player could not see anyway — the route is only sent for entities the vision filter already cleared.
+
+### Client-Side Handling
+
+| Case | Rule |
+|---|---|
+| Movement | Evaluated from route + server clock, every frame |
+| Resync inside tolerance (< ~2 m) | Corrected smoothly over ~0.5 s, never snapped |
+| Resync outside tolerance, or new route | Applied immediately |
+| HP, ownership, state | Applied on arrival, no smoothing |
+| Server clock | Offset estimated on connect and re-estimated periodically; the client clock is never authoritative |
+| Missed deltas | Re-snapshot the cell — no reconstruction (see [Reconnect & Offline](#reconnect--offline)) |
+
+This is the only client-side motion logic besides the avatar, and it is **evaluation of server-sent data**, not prediction: the client never advances a state the server did not already commit to.
 
 ## Backend Architecture
 
@@ -371,7 +493,7 @@ Gateways are stateless with respect to the world and can scale independently of 
 |---|---|
 | Territory (conquest) | Intent validated against server-side position fix; ownership row in PostGIS; delta to subscribers |
 | Points economy | Analytic accrual on region wake + periodic materialization; never ticked per building |
-| RTS (units, structures) | Region actor tick + routing service; stations are per-unit anchors, engagement is a radius query inside the region |
+| RTS (units, structures) | Region actor tick + routing service; stations are per-unit anchors, engagement is a radius query inside the region; movement streams as route + progress ([Entity Streaming](#entity-streaming)) |
 | Combat | Deterministic region tick; event-driven when no hostiles present |
 | RPG (avatar, gear) | Stateless request/response against economy service; RNG server-side, committed before response |
 | Demons (PvE) | Demon director schedules gates weighted by player presence; wakes regions via timer queue |
@@ -494,7 +616,7 @@ Moved from the design doc; unchanged in substance.
 | Forged orders | Server validates ownership, proximity, and point balance on every order |
 | Client-computed paths | Client cannot submit paths; routing is server-only |
 | Injected combat results | Combat resolved on the server tick; client-asserted results are rejected by protocol design |
-| State scraping | Interest scoping limits visibility; subscription caps and rate limits per session |
+| State scraping | Interest scoping plus a server-side vision filter; invisible entities are never serialized; subscription caps and rate limits per session |
 | Replay / speed hacks | Server clock authoritative for accrual, build times, movement |
 | Loot RNG manipulation | All drop and craft rolls executed server-side |
 | Reroll scumming | Roll committed before the client is told the outcome; disconnect does not undo it |
@@ -537,7 +659,7 @@ Moved from the design doc; unchanged in substance.
 
 ## Open Technical Questions
 
-- Tile format: custom binary vs. glTF vs. 3D Tiles; LOD strategy for dense cores.
+- Tile encoding details: ring simplification tolerance per zoom, and the LOD strategy for dense cores.
 - Avatar smoothing filter: low-pass vs. Kalman; tuning per accuracy class.
 - Heading source: GPS course over ground vs. compass fusion at walking speed.
 - Whether the street layer is rendered geometry or a baked basemap texture per tile.
@@ -545,7 +667,9 @@ Moved from the design doc; unchanged in substance.
 - Faction recolouring path: material property blocks vs. per-kit texture variants.
 - Interest cell resolution: confirm r9 against real subscription sizes in a dense core.
 - Region resolution: r8 vs. r7 — trade-off between actor count and cross-boundary handoffs.
-- Delta encoding: field-mask deltas vs. full-entity snapshots per changed entity.
+- Progress resync interval: fixed ~5 s vs. derived from the entity's speed and route length.
+- Route quantization: how much a simplified route may deviate before units visibly clip building corners.
+- Vision-filter cost: recompute per asset change vs. a cached per-player cell mask.
 - Routing engine: Valhalla vs. GraphHopper vs. OSRM; memory footprint per ingested region.
 - Wake latency budget: acceptable delay when a dormant region is first subscribed.
 - Timer queue durability: in-process vs. Postgres-backed scheduled events.

@@ -380,7 +380,41 @@ Der Client rekonstruiert nie Simulationszustand, den er verpasst hat. Bei einer 
 | **WebSocket + Deltas** | Eine Verbindung, Bytes nur bei Änderung |
 | UDP | Nötig bei Twitch-Gameplay; hier nicht — Kampf läuft mit 2–4 Hz automatisch ab |
 
-Grössenordnung: ein Delta ist 16–40 Byte. 30 bewegte Objekte bei 2 Hz ≈ **2 KB/s**. Ohne Kampf deutlich unter 100 B/s.
+Grössenordnung: ein Zustands-Delta ist 8–24 Byte. Bewegung wird nicht pro Tick übertragen (siehe unten), darum bleibt aktiver Kampf mit ~30 sichtbaren Objekten unter **1 KB/s**; ohne Kampf deutlich unter 100 B/s. Schätzwerte.
+
+### Bewegung übertragen: Positionsstrom vs. Route + Fortschritt
+
+**Problem:** Eine Einheit läuft zwanzig Minuten durch die Stadt. Ihre Position ändert sich in jedem Tick — ihre *Absicht* nicht.
+
+**Analogie:** Ein Fahrplan statt eines GPS-Livetickers. Wer Abfahrtszeit, Strecke und Tempo kennt, kann jede Zwischenposition selbst ausrechnen und braucht keine Meldung pro Minute.
+
+| Ansatz | Was über die Leitung geht | Kosten pro bewegter Einheit |
+|---|---|---|
+| Positionsstrom | Koordinaten in jedem Tick | Dauerhaft Bytes, solange sie läuft |
+| **Route + Fortschritt** | Einmal Polylinie, Tempo, Startzeit; danach nur Korrekturen | Einmalig, danach fast nichts |
+
+- Der Client rechnet `Position = Route(Tempo × verstrichene Zeit)` selbst — gegen die **Serveruhr**, nicht die eigene.
+- Ein gelegentlicher `progress`-Abgleich fängt Abweichungen ab (z. B. weil der Server die Einheit angehalten hat).
+- Das ist **keine** Prediction: der Client rät nichts, er wertet eine Kurve aus, die der Server bereits festgelegt hat.
+
+| Eigenschaft | Positionsstrom | Route + Fortschritt |
+|---|---|---|
+| Ruckeln bei niedriger Tickrate | Sichtbar | Nicht sichtbar |
+| Kurzer Netzausbruch | Objekt friert ein | Objekt läuft korrekt weiter |
+| Serverkosten | Jeder Mover pro Tick serialisiert | Nur bei Zustandswechsel |
+| Preis | — | Der Client kennt den geplanten Weg vorab |
+
+### Sichtbarkeit ist nicht dasselbe wie Interest
+
+Zwei Filter, die oft verwechselt werden:
+
+| Filter | Frage | Motiv |
+|---|---|---|
+| Interest / Subscription | Welcher Weltausschnitt ist für diesen Client überhaupt relevant? | Bandbreite, Serverlast |
+| Sichtbarkeit (**Fog of War**) | Was davon darf dieser Spieler wissen? | Spielregel |
+
+- Interest ist eine technische Grenze, Fog of War eine Design-Entscheidung — sie fallen selten zusammen.
+- Beide müssen **serverseitig** greifen. Wer ungesehene Objekte mitschickt und den Client ausblenden lässt, hat die Regel nicht implementiert, sondern nur versteckt (Maphack-Klassiker).
 
 **Fallstricke**
 
@@ -390,8 +424,11 @@ Grössenordnung: ein Delta ist 16–40 Byte. 30 bewegte Objekte bei 2 Hz ≈ **2
 | Kein Rückstau-Schutz (Backpressure) | Langsame Clients füllen Serverpuffer |
 | Zustand nach Reconnect „nachrechnen" | Divergenz, schwer reproduzierbare Fehler |
 | Zeitstempel vom Client | Manipulierbar; immer Serveruhr |
+| Unsichtbares mitsenden und im Client ausblenden | Maphack per Paketmitschnitt, ganz ohne Code-Eingriff |
+| Bewegung als Positionsstrom bei niedriger Tickrate | Ruckeln, hohe Dauerlast — beides vermeidbar |
+| Client-Uhr für die Routenauswertung | Zeitmanipulation beschleunigt Einheiten |
 
-**Im Projekt:** → [ARCHITECTURE.md § Streaming & Interest Management](ARCHITECTURE.md#streaming--interest-management) und [§ Reconnect & Offline](ARCHITECTURE.md#reconnect--offline).
+**Im Projekt:** → [ARCHITECTURE.md § Streaming & Interest Management](ARCHITECTURE.md#streaming--interest-management), [§ Entity Streaming](ARCHITECTURE.md#entity-streaming), [§ Reconnect & Offline](ARCHITECTURE.md#reconnect--offline). Was statisch in der Kachel liegt und was über den Socket kommt: [§ Tile Payload](ARCHITECTURE.md#tile-payload). Die Sichtbarkeitsregel selbst steht in [GAME_DESIGN.md § Visibility](GAME_DESIGN.md#visibility).
 
 ---
 
@@ -585,8 +622,9 @@ Zahlen als grobe Orientierung, nicht als Messwerte.
 | Vektor-Basiskarte Planet (PMTiles, z0–15) | ≈ 120 GB |
 | Stadt-Extrakt (Geometrie, eigenes Format) | einige 10 MB |
 | Eine z15-Kachel, städtisch | 10–100 KB |
-| Entity-Delta | 16–40 Byte |
-| Datenrate im Kampf | ≈ 2 KB/s |
+| Zustands-Delta einer Entity | 8–24 Byte |
+| Routen-Nachricht einer Einheit | 40–200 Byte, einmalig |
+| Datenrate im Kampf | unter 1 KB/s |
 | Tick-Kosten einer Region (≈ 200 Entities) | deutlich unter 1 ms |
 | Objektspeicher (Cloudflare R2) | ≈ $0.015/GB/Monat, kein Egress-Entgelt |
 | Kleiner VPS (Hetzner) | ≈ 4–6 €/Monat |
@@ -606,6 +644,8 @@ Daraus folgt die Kostenlogik des Projekts: die grossen Datenmengen sind **statis
 | Delta | Änderungsnachricht statt Vollzustand |
 | ENU | Lokales Meter-Koordinatensystem (East, North, Up) |
 | Feature | Geoobjekt: Geometrie + Attribute |
+| Feldmaske | Bitmaske im Delta: welche Felder folgen |
+| Fog of War | Spielregel, welche fremden Objekte ein Spieler sehen darf |
 | Floating Origin | Mitwandernder lokaler Nullpunkt gegen Float-Ungenauigkeit |
 | Follow-Kamera | Kamera, die starr am Avatar hängt und ihm folgt |
 | Footprint | Gebäudegrundriss als Polygon |
@@ -620,8 +660,10 @@ Daraus folgt die Kostenlogik des Projekts: die grossen Datenmengen sind **statis
 | ODbL | Open Database License (OSM) |
 | PMTiles | Einzeldatei-Kachelarchiv mit HTTP-Range-Zugriff |
 | POI | Point of Interest |
+| Polylinie | Streckenzug aus Punkten — hier: eine Route |
 | Polycount | Anzahl Dreiecke eines Modells |
 | PostGIS | Räumliche Erweiterung für PostgreSQL |
+| Prefab | Vorgefertigtes Objekt im Client-Build, aus dem Instanzen entstehen |
 | Region Actor | Zuständiger Simulationsprozess für eine Weltregion |
 | Slippy Map | Übliche Kachelkarte mit XYZ-Schema |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
@@ -639,6 +681,8 @@ Daraus folgt die Kostenlogik des Projekts: die grossen Datenmengen sind **statis
 | Kapitel 5 — H3 | [Spatial Index](ARCHITECTURE.md#spatial-index), [Subscription Set](ARCHITECTURE.md#subscription-set) |
 | Kapitel 6 — PostGIS | [Components](ARCHITECTURE.md#components) |
 | Kapitel 7 — Streaming | [Message Flow](ARCHITECTURE.md#message-flow), [Wire Budget](ARCHITECTURE.md#wire-budget) |
+| Kapitel 7 — Route + Fortschritt, Fog of War | [Entity Streaming](ARCHITECTURE.md#entity-streaming), [Subscription Set](ARCHITECTURE.md#subscription-set) |
+| Kapitel 4, 7 — statisch vs. live | [Tile Payload](ARCHITECTURE.md#tile-payload) |
 | Kapitel 8 — Tick, Autorität | [Region Actors](ARCHITECTURE.md#region-actors), [Transport & Protocol](ARCHITECTURE.md#transport--protocol) |
 | Kapitel 9 — Unity, Floating Origin | [Chosen: Custom Tile Pipeline](ARCHITECTURE.md#chosen-custom-tile-pipeline) |
 | Kapitel 9 — Kartenansicht, Kamera, Avatar | [Client Presentation](ARCHITECTURE.md#client-presentation) |
@@ -658,6 +702,7 @@ Daraus folgt die Kostenlogik des Projekts: die grossen Datenmengen sind **statis
 | Räumliche Abfragen | [PostGIS Reference](https://postgis.net/docs/reference.html) |
 | OSM-Lizenz | [ODbL / OSM Copyright](https://www.openstreetmap.org/copyright) |
 | Netcode-Grundlagen | [Valve: Source Multiplayer Networking](https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking) |
+| Entity-Interpolation, Autorität | [Gabriel Gambetta: Fast-Paced Multiplayer](https://www.gabrielgambetta.com/client-server-game-architecture.html) |
 | Standortdienste auf Mobilgeräten | [Android: Location strategies](https://developer.android.com/develop/sensors-and-location/location/strategies) |
 | Rendering-Kosten auf Mobilgeräten | [Unity: Optimizing graphics performance](https://docs.unity3d.com/Manual/OptimizingGraphicsPerformance.html) |
 | Asset-Budget und Modellierung | [Unity: Art asset best practice guide](https://docs.unity3d.com/Manual/HOWTO-ArtAssetBestPracticeGuide.html) |

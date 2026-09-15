@@ -300,6 +300,32 @@ flowchart TD
 - The ring is presentation of a server-side radius, never the rule itself — the server re-checks every intent (see [Presence Rules](#presence-rules)).
 - Unit orders work from the panned-away map; placement and conquest do not.
 
+### Visibility
+
+Not everything inside the streamed area is shown. **Vision comes from what you own.**
+
+| Object | Visible when |
+|---|---|
+| Buildings, streets, workshops | Always, in the streamed area — this is the map itself |
+| Building ownership + HP | Always, in the streamed area |
+| Own avatar, units, factories, towers | Always, at any distance |
+| **Rival units, factories, towers** | Only inside the sight radius of an own asset (avatar, unit, building, factory, tower) |
+| **Demons** | Same rule as rival units |
+| **Hellgates** | Always, in the streamed area — gates exist to attract players |
+| **Rival avatars** | **Never on the open map.** Only at a shared site (workshop, hellgate), inside that site's radius |
+
+- Sight radius is a server constant, derived from the same density normalization as the other constants.
+- An unseen attacker is a real outcome: a rival can station units outside your sight and close in. Owning more ground buys more warning.
+- The server sends only what is visible — invisible entities are not in the stream at all, so the rule cannot be bypassed by a modified client.
+
+Why rival avatars stay hidden:
+
+| Reason | Effect |
+|---|---|
+| Safety | An avatar marker is a live GPS position of a real person; broadcasting it enables stalking |
+| Consent | At workshops and gates the player chose to travel to a shared site — that is the consent boundary |
+| Design | The conflict is over territory and units, not over ambushing people |
+
 ## Coverage & Density
 
 Target: playable anywhere people live — dense city, suburb, village, rural. Play quality must not depend on where the player lives.
@@ -906,7 +932,7 @@ stateDiagram-v2
 - Density normalization constants: `d_ref`, `a`, `bonus_max`.
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
 - Whether free map panning is limited to subscribed cells or reaches any owned asset.
-- Whether rival avatars are shown on the map at all, and at what range.
+- Sight radius value, and whether it differs per asset type (a tower sees further than a unit).
 - Building-kit size: how many low-poly building variants per kind before repetition shows.
 - Whether faction ownership reads as a full retexture, an accent colour, or an overlay.
 - Camera zoom band: closest and widest zoom, and whether zoom level changes what is rendered.
