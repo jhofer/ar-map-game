@@ -223,7 +223,7 @@ Unlocked by accumulated points. Applies per-building, anchored to that building'
 |---|---|---|
 | Factory | Produces units | Points threshold |
 | Wall/Turret (optional) | Passive defense | Points threshold |
-| Workshop (optional) | Gear crafting / repair from Essence | Points threshold |
+| Workshop | Armor crafting from Essence + materials | Points threshold |
 
 ### Units
 
@@ -271,7 +271,9 @@ The avatar is the player's body on the map. Progression is **personal**: it trav
 | Currency | Essence (working name) |
 | XP source | Demon kills, gate closures |
 | Progression | Avatar level + gear slots |
-| Gear source | Demon drops, gate rewards, crafting at owned buildings |
+| Weapons | Demon drops only |
+| Armor | Crafted at a Workshop |
+| Stats | Randomly rolled on both |
 | Persistence | Survives loss of all buildings and units |
 | Scope | Single avatar per player; no alts |
 
@@ -297,6 +299,55 @@ flowchart LR
     L --> T[Unlock unit / structure tiers]
     T --> R
 ```
+
+### Gear
+
+Two acquisition paths, both with **randomly rolled stats**. This is the endless-chase layer: no item is terminal, so the demon loop never runs out of reason to run.
+
+| Slot class | Acquisition | Source | Sink |
+|---|---|---|---|
+| Weapon | **Drop only** | Demon kills, gate rewards | — |
+| Armor | **Craft only** | Workshop at an owned building | Essence + materials |
+
+- Materials drop from demons; Essence pays the craft cost.
+- Every roll is independent: crafting the same armor twice yields different stats.
+- Higher-tier gates raise base-item tier and rarity odds, not just drop volume.
+- **All rolls are server-side.** The client never generates or reveals stats before the server commits them (see Anti-Cheat).
+
+```mermaid
+flowchart LR
+    D[Demon kill] --> W[Weapon drop]
+    D --> M[Materials]
+    D --> E[Essence]
+    M --> C[Workshop craft]
+    E --> C
+    C --> A[Armor with random stats]
+    W --> P[Avatar power]
+    A --> P
+    P --> D
+```
+
+Roll model (sketch):
+
+```
+item = base_template(tier) + rarity(tier) + affixes(rarity) + affix_values(range)
+```
+
+| Stage | Driven by |
+|---|---|
+| Base template | Gate tier / demon tier |
+| Rarity | Weighted roll, tier-scaled |
+| Affix count | Rarity |
+| Affix values | Range roll per affix |
+
+### Why This Sustains the Loop
+
+| Mechanism | Effect |
+|---|---|
+| No terminal item | A better roll always exists → gates stay worth running |
+| Armor crafting | Unbounded Essence sink; late-game avatars never cap out |
+| Weapon drop-only | Ties weapon progress directly to gate tier and risk |
+| Split paths | Neither pure grinding nor pure crafting covers a full build |
 
 ### Avatar in RTS Combat
 
@@ -352,6 +403,7 @@ World-scale persistent simulation. Two hard constraints drive the design:
 | Pathfinding | Server | Street-graph routing; client never submits paths |
 | Unit movement | Server | Tick-advanced; client interpolates between deltas |
 | Combat resolution | Server | Deterministic, server clock |
+| Loot and craft rolls | Server | RNG never runs on the client |
 | Rendering / AR / input | Client | Presentation and intent only |
 
 Rule: **client sends intent, server sends state.** Any client message asserting an outcome is rejected.
@@ -413,6 +465,8 @@ sequenceDiagram
 | Injected combat results | Combat resolved on server tick; client results ignored |
 | State scraping | Interest scoping limits visibility to the player's own area |
 | Replay / speed hacks | Server clock authoritative for accrual, build times, movement |
+| Loot RNG manipulation | All drop and craft rolls executed server-side; client receives committed results only |
+| Reroll scumming | Roll is committed before the client is told the outcome; disconnecting does not undo it |
 
 ## Factions
 
@@ -503,9 +557,12 @@ stateDiagram-v2
 - Hellgate spawn weighting, cadence, escalation curve, and Essence reward scale.
 - Avatar defeat penalty: cooldown length, durability or Essence cost.
 - Whether avatar level gating of unit tiers is hard (locked) or soft (cost scaling).
-- Gear model: slots, rarity tiers, crafting vs. drop-only.
 - Whether the avatar can solo low-tier gates without units, and at which level.
-- Currency sink balance: Essence sinks must scale, or late-game avatars cap out.
+- Gear slot count and rarity tier count.
+- Affix pool: which stats roll, and which are weapon- vs. armor-only.
+- Whether crafted armor can be re-rolled, and at what Essence cost.
+- Trading: whether gear is bound to the player or tradeable between players.
+- Power-gap control: how far random gear may separate two players in RTS hero combat.
 
 ### Technical
 
