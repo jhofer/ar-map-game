@@ -85,14 +85,55 @@ flowchart LR
 
 Neutral locations nobody owns. They exist to pull players out into the real world.
 
-| Site | Anchored to | Lifetime | Ownable | Purpose |
-|---|---|---|---|---|
-| **Workshop** | A real-world POI | Permanent | **No** | Armor crafting |
-| **Hellgate** | A spawned position | Temporary, until closed | **No** | Demon source, Essence |
+| Site | Anchored to | Lifetime | Ownable | Hostile combat | Purpose |
+|---|---|---|---|---|---|
+| **Workshop** | A real-world POI | Permanent | **No** | **Suppressed** — safe zone | Armor crafting, duels |
+| **Hellgate** | A spawned position | Temporary, until closed | **No** | Full | Demon source, Essence |
 
 - Both require the player to **physically travel there**. Neither can be used remotely.
 - Both are open to all three factions — shared, never claimed.
 - This is the design's main real-world-interaction driver: the RPG loop cannot be played from the couch.
+- Workshops are **neutral ground**; hellgates are not.
+
+### Workshops — Neutral Ground
+
+A workshop and a radius around it are a **safe zone**. Nothing hostile resolves inside it.
+
+| Rule | Value |
+|---|---|
+| Player vs. player combat | **Suppressed** |
+| Unit and tower combat | **Suppressed** inside the radius |
+| Demon presence | Hellgates never spawn inside the radius; demons do not enter |
+| Faction access | All three factions, simultaneously |
+| Claiming | Impossible — a workshop can never be owned |
+
+Consequence: a rival cannot camp the only workshop in a town to deny it. Access is guaranteed.
+
+#### Avatar Duels
+
+The one exception to combat suppression — consensual, and with nothing at stake.
+
+| Property | Rule |
+|---|---|
+| Initiation | Challenge + accept; both avatars physically present |
+| Resolution | **Auto-combat**, same engine as PvE — no input |
+| Death | **None.** Loser is never knocked out |
+| Gear | No loss, no damage, no durability cost |
+| Currency | **No Essence or Points transferred or awarded** |
+| Effect on the faction war | None — territory and income are untouched |
+| Cross-faction | Allowed; same-faction duels allowed too |
+
+```mermaid
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Challenged: Player challenges another present avatar
+    Challenged --> Idle: Declined or timed out
+    Challenged --> Dueling: Accepted
+    Dueling --> Resolved: Auto-combat completes
+    Resolved --> Idle: No death, no loss, no reward
+```
+
+Why duels pay nothing: any material reward would be farmable by two cooperating players. Duels exist to **test a build against another build**, not to earn.
 
 ### Presence Rules
 
@@ -590,9 +631,18 @@ flowchart LR
     W -->|reduce HP| T
 ```
 
+### Combat Types
+
+| Type | Stakes | Where |
+|---|---|---|
+| Unit / tower / demon combat | Real — buildings and units are lost | Anywhere except workshop safe zones |
+| Avatar vs. demons | Real — avatar can be knocked out | Anywhere hostile |
+| **Avatar duel** | **None** — no death, no loss, no reward | Workshop safe zones only |
+
 ### Engagement Rules
 
 - Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
+- No hostile engagement resolves inside a workshop safe zone (see Workshops — Neutral Ground).
 - Units vs. building: **towers must fall first** — building HP is untouchable while any tower stands (see Towers).
 - Units stationed on or near a building engage attackers independently of the tower layer.
 - Avatar vs. anything hostile in range: continuous auto-attack, no player action.
@@ -831,8 +881,11 @@ stateDiagram-v2
 - Whether a factory itself can be attacked and destroyed, and what it drops.
 - Which POI categories qualify as workshops, and their density per region.
 - Workshop fallback where POI data is thin — synthesize, or widen the qualifying categories.
-- Whether rival factions can fight at a workshop, or whether it is a no-combat zone.
 - Whether crafting has a per-workshop cooldown, to stop one site being farmed repeatedly.
+- Workshop safe-zone radius, and how it interacts with nearby owned buildings and stationed units.
+- Whether duels are rated or tracked at all, or purely casual.
+- Whether duel results feed a leaderboard, and if so scoped per region or global.
+- Whether a duel can be declined silently or shows a refusal to the challenger.
 - Tower count per building, and whether it scales with building volume.
 - Whether towers repair or must be rebuilt after an attack.
 - Whether towers block conquest of a Neutral building, or only damage to an Owned one.
