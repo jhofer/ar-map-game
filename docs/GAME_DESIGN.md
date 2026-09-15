@@ -224,7 +224,7 @@ All structures are built **on an owned building**, and only while the player is 
 
 | Structure | Placement | Function | Cost |
 |---|---|---|---|
-| Factory | On an owned building | Crafts units | Points |
+| Factory | On an owned building | Crafts units (the unit production source) | Points |
 | Turret | On top of an owned building | Auto-defense + damage shield | Points |
 | Workshop | On an owned building | Armor crafting from Essence + materials | Points |
 
@@ -258,7 +258,7 @@ Consequence: taking a defended building is a two-stage job. Stacking turrets buy
 
 ### Units
 
-Crafted at factories, paid in Points. Each unit holds a **station** — a fixed map position — and guards a radius around it. It acts like a creep: auto-engages anything hostile inside the radius, then returns.
+Crafted at factories, paid in Points. A unit spawns at the factory that made it, then paths to its **station** — a fixed map position it guards a radius around. It acts like a creep: auto-engages anything hostile inside the radius, then returns.
 
 **There is exactly one player order: set the station.** Attacking is expressed by stationing a unit near the target, not by issuing an attack command.
 
@@ -318,14 +318,23 @@ stateDiagram-v2
 
 Every placement action requires the player to be physically present. Nothing is placed remotely.
 
-| Action | Player range required | Line of sight required | Anchor |
-|---|---|---|---|
-| Conquer building | Yes | No | The building |
-| Set unit station | Yes | **Yes** — buildings block | Free map position |
-| Build turret | Yes | No | Owned building |
-| Build factory / workshop | Yes | No | Owned building |
+Two distinct kinds of action share that requirement:
 
-Line of sight applies only to stations, because a station is a free position in the world. Structures anchor to a building the player is already standing at.
+| Kind | What it does | Cost | Repeatable |
+|---|---|---|---|
+| **Construction** | Adds a structure to an owned building | Points, one-time | Once per building slot |
+| **Positioning** | Moves an existing unit's guard post | Free | Any time |
+
+| Action | Kind | Player range | Line of sight | Anchor |
+|---|---|---|---|---|
+| Conquer building | — | Yes | No | The building |
+| Build factory | Construction | Yes | No | Owned building |
+| Build turret | Construction | Yes | No | Owned building |
+| Build workshop | Construction | Yes | No | Owned building |
+| Set unit station | Positioning | Yes | **Yes** — buildings block | Free map position |
+
+- Line of sight applies only to stations, because a station is a free position in the world. Structures anchor to a building the player is already standing at.
+- **Factory vs. station:** a factory is the structure that *produces* units; a station is *where a produced unit stands*. Building a factory creates nothing by itself — units are crafted there for Points, and each is then stationed.
 
 Consequences of a one-order model:
 
