@@ -220,11 +220,40 @@ Unlocked by accumulated points. Applies per-building, anchored to that building'
 
 ### Structures
 
-| Structure | Function | Unlock cost |
-|---|---|---|
-| Factory | Produces units | Points threshold |
-| Wall/Turret (optional) | Passive defense | Points threshold |
-| Workshop | Armor crafting from Essence + materials | Points threshold |
+All structures are built **on an owned building**. There is no free-standing construction.
+
+| Structure | Placement | Function | Cost |
+|---|---|---|---|
+| Factory | On an owned building | Crafts units | Points |
+| Turret | On top of an owned building | Auto-defense + damage shield | Points |
+| Workshop | On an owned building | Armor crafting from Essence + materials | Points |
+
+### Turrets
+
+Turrets are the building's armour layer. A building cannot be damaged while its turrets stand.
+
+| Property | Rule |
+|---|---|
+| Placement | On top of an **owned building** only |
+| Mobility | Fixed to the building; never moves |
+| Targeting | Auto-attacks hostiles in its radius |
+| Shield role | **Building takes no damage while any turret on it stands** |
+| Order of destruction | All turrets first, then building HP |
+| On building loss | Turrets are destroyed with the building |
+
+```mermaid
+flowchart TD
+    A[Attacker in range of building] --> B{Turrets standing?}
+    B -->|yes| C[Attack turrets only]
+    C --> D[Turret destroyed]
+    D --> B
+    B -->|no| E[Attack building HP]
+    E --> F{HP = 0?}
+    F -->|no| E
+    F -->|yes| G[Building becomes Neutral]
+```
+
+Consequence: taking a defended building is a two-stage job. Stacking turrets buys time for the owner to respond or for stationed units to arrive.
 
 ### Units
 
@@ -270,6 +299,19 @@ stateDiagram-v2
 | Order | Effect |
 |---|---|
 | `SetStation(unitId, position)` | Unit paths to the new station and guards it |
+
+#### Station Placement Rules
+
+| Rule | Requirement |
+|---|---|
+| Range | Within placement radius of the **player's live GPS position** |
+| Line of sight | Clear line from the player to the station point — **buildings block** |
+| Validation | Server-side, against real building footprints |
+
+- Stationing is a **physical act**: to put forces somewhere, the player must go there.
+- Units are not a remote arm. No stationing into a city the player has never visited.
+- Already-stationed units keep fighting while the player is offline or far away; only **re-**stationing needs presence.
+- Emergent terrain: dense blocks restrict placement because buildings break line of sight; open ground is permissive. Real architecture becomes cover.
 
 Consequences of a one-order model:
 
@@ -467,7 +509,8 @@ flowchart LR
 ### Engagement Rules
 
 - Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
-- Units vs. building: reduce building HP; units stationed on it are the first line.
+- Units vs. building: **turrets must fall first** — building HP is untouchable while any turret stands (see Turrets).
+- Units stationed on or near a building engage attackers independently of the turret layer.
 - Avatar vs. anything hostile in range: continuous auto-attack, no player action.
 - Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
@@ -506,14 +549,19 @@ stateDiagram-v2
 
 ## Building State Machine
 
+**Shielded** = under attack but turrets still standing; building HP cannot be reduced.
+
 ```mermaid
 stateDiagram-v2
     [*] --> Neutral
     Neutral --> Owned: Conquered by player
-    Owned --> Owned: Points generation, garrison
-    Owned --> Contested: Enemy faction or demon attacks
+    Owned --> Owned: Points generation
+    Owned --> Shielded: Attacked while turrets stand
+    Owned --> Contested: Attacked with no turrets left
+    Shielded --> Contested: Last turret destroyed
+    Shielded --> Owned: Attackers repelled
     Contested --> Owned: Defenders repel attack
-    Contested --> Neutral: HP reaches 0
+    Contested --> Neutral: Building HP reaches 0
     Neutral --> [*]
 ```
 
@@ -535,7 +583,7 @@ World-scale persistent simulation. Two hard constraints drive the design:
 | Unit spawning / cost | Server | Rejects orders exceeding point balance |
 | Pathfinding | Server | Street-graph routing; client never submits paths |
 | Unit movement | Server | Tick-advanced; client interpolates between deltas |
-| Station placement | Server | Validates legality of the requested position |
+| Station placement | Server | Validates player range and line of sight against footprints |
 | Combat resolution | Server | Deterministic, server clock |
 | Loot and craft rolls | Server | RNG never runs on the client |
 | Avatar speed / speed lock | Server | Derived from GPS fix sequence, not client-reported |
@@ -596,6 +644,7 @@ sequenceDiagram
 |---|---|
 | GPS spoofing | Server-side plausibility: speed between fixes, jump detection, platform attestation |
 | Drive-by farming | Speed lock: avatar cannot attack above 30 km/h sustained |
+| Remote stationing | Station placement checked against the server's own position fix and line of sight |
 | Forged orders | Server validates ownership, proximity, and point balance on every order |
 | Client-computed paths | Client cannot submit paths; routing is server-only |
 | Injected combat results | Combat resolved on server tick; client results ignored |
@@ -687,9 +736,13 @@ stateDiagram-v2
 - Points payout: passive tick vs. manual collection visit.
 - Unit cap per building / per player.
 - Station engagement radius: fixed, per unit type, or upgradeable.
-- Whether a station may be placed anywhere, or only within range of owned territory.
 - Target priority inside a radius: nearest, weakest, or by type (demons vs. players vs. buildings).
-- Whether re-stationing has a cooldown, to stop rapid remote micro-management.
+- Whether re-stationing has a cooldown.
+- Station placement radius value.
+- Line-of-sight model: 2D footprint occlusion vs. 3D height-aware.
+- Turret count per building, and whether it scales with building volume.
+- Whether turrets repair or must be rebuilt after an attack.
+- Whether turrets block conquest of a Neutral building, or only damage to an Owned one.
 - Fixed conquest radius value.
 - Density normalization constants: `d_ref`, `a`, `bonus_max`.
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
