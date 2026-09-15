@@ -220,7 +220,7 @@ Unlocked by accumulated points. Applies per-building, anchored to that building'
 
 ### Structures
 
-All structures are built **on an owned building**. There is no free-standing construction.
+All structures are built **on an owned building**, and only while the player is **physically within placement range of it**. There is no free-standing construction and no remote construction.
 
 | Structure | Placement | Function | Cost |
 |---|---|---|---|
@@ -234,7 +234,8 @@ Turrets are the building's armour layer. A building cannot be damaged while its 
 
 | Property | Rule |
 |---|---|
-| Placement | On top of an **owned building** only |
+| Placement | On top of an **owned building**, and only within player range of it |
+| Placement check | Player proximity only — no line-of-sight test (the target building is the anchor) |
 | Mobility | Fixed to the building; never moves |
 | Targeting | Auto-attacks hostiles in its radius |
 | Shield role | **Building takes no damage while any turret on it stands** |
@@ -312,6 +313,19 @@ stateDiagram-v2
 - Units are not a remote arm. No stationing into a city the player has never visited.
 - Already-stationed units keep fighting while the player is offline or far away; only **re-**stationing needs presence.
 - Emergent terrain: dense blocks restrict placement because buildings break line of sight; open ground is permissive. Real architecture becomes cover.
+
+#### Placement Rules Summary
+
+Every placement action requires the player to be physically present. Nothing is placed remotely.
+
+| Action | Player range required | Line of sight required | Anchor |
+|---|---|---|---|
+| Conquer building | Yes | No | The building |
+| Set unit station | Yes | **Yes** — buildings block | Free map position |
+| Build turret | Yes | No | Owned building |
+| Build factory / workshop | Yes | No | Owned building |
+
+Line of sight applies only to stations, because a station is a free position in the world. Structures anchor to a building the player is already standing at.
 
 Consequences of a one-order model:
 
@@ -583,7 +597,7 @@ World-scale persistent simulation. Two hard constraints drive the design:
 | Unit spawning / cost | Server | Rejects orders exceeding point balance |
 | Pathfinding | Server | Street-graph routing; client never submits paths |
 | Unit movement | Server | Tick-advanced; client interpolates between deltas |
-| Station placement | Server | Validates player range and line of sight against footprints |
+| Placement (stations, structures) | Server | Validates player range, and line of sight for stations |
 | Combat resolution | Server | Deterministic, server clock |
 | Loot and craft rolls | Server | RNG never runs on the client |
 | Avatar speed / speed lock | Server | Derived from GPS fix sequence, not client-reported |
@@ -644,7 +658,7 @@ sequenceDiagram
 |---|---|
 | GPS spoofing | Server-side plausibility: speed between fixes, jump detection, platform attestation |
 | Drive-by farming | Speed lock: avatar cannot attack above 30 km/h sustained |
-| Remote stationing | Station placement checked against the server's own position fix and line of sight |
+| Remote placement | Every station and structure placement checked against the server's own position fix |
 | Forged orders | Server validates ownership, proximity, and point balance on every order |
 | Client-computed paths | Client cannot submit paths; routing is server-only |
 | Injected combat results | Combat resolved on server tick; client results ignored |
@@ -741,6 +755,7 @@ stateDiagram-v2
 - Station placement radius value.
 - Line-of-sight model: 2D footprint occlusion vs. 3D height-aware.
 - Turret count per building, and whether it scales with building volume.
+- Whether structure placement range equals the conquest radius or is its own value.
 - Whether turrets repair or must be rebuilt after an attack.
 - Whether turrets block conquest of a Neutral building, or only damage to an Owned one.
 - Fixed conquest radius value.
