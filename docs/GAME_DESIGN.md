@@ -469,7 +469,7 @@ Consequences of a one-order model:
 - Units move along real street routes (road graph from map data).
 - Applies both to reaching a station and to closing on a target inside the radius.
 - Travel time is real-time or scaled; affects tactical timing (reinforcement races).
-- **Server-side only.** Client sends intent (`SetStation`), never a path. See [Architecture](#architecture).
+- **Server-side only.** Client sends intent (`SetStation`), never a path. See [ARCHITECTURE.md](ARCHITECTURE.md).
 
 ```mermaid
 sequenceDiagram
@@ -718,93 +718,22 @@ stateDiagram-v2
 
 ## Architecture
 
-World-scale persistent simulation. Two hard constraints drive the design:
+Full technical architecture — client/server split, map data pipeline, spatial streaming, scaling, framework and cost evaluation — lives in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-| Constraint | Consequence |
+Background for developers without geodata/game-server experience: [GRUNDLAGEN.md](GRUNDLAGEN.md) (German).
+
+Design-relevant summary:
+
+| Concern | Rule |
 |---|---|
-| World-scale data volume | Client streams only its interest area, never the global state |
-| Cheat resistance | Server is authoritative for all simulation; client renders and sends intent |
-
-### Authority Split
-
-| Concern | Owner | Notes |
-|---|---|---|
-| Ownership / conquest | Server | Validates GPS proximity server-side |
-| Points generation | Server | Accrual computed from server clock, not client |
-| Unit spawning / cost | Server | Rejects orders exceeding point balance |
-| Pathfinding | Server | Street-graph routing; client never submits paths |
-| Unit movement | Server | Tick-advanced; client interpolates between deltas |
-| Construct placement | Server | Validates player presence and free-space / owned-building rules |
-| Unit orders | Server | Validates ownership and route reachability; no presence check |
-| Combat resolution | Server | Deterministic, server clock |
-| Loot and craft rolls | Server | RNG never runs on the client |
-| Avatar speed / speed lock | Server | Derived from GPS fix sequence, not client-reported |
-| Rendering / AR / input | Client | Presentation and intent only |
+| Authority | Server simulates; client renders and sends intent |
+| Client state | Interest-scoped only — the client never holds global world state |
+| Position | All presence checks run against the server's own accepted GPS fix |
+| RNG | Loot and craft rolls execute server-side, committed before the client is told |
+| Routing | Street-graph pathfinding is server-side; the client cannot submit paths |
+| Anti-cheat | See [ARCHITECTURE.md § Anti-Cheat](ARCHITECTURE.md#anti-cheat) |
 
 Rule: **client sends intent, server sends state.** Any client message asserting an outcome is rejected.
-
-```mermaid
-flowchart LR
-    subgraph Client["Client (Unity)"]
-        I[Input / AR] --> IN[Intent messages]
-        ST[Local state cache] --> R[Render + interpolate]
-    end
-    subgraph Server["Server (authoritative)"]
-        V[Validate] --> SIM[Simulation tick]
-        SIM --> DB[(World state)]
-        SIM --> IM[Interest manager]
-    end
-    IN -->|SetStation, Conquer, Build| V
-    IM -->|State deltas, scoped| ST
-```
-
-### Spatial Streaming
-
-- World partitioned into a fixed spatial grid (tiles / geohash / H3 cells).
-- Client subscribes to tiles covering its **interest area**: current GPS position + radius, plus tiles containing its own assets.
-- Server pushes deltas only for subscribed tiles. Unsubscribed world state is never sent.
-- Subscription updates on movement: enter/leave tiles as the player moves.
-
-| Layer | Streamed | Source |
-|---|---|---|
-| Building geometry (3D) | On tile enter, cached locally | Static map data, CDN |
-| Street graph | Server-side only | Not shipped to client |
-| Ownership / HP / points | Delta per tick | Live, server |
-| Units in interest area | Delta per tick | Live, server |
-| Units outside interest area | Not sent | — |
-
-```mermaid
-sequenceDiagram
-    participant C as Client
-    participant IM as Interest Manager
-    participant W as World State
-
-    C->>IM: Position update (GPS)
-    IM->>IM: Compute tile set (radius + owned assets)
-    IM->>C: Unsubscribe: exited tiles
-    IM->>W: Subscribe: entered tiles
-    W-->>C: Snapshot of entered tiles
-    loop Simulation tick
-        W-->>IM: Changed entities
-        IM-->>C: Deltas, filtered to subscribed tiles
-    end
-```
-
-### Anti-Cheat
-
-| Vector | Mitigation |
-|---|---|
-| GPS spoofing | Server-side plausibility: speed between fixes, jump detection, platform attestation |
-| Drive-by farming | Speed lock: avatar cannot attack above 30 km/h sustained |
-| Forged placement | Conquest and construct placement checked against the server's own position fix |
-| Factory placement abuse | Free-space test run server-side against building footprints |
-| Forged orders | Server validates ownership, proximity, and point balance on every order |
-| Client-computed paths | Client cannot submit paths; routing is server-only |
-| Injected combat results | Combat resolved on server tick; client results ignored |
-| State scraping | Interest scoping limits visibility to the player's own area |
-| Replay / speed hacks | Server clock authoritative for accrual, build times, movement |
-| Loot RNG manipulation | All drop and craft rolls executed server-side; client receives committed results only |
-| Reroll scumming | Roll is committed before the client is told the outcome; disconnecting does not undo it |
 
 ## Factions
 
@@ -927,12 +856,4 @@ stateDiagram-v2
 
 ### Technical
 
-- Spatial index choice: geohash vs. H3 vs. fixed grid; tile size vs. interest radius.
-- Simulation tick rate, and whether distant regions tick lazily (on-demand catch-up) vs. continuously.
-- Transport: WebSocket vs. QUIC; delta encoding format.
-- Building data source and licensing (OSM buildings, height estimation).
-- Street graph storage and routing engine (prebuilt contraction hierarchies vs. on-demand A*).
-- Offline/reconnect behavior: state reconciliation after client gap.
-- Server sharding strategy by geography, and cross-shard unit movement.
-- Density recomputation cadence: static precompute vs. periodic refresh as map data updates.
-- Global map-data ingestion pipeline: coverage auditing, per-region quality scoring.
+Tracked in [ARCHITECTURE.md § Open Technical Questions](ARCHITECTURE.md#open-technical-questions).
