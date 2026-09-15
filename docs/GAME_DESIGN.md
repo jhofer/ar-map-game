@@ -106,8 +106,25 @@ A workshop and a radius around it are a **safe zone**. Nothing hostile resolves 
 | Demon presence | Hellgates never spawn inside the radius; demons do not enter |
 | Faction access | All three factions, simultaneously |
 | Claiming | Impossible — a workshop can never be owned |
+| Radius | **Small** — tight around the POI itself |
 
 Consequence: a rival cannot camp the only workshop in a town to deny it. Access is guaranteed.
+
+#### Small Radius, and Snapping
+
+The safe zone is deliberately tight: large enough to stand in, small enough that it rarely swallows a nearby owned building.
+
+| Rule | Value |
+|---|---|
+| Radius | Small — scoped to the POI, not the block |
+| Owned building inside the radius | Suppression still applies; kept rare by the small radius, not by an exception |
+| GPS jitter at the edge | Handled by snapping, below |
+
+**Snap on entry.** A small radius plus normal GPS noise would otherwise flicker a standing player in and out of the zone.
+
+- On login, a player whose position is already inside the radius has their avatar placed at the **workshop anchor**, not at the raw GPS fix.
+- The same snap applies on arrival, so a player standing at the site stays reliably inside it.
+- Snapping never moves a player *to* a workshop they are not at — it only resolves position within a site they already occupy.
 
 #### Avatar Duels
 
@@ -882,7 +899,8 @@ stateDiagram-v2
 - Which POI categories qualify as workshops, and their density per region.
 - Workshop fallback where POI data is thin — synthesize, or widen the qualifying categories.
 - Whether crafting has a per-workshop cooldown, to stop one site being farmed repeatedly.
-- Workshop safe-zone radius, and how it interacts with nearby owned buildings and stationed units.
+- Exact safe-zone radius value (decided: small).
+- Snap tolerance: how far outside the radius a fix may sit and still snap in.
 - Whether duels are rated or tracked at all, or purely casual.
 - Whether duel results feed a leaderboard, and if so scoped per region or global.
 - Whether a duel can be declined silently or shows a refusal to the challenger.
