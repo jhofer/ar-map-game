@@ -54,6 +54,45 @@ flowchart TD
     L --> F
 ```
 
+## Entities
+
+Four object types. Everything else in the design is built from these.
+
+| Entity | What it is | Placed / created | Location constraint | Cost | Mobile |
+|---|---|---|---|---|---|
+| **Building** | A real-world building, conquered by a player | Conquered, not placed | Exists in the real world | — | No |
+| **Factory** | Player-placed construct that produces units | Placed by player | **Free space only** | Points | No |
+| **Tower** | Player-placed construct, defensive | Placed by player | **On an owned building only** | Points | No |
+| **Unit** | Produced fighter, player-directed | Produced at a factory | Spawns at factory, then moves | Points | **Yes** |
+
+```mermaid
+flowchart LR
+    B[Building: conquered real-world structure] -->|generates| P[Points]
+    P -->|pays for| F[Factory: on free space]
+    P -->|pays for| T[Tower: on owned building]
+    P -->|pays for| U[Unit: produced at factory]
+    T -->|shields| B
+    U -->|takes and holds| B
+```
+
+- Factory and Tower are complementary: **factories never sit on buildings, towers only ever do.**
+- Buildings are found, not built. Factories and towers are built, not found.
+- Units are the only mobile entity a player owns besides the avatar.
+
+### Presence Rules
+
+Physical presence is required to **place** and to **take**, never to **command**.
+
+| Action | Physical presence required |
+|---|---|
+| Conquer a building | **Yes** |
+| Place a factory | **Yes** |
+| Place a tower | **Yes** |
+| Give orders to units | **No** — fully remote |
+
+- Rationale: the map is claimed on foot, but an army is directed from anywhere.
+- Consequence: territory expansion is gated by real travel; tactical response is not. A player under attack can redirect units immediately, from anywhere.
+
 ## Game Loops & Currencies
 
 Three loops, two currencies. No loop is self-sufficient; each feeds the others.
@@ -220,17 +259,21 @@ Unlocked by accumulated points. Applies per-building, anchored to that building'
 
 ### Structures
 
-All structures are built **on an owned building**, and only while the player is **physically within placement range of it**. There is no free-standing construction and no remote construction.
+Constructs are placed by the player and cost Points. **Placement always requires physical presence** — there is no remote construction.
 
-| Structure | Placement | Function | Cost |
+| Construct | Placement | Function | Cost |
 |---|---|---|---|
-| Factory | On an owned building | Crafts units (the unit production source) | Points |
-| Turret | On top of an owned building | Auto-defense + damage shield | Points |
-| Workshop | On an owned building | Armor crafting from Essence + materials | Points |
+| Factory | **Free space only** — never on a building | Produces units | Points |
+| Tower | **On an owned building only** | Auto-defense + damage shield | Points |
+| Workshop *(proposed)* | On an owned building | Armor crafting from Essence + materials | Points |
 
-### Turrets
+- **Free space** = a map position not intersecting any building footprint. Validated server-side.
+- Factory and Tower are complementary and never overlap: factories go in the gaps between buildings, towers go on top of them.
+- Workshop is not part of the confirmed entity set (see Entities); it exists here only to anchor armor crafting.
 
-Turrets are the building's armour layer. A building cannot be damaged while its turrets stand.
+### Towers
+
+Towers are the building's armour layer. A building cannot be damaged while its towers stand.
 
 | Property | Rule |
 |---|---|
@@ -238,15 +281,15 @@ Turrets are the building's armour layer. A building cannot be damaged while its 
 | Placement check | Player proximity only — no line-of-sight test (the target building is the anchor) |
 | Mobility | Fixed to the building; never moves |
 | Targeting | Auto-attacks hostiles in its radius |
-| Shield role | **Building takes no damage while any turret on it stands** |
-| Order of destruction | All turrets first, then building HP |
-| On building loss | Turrets are destroyed with the building |
+| Shield role | **Building takes no damage while any tower on it stands** |
+| Order of destruction | All towers first, then building HP |
+| On building loss | Towers are destroyed with the building |
 
 ```mermaid
 flowchart TD
-    A[Attacker in range of building] --> B{Turrets standing?}
-    B -->|yes| C[Attack turrets only]
-    C --> D[Turret destroyed]
+    A[Attacker in range of building] --> B{Towers standing?}
+    B -->|yes| C[Attack towers only]
+    C --> D[Tower destroyed]
     D --> B
     B -->|no| E[Attack building HP]
     E --> F{HP = 0?}
@@ -254,13 +297,13 @@ flowchart TD
     F -->|yes| G[Building becomes Neutral]
 ```
 
-Consequence: taking a defended building is a two-stage job. Stacking turrets buys time for the owner to respond or for stationed units to arrive.
+Consequence: taking a defended building is a two-stage job. Stacking towers buys time for the owner to respond or for stationed units to arrive.
 
 ### Units
 
 Crafted at factories, paid in Points. A unit spawns at the factory that made it, then paths to its **station** — a fixed map position it guards a radius around. It acts like a creep: auto-engages anything hostile inside the radius, then returns.
 
-**There is exactly one player order: set the station.** Attacking is expressed by stationing a unit near the target, not by issuing an attack command.
+**There is exactly one player order: set the station.** Attacking is expressed by stationing a unit near the target, not by issuing an attack command. Orders are given **remotely** — no physical presence required (see Presence Rules).
 
 | Property | Rule |
 |---|---|
@@ -305,36 +348,35 @@ stateDiagram-v2
 
 | Rule | Requirement |
 |---|---|
-| Range | Within placement radius of the **player's live GPS position** |
-| Line of sight | Clear line from the player to the station point — **buildings block** |
-| Validation | Server-side, against real building footprints |
+| Player presence | **Not required** — orders are given remotely, from anywhere |
+| Line of sight | Not required |
+| Reachability | The station must be reachable by street route from the unit's position |
+| Validation | Server-side |
 
-- Stationing is a **physical act**: to put forces somewhere, the player must go there.
-- Units are not a remote arm. No stationing into a city the player has never visited.
-- Already-stationed units keep fighting while the player is offline or far away; only **re-**stationing needs presence.
-- Emergent terrain: dense blocks restrict placement because buildings break line of sight; open ground is permissive. Real architecture becomes cover.
+- Commanding units is **not** a physical act. A player can redirect their army from anywhere, at any time.
+- What limits reach is **travel time**, not permission: a unit ordered across the city takes as long as the streets take.
+- Units keep fighting while the player is offline; they simply hold their last station.
 
 #### Placement Rules Summary
 
 Every placement action requires the player to be physically present. Nothing is placed remotely.
 
-Two distinct kinds of action share that requirement:
+Two distinct kinds of action, with **different presence rules**:
 
-| Kind | What it does | Cost | Repeatable |
-|---|---|---|---|
-| **Construction** | Adds a structure to an owned building | Points, one-time | Once per building slot |
-| **Positioning** | Moves an existing unit's guard post | Free | Any time |
-
-| Action | Kind | Player range | Line of sight | Anchor |
+| Kind | What it does | Presence | Cost | Repeatable |
 |---|---|---|---|---|
-| Conquer building | — | Yes | No | The building |
-| Build factory | Construction | Yes | No | Owned building |
-| Build turret | Construction | Yes | No | Owned building |
-| Build workshop | Construction | Yes | No | Owned building |
-| Set unit station | Positioning | Yes | **Yes** — buildings block | Free map position |
+| **Placement** | Puts a construct on the map, or claims a building | **Required** | Points | Once per position |
+| **Command** | Moves an existing unit's guard post | **Not required** | Free | Any time |
 
-- Line of sight applies only to stations, because a station is a free position in the world. Structures anchor to a building the player is already standing at.
-- **Factory vs. station:** a factory is the structure that *produces* units; a station is *where a produced unit stands*. Building a factory creates nothing by itself — units are crafted there for Points, and each is then stationed.
+| Action | Kind | Presence | Anchor |
+|---|---|---|---|
+| Conquer building | Placement | **Yes** | The building |
+| Place factory | Placement | **Yes** | Free space |
+| Place tower | Placement | **Yes** | Owned building |
+| Set unit station | Command | **No** | Any reachable position |
+
+- The rule in one line: **be there to claim it, not to command it.**
+- **Factory vs. station:** a factory is a construct that *produces* units; a station is *where a produced unit stands*. Placing a factory creates nothing by itself — units are produced there for Points, and each is then stationed.
 
 Consequences of a one-order model:
 
@@ -516,7 +558,7 @@ The three actors map onto tower-defense roles:
 |---|---|---|
 | Demon waves | Creeps | Path toward gates and buildings |
 | Units | Mobile towers | Guard a radius around a player-set station |
-| Turrets | Static towers | Fixed to a building |
+| Towers | Static towers | Fixed to an owned building |
 | Avatar | Mobile tower | Moves only when the **player physically moves** |
 
 ```mermaid
@@ -524,7 +566,7 @@ flowchart LR
     G[Hellgate] --> W[Demon wave paths to target]
     W --> T[Target building]
     U[Owned units] -->|auto-engage| W
-    R[Turrets] -->|auto-engage| W
+    R[Towers] -->|auto-engage| W
     AV[Avatar at player GPS] -->|auto-attack in range| W
     W -->|reduce HP| T
 ```
@@ -532,8 +574,8 @@ flowchart LR
 ### Engagement Rules
 
 - Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
-- Units vs. building: **turrets must fall first** — building HP is untouchable while any turret stands (see Turrets).
-- Units stationed on or near a building engage attackers independently of the turret layer.
+- Units vs. building: **towers must fall first** — building HP is untouchable while any tower stands (see Towers).
+- Units stationed on or near a building engage attackers independently of the tower layer.
 - Avatar vs. anything hostile in range: continuous auto-attack, no player action.
 - Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
@@ -559,7 +601,7 @@ Consequence: weapon choice is a **build decision, not a combat action**. A loado
 
 - Speed derived **server-side** from the GPS fix sequence; the client does not report it.
 - Purpose: safety (no play while driving) and anti-cheat (no drive-by farming).
-- Units, turrets, and buildings are unaffected — only the avatar is disabled.
+- Units, towers, and buildings are unaffected — only the avatar is disabled.
 - Attack re-enables once sustained speed drops below the threshold.
 
 ```mermaid
@@ -572,16 +614,16 @@ stateDiagram-v2
 
 ## Building State Machine
 
-**Shielded** = under attack but turrets still standing; building HP cannot be reduced.
+**Shielded** = under attack but towers still standing; building HP cannot be reduced.
 
 ```mermaid
 stateDiagram-v2
     [*] --> Neutral
     Neutral --> Owned: Conquered by player
     Owned --> Owned: Points generation
-    Owned --> Shielded: Attacked while turrets stand
-    Owned --> Contested: Attacked with no turrets left
-    Shielded --> Contested: Last turret destroyed
+    Owned --> Shielded: Attacked while towers stand
+    Owned --> Contested: Attacked with no towers left
+    Shielded --> Contested: Last tower destroyed
     Shielded --> Owned: Attackers repelled
     Contested --> Owned: Defenders repel attack
     Contested --> Neutral: Building HP reaches 0
@@ -606,7 +648,8 @@ World-scale persistent simulation. Two hard constraints drive the design:
 | Unit spawning / cost | Server | Rejects orders exceeding point balance |
 | Pathfinding | Server | Street-graph routing; client never submits paths |
 | Unit movement | Server | Tick-advanced; client interpolates between deltas |
-| Placement (stations, structures) | Server | Validates player range, and line of sight for stations |
+| Construct placement | Server | Validates player presence and free-space / owned-building rules |
+| Unit orders | Server | Validates ownership and route reachability; no presence check |
 | Combat resolution | Server | Deterministic, server clock |
 | Loot and craft rolls | Server | RNG never runs on the client |
 | Avatar speed / speed lock | Server | Derived from GPS fix sequence, not client-reported |
@@ -667,7 +710,8 @@ sequenceDiagram
 |---|---|
 | GPS spoofing | Server-side plausibility: speed between fixes, jump detection, platform attestation |
 | Drive-by farming | Speed lock: avatar cannot attack above 30 km/h sustained |
-| Remote placement | Every station and structure placement checked against the server's own position fix |
+| Forged placement | Conquest and construct placement checked against the server's own position fix |
+| Factory placement abuse | Free-space test run server-side against building footprints |
 | Forged orders | Server validates ownership, proximity, and point balance on every order |
 | Client-computed paths | Client cannot submit paths; routing is server-only |
 | Injected combat results | Combat resolved on server tick; client results ignored |
@@ -761,12 +805,14 @@ stateDiagram-v2
 - Station engagement radius: fixed, per unit type, or upgradeable.
 - Target priority inside a radius: nearest, weakest, or by type (demons vs. players vs. buildings).
 - Whether re-stationing has a cooldown.
-- Station placement radius value.
-- Line-of-sight model: 2D footprint occlusion vs. 3D height-aware.
-- Turret count per building, and whether it scales with building volume.
-- Whether structure placement range equals the conquest radius or is its own value.
-- Whether turrets repair or must be rebuilt after an attack.
-- Whether turrets block conquest of a Neutral building, or only damage to an Owned one.
+- Free-space definition: footprint clearance only, or also minimum spacing from roads and other factories.
+- Whether factories can be placed on rival-held ground, or only in neutral / own areas.
+- Factory placement range from the player, and whether it equals the conquest radius.
+- Whether a factory itself can be attacked and destroyed, and what it drops.
+- Whether the Workshop survives as an entity or armor crafting moves onto factories.
+- Tower count per building, and whether it scales with building volume.
+- Whether towers repair or must be rebuilt after an attack.
+- Whether towers block conquest of a Neutral building, or only damage to an Owned one.
 - Fixed conquest radius value.
 - Density normalization constants: `d_ref`, `a`, `bonus_max`.
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
