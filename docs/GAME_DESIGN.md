@@ -35,8 +35,8 @@ flowchart TD
     B --> C[Conquer: claim ownership]
     C --> D[Building generates Points]
     D --> E[Spend Points: factories, units]
-    E --> F[Units defend owned buildings]
-    E --> G[Units attack rival buildings/units]
+    E --> F[Station units to guard own buildings]
+    E --> G[Station units near rival buildings/units]
     G --> H{Building destroyed?}
     H -->|yes| I[Building becomes neutral]
     H -->|no| D
@@ -228,38 +228,88 @@ Unlocked by accumulated points. Applies per-building, anchored to that building'
 
 ### Units
 
-- Trained at factories, cost points per unit.
-- Unit types differ by faction (see Factions).
-- Two orders: **Defend** (garrison owned building) or **Attack** (move to target building).
+Crafted at factories, paid in Points. Each unit holds a **station** — a fixed map position — and guards a radius around it. It acts like a creep: auto-engages anything hostile inside the radius, then returns.
+
+**There is exactly one player order: set the station.** Attacking is expressed by stationing a unit near the target, not by issuing an attack command.
+
+| Property | Rule |
+|---|---|
+| Production | Crafted at a factory; costs Points |
+| Station | A map position assigned to the unit |
+| Engagement radius | Fixed radius around the **station** |
+| Targets in radius | Demons, rival units, rival buildings |
+| Targeting | Automatic — no player input |
+| When radius is clear | Return to station |
+| Player control | Set / re-set the station. Nothing else. |
+| Movement | Street routes (see Pathfinding) |
+| Unit types | Differ by faction (see Factions) |
+
+### Unit Behavior
+
+```mermaid
+stateDiagram-v2
+    [*] --> Producing: Queued at factory
+    Producing --> Moving: Spawned
+    Moving --> Holding: Arrived at station
+    Holding --> Engaging: Hostile enters radius
+    Engaging --> Engaging: Target down, another in radius
+    Engaging --> Returning: Radius clear
+    Returning --> Holding: Back at station
+    Holding --> Moving: Player sets new station
+    Engaging --> Moving: Player sets new station
+    Returning --> Moving: Player sets new station
+```
+
+- The radius is measured from the **station**, not from the unit's current position — a fleeing target cannot drag a unit away.
+- Hostiles outside the radius are ignored, even if adjacent to the unit.
+- Re-stationing is the only way to change what a unit fights.
+- Units left on a station keep working while the player is offline.
+
+### Orders
+
+| Order | Effect |
+|---|---|
+| `SetStation(unitId, position)` | Unit paths to the new station and guards it |
+
+Consequences of a one-order model:
+
+| Intent | How the player expresses it |
+|---|---|
+| Defend a building | Station units on or near it |
+| Attack a rival building | Station units inside its radius |
+| Hold a hellgate | Station units within the gate's radius |
+| Escort the avatar | Station units where the player is standing |
+| Retreat | Re-station further back |
 
 ### Pathfinding
 
 - Units move along real street routes (road graph from map data).
-- Attack orders compute shortest/fastest path via street network to target building.
+- Applies both to reaching a station and to closing on a target inside the radius.
 - Travel time is real-time or scaled; affects tactical timing (reinforcement races).
-- **Server-side only.** Client sends intent (`Attack(targetId)`), never a path. See [Architecture](#architecture).
+- **Server-side only.** Client sends intent (`SetStation`), never a path. See [Architecture](#architecture).
 
 ```mermaid
 sequenceDiagram
     participant C as Client
     participant S as Server (authoritative)
     participant N as Street Graph
-    participant T as Target Building
+    participant T as Hostile in radius
 
-    C->>S: Order: Attack(targetId)
-    S->>S: Validate: ownership, cost, unit exists
-    S->>N: Compute route (street graph)
+    C->>S: SetStation(unitId, position)
+    S->>S: Validate: ownership, unit exists, placement legal
+    S->>N: Compute route to station
     N-->>S: Route + ETA
     S-->>C: Unit state: route, ETA
     loop Simulation tick
         S->>S: Advance unit along route
+        S->>S: Scan radius for hostiles
+        alt Hostile in radius
+            S->>T: Path to target, auto-attack
+            S->>S: Resolve combat
+        else Radius clear
+            S->>S: Return to station
+        end
         S-->>C: Delta (only if in client's interest area)
-    end
-    S->>T: Engage on arrival
-    S->>S: Resolve combat, reduce HP
-    alt Building destroyed
-        S->>T: State: Owned -> Neutral
-        S-->>C: Broadcast to subscribers of tile
     end
 ```
 
@@ -388,8 +438,9 @@ Design target: **simple, glanceable, no twitch input.** Closer to tower defense 
 | Avatar position | **Locked to the player's real GPS position**; not movable in-game |
 | Avatar targeting | Auto-attacks any hostile in range |
 | Weapon selection | Automatic by target distance — melee close, ranged far |
-| Unit movement | Along street routes to the ordered target |
-| Unit targeting | Auto-engage hostiles on arrival or when paths cross |
+| Unit position | Player-assigned **station**; unit guards a radius around it |
+| Unit targeting | Auto-engage any hostile inside the station radius |
+| Unit movement | Along street routes, to the station and to targets within radius |
 | Resolution | Server-side simulation tick |
 
 ### Tower-Defense Shape
@@ -399,7 +450,8 @@ The three actors map onto tower-defense roles:
 | Actor | Role | Mobility |
 |---|---|---|
 | Demon waves | Creeps | Path toward gates and buildings |
-| Units / turrets | Towers | Placed by the RTS loop; units path, turrets are static |
+| Units | Mobile towers | Guard a radius around a player-set station |
+| Turrets | Static towers | Fixed to a building |
 | Avatar | Mobile tower | Moves only when the **player physically moves** |
 
 ```mermaid
@@ -414,8 +466,8 @@ flowchart LR
 
 ### Engagement Rules
 
-- Units vs. units: engage when paths intersect or on arrival at a contested building.
-- Units vs. building: reduce building HP; garrisoned units are the first line.
+- Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
+- Units vs. building: reduce building HP; units stationed on it are the first line.
 - Avatar vs. anything hostile in range: continuous auto-attack, no player action.
 - Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
@@ -483,6 +535,7 @@ World-scale persistent simulation. Two hard constraints drive the design:
 | Unit spawning / cost | Server | Rejects orders exceeding point balance |
 | Pathfinding | Server | Street-graph routing; client never submits paths |
 | Unit movement | Server | Tick-advanced; client interpolates between deltas |
+| Station placement | Server | Validates legality of the requested position |
 | Combat resolution | Server | Deterministic, server clock |
 | Loot and craft rolls | Server | RNG never runs on the client |
 | Avatar speed / speed lock | Server | Derived from GPS fix sequence, not client-reported |
@@ -501,7 +554,7 @@ flowchart LR
         SIM --> DB[(World state)]
         SIM --> IM[Interest manager]
     end
-    IN -->|Order, Conquer, Build| V
+    IN -->|SetStation, Conquer, Build| V
     IM -->|State deltas, scoped| ST
 ```
 
@@ -633,6 +686,10 @@ stateDiagram-v2
 
 - Points payout: passive tick vs. manual collection visit.
 - Unit cap per building / per player.
+- Station engagement radius: fixed, per unit type, or upgradeable.
+- Whether a station may be placed anywhere, or only within range of owned territory.
+- Target priority inside a radius: nearest, weakest, or by type (demons vs. players vs. buildings).
+- Whether re-stationing has a cooldown, to stop rapid remote micro-management.
 - Fixed conquest radius value.
 - Density normalization constants: `d_ref`, `a`, `bonus_max`.
 - Whether synthetic (non-footprint) targets carry reduced value, and by how much.
