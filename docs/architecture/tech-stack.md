@@ -144,6 +144,8 @@ Region host sits behind `IRegionHost` so a switch to Orleans during scale-out do
 | Unity build | GameCI (`game-ci/unity-builder`, `unity-test-runner`) on Linux; iOS archive on macOS runner |
 | Store upload | fastlane (TestFlight, Play internal track) |
 | Deploy stage 0–1 | `docker compose` on the VPS, pulled image — see [Operations](operations.md#operations) |
+| Art assets | Blender + Blender MCP (Claude Code), Gemini image model, Hyper3D Rodin; FBX into Unity — see [Asset Pipeline](asset-pipeline.md#asset-pipeline) |
+| Binary files | Git LFS for `.blend`, textures, FBX, concept images |
 | Local dev | `docker compose` with Postgres/PostGIS, server, Grafana; Unity editor against `localhost` with GPX replay location |
 
 ## Version Matrix

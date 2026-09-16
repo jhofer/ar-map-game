@@ -2,7 +2,7 @@
 
 [← Grundlagen](README.md)
 
-## 14. Glossar
+## 15. Glossar
 
 | Begriff | Kurz |
 |---|---|
@@ -12,10 +12,14 @@
 | Attestation | Plattformprüfung, dass eine echte, unmanipulierte App spricht |
 | Backpressure | Rückstau-Schutz bei langsamen Empfängern |
 | Balancing | Abstimmen der Spielwerte auf Fairness und Spannung |
+| Blender | Freie 3D-Software, per Python steuerbar |
+| Blender MCP | MCP-Server, über den Claude Blender fernsteuert |
+| Blockout | Grobform eines Modells aus einfachen Körpern |
 | Burst | Compiler für schnellen nativen Job-Code in Unity |
 | CDN | Verteiltes Auslieferungsnetz für statische Dateien |
 | ClickHouse | Spaltenorientierte Datenbank für Event-Auswertungen |
 | Code Stripping | Entfernen scheinbar unbenutzten Codes beim IL2CPP-Build |
+| Concept Art | Gemaltes Zielbild eines Objekts |
 | Config-Version | Unveränderlicher Satz aller Balance-Parameter |
 | Dead Reckoning | Position fortschreiben aus Richtung und Tempo, wenn kein Messwert vorliegt |
 | Delta | Änderungsnachricht statt Vollzustand |
@@ -23,6 +27,7 @@
 | DuckDB | Eingebettete SQL-Engine für Parquet-Dateien |
 | Earcut | Verfahren, ein Polygon in Dreiecke zu zerlegen |
 | ENU | Lokales Meter-Koordinatensystem (East, North, Up) |
+| FBX / glTF | Austauschformate für 3D-Modelle mit Skelett und Animation |
 | Feature | Geoobjekt: Geometrie + Attribute |
 | Feldmaske | Bitmaske im Delta: welche Felder folgen |
 | Floating Origin | Mitwandernder lokaler Nullpunkt gegen Float-Ungenauigkeit |
@@ -33,6 +38,7 @@
 | GC-Spike | Ruckler durch Pause des Garbage Collectors |
 | GeoParquet | Parquet mit Geometriespalte |
 | GERS | Stabile Objekt-ID in Overture Maps |
+| Git LFS | Git-Erweiterung für grosse Binärdateien |
 | GNSS | Oberbegriff für Satellitennavigation (GPS, Galileo, …) |
 | GPX | XML-Format für aufgezeichnete GPS-Strecken |
 | Grafana | Dashboard-Werkzeug über Metrik- und SQL-Quellen |
@@ -41,6 +47,7 @@
 | Heading | Blickrichtung des Avatars, aus der Bewegungsrichtung abgeleitet |
 | Hot Reload | Neue Konfiguration im Betrieb übernehmen, ohne Neustart |
 | IL2CPP | Unitys Übersetzung von C# nach C++ (AOT) |
+| Image-to-3D | KI erzeugt aus einem Bild ein 3D-Modell |
 | Interest Area | Abonnierter Weltausschnitt eines Clients |
 | Jobs System | Unity-Arbeitsaufträge auf Worker-Threads |
 | Journal | Änderungsliste seit dem letzten Snapshot |
@@ -49,7 +56,9 @@
 | LOD | Detailstufe abhängig von der Distanz |
 | Mailbox | Eingangs-Queue eines Actors |
 | Main Thread | Einziger Thread mit Zugriff auf Unity-Objekte |
+| MCP | Model Context Protocol: offenes Protokoll für Werkzeugaufrufe durch KI-Assistenten |
 | MemoryPack | Binärer C#-Serialisierer mit Source Generator |
+| Mesh | Oberfläche aus Vertices und Dreiecken |
 | Mono | Ältere .NET-Laufzeit im Unity-Editor |
 | MonoBehaviour | Unity-Klasse an einem Szenenobjekt, pro Bild aufgerufen |
 | MVT | Mapbox Vector Tile, Protobuf-Kachelformat |
@@ -57,6 +66,7 @@
 | Object Pooling | Objekte wiederverwenden statt neu erzeugen |
 | ODbL | Open Database License (OSM) |
 | Orleans | Actor-Framework von Microsoft |
+| Pivot | Bezugspunkt eines Modells für Position und Drehung |
 | PMTiles | Einzeldatei-Kachelarchiv mit HTTP-Range-Zugriff |
 | POI | Point of Interest |
 | Polycount | Anzahl Dreiecke eines Modells |
@@ -66,21 +76,29 @@
 | Prometheus | Zeitreihen-Datenbank für aggregierte Metriken |
 | R3 | Reactive Extensions für Unity und .NET |
 | Region Actor | Zuständiger Simulationsprozess für eine Weltregion |
+| Retopologie | Schlankes Mesh über ein dichtes legen |
+| Rig | Knochenhierarchie, die ein Mesh bewegt |
+| Root Motion | Animation, die das Objekt selbst verschiebt |
+| Skinning | Zuordnung von Vertices zu Knochen |
 | Slippy Map | Übliche Kachelkarte mit XYZ-Schema |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
 | Telemetrie-Event | Einzelnes Spielereignis mit Details, für spätere Auswertung |
 | Texture Atlas | Mehrere Texturen in einer Datei, damit ein Material genügt |
+| Texture Baking | Details und Licht in eine Textur vorberechnen |
 | Tick | Simulationsschritt in festem Takt |
+| Topologie | Anordnung der Polygone eines Mesh |
+| Turnaround Sheet | Objekt in Vorder-, Seiten-, Rückansicht ohne Perspektive |
 | UniTask | Allokationsfreies `async/await` für Unity |
 | UPM | Unity Package Manager |
 | URP | Universal Render Pipeline, Unitys Mobil-Renderpfad |
+| UV-Mapping | Abwicklung einer 3D-Oberfläche auf eine 2D-Textur |
 | VContainer | Dependency Injection für Unity ohne Reflection |
 | Vertical Slice | Ausbaustufe, die ein Feature durch alle Schichten (Client, Server, DB, Deployment) spielbar liefert |
 | Walking Skeleton | Erster Vertical Slice: dünnster lauffähiger Durchstich durch alle Schichten, noch ohne Fachlogik |
 | WGS84 | Weltweites geodätisches Bezugssystem (GPS-Koordinaten) |
 | Write-Behind | Zustand im Speicher, gebündelt asynchron persistiert |
 
-## 15. Begriff → Stelle in der Architektur
+## 16. Begriff → Stelle in der Architektur
 
 | Grundlage | Architekturabschnitt |
 |---|---|
@@ -105,8 +123,9 @@
 | Kapitel 12 — Live-Konfiguration, Metriken | [Game Config & Metrics](../architecture/live-ops.md#game-config--metrics), [Operations](../architecture/operations.md#operations) |
 | Glossar — Vertical Slice, Walking Skeleton | [Build Phases](../architecture/operations.md#build-phases) |
 | Kapitel 13 — Unity und .NET, Shared Assembly, Frame-Budget | [Tech Stack](../architecture/tech-stack.md#tech-stack), [Implementation Patterns](../architecture/code-patterns.md#implementation-patterns) |
+| Kapitel 14 — 3D-Assets, Blender MCP, Image-to-3D | [Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline), [Game Design § Art Direction](../design/presentation.md#art-direction) |
 
-## 16. Weiterführend
+## 17. Weiterführend
 
 | Thema | Quelle |
 |---|---|
@@ -131,3 +150,8 @@
 | Channels | [Microsoft Learn: System.Threading.Channels](https://learn.microsoft.com/dotnet/core/extensions/channels) |
 | Serialisierung Unity + .NET | [MemoryPack](https://github.com/Cysharp/MemoryPack) |
 | Overture-Daten abfragen | [Overture Maps — Getting data with DuckDB](https://docs.overturemaps.org/getting-data/duckdb/) |
+| Blender per KI steuern | [blender-mcp](https://github.com/ahujasid/blender-mcp) |
+| Blender-Grundlagen, Modifier, UV | [Blender Manual](https://docs.blender.org/manual/en/latest/) |
+| Bildgenerierung mit Gemini | [Gemini API: Image generation](https://ai.google.dev/gemini-api/docs/image-generation) |
+| Modellimport in Unity | [Unity Manual: Importing models](https://docs.unity3d.com/Manual/ImportingModelFiles.html) |
+| Model Context Protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io/) |
