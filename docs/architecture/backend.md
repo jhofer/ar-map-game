@@ -86,3 +86,5 @@ Rationale for custom over a game backend framework:
 - Cost floor is a VPS, not a plan.
 
 Use OSS Nakama alongside the sim only if social/commodity features are wanted before they are worth writing. Keep it optional and behind the gateway.
+
+Libraries and actor runtime: [Tech Stack § Server](tech-stack.md#server).

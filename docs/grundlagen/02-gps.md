@@ -16,6 +16,7 @@
 - Jedes Betriebssystem liefert zur Position einen **Genauigkeitsradius**. Der gehört ins Protokoll und in die Validierung.
 - Die Position „springt" auch bei stehendem Gerät (Jitter). Ohne Glättung flackert jede radiusbasierte Prüfung.
 - „GPS" heisst heute GNSS: GPS, Galileo, GLONASS, BeiDou kombiniert.
+- **GPX** ist ein XML-Format für aufgezeichnete Strecken. Abgespielt ersetzt es im Editor und in Tests das echte GPS — wie ein aufgezeichneter HTTP-Mitschnitt statt eines Live-Systems.
 
 **Fallstricke**
 

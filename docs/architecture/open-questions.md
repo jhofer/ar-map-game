@@ -14,11 +14,13 @@
 - Progress resync interval: fixed ~5 s vs. derived from the entity's speed and route length.
 - Route quantization: how much a simplified route may deviate before units visibly clip building corners.
 - Vision-filter cost: recompute per asset change vs. a cached per-player cell mask.
-- Routing engine: Valhalla vs. GraphHopper vs. OSRM; memory footprint per ingested region.
+- Routing engine: Valhalla vs. GraphHopper vs. OSRM vs. Itinero (in-process .NET); memory footprint per ingested region.
 - Wake latency budget: acceptable delay when a dormant region is first subscribed.
 - Timer queue durability: in-process vs. Postgres-backed scheduled events.
 - Persistence cadence: write-behind interval vs. acceptable loss window on crash.
 - Redis introduction point: which stage actually needs it.
+- Scale-out trigger thresholds: concrete tick-duration, connection and region numbers per node, from P2 load tests.
+- On-demand region ingest: manual per request vs. automatic on first login in an uncovered area.
 - Shard map and handoff protocol details; behaviour under shard restart.
 - Push notifications for offline events: provider, batching, opt-in rules.
 - Data refresh: how ownership survives a building disappearing or changing ID between data versions.
@@ -28,3 +30,8 @@
 - Event store switch point: Postgres query latency or event volume that triggers ClickHouse.
 - Per-region config overrides: needed for region-split A/B comparison, or before/after per version is enough.
 - Gameplay event retention window and aggregate granularity.
+- `pocketken.H3` parity with the H3 v4 C library (cell IDs, `kRing`, polygon fill) — decides managed port vs. P/Invoke.
+- Own-actor host vs. Orleans on scale-out: shard map and handoff effort vs. Orleans tick jitter.
+- Unity CoreCLR scripting runtime: adoption point, and whether `Game.Shared` then moves to a current .NET target.
+- Earcut robustness on real footprints with holes and invalid rings: fix in pipeline vs. client fallback.
+- Native location plugin: own thin plugin vs. an existing asset; background location policy per store.
