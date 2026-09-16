@@ -101,7 +101,7 @@ Separating static geometry from live state is the core of the streaming design.
 
 | | Static plane | Live plane |
 |---|---|---|
-| Content | Building footprints, heights, kinds, street rendering data, workshop sites | Ownership, HP, points, units, towers, factories, gates, avatars |
+| Content | Building footprints, heights, kinds, street rendering data, workshop sites | Ownership, HP, points, units, towers, factories, gates, ground drops, avatars |
 | Transport | HTTPS, CDN-cached | WebSocket, binary deltas |
 | Mutability | Immutable per version | Per tick |
 | Volume | MB per region, cached on device | Bytes per entity per tick |

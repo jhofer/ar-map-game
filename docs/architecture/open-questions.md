@@ -7,7 +7,8 @@
 - Heading source: GPS course over ground vs. compass fusion at walking speed.
 - Whether the street layer is rendered geometry or a baked basemap texture per tile.
 - Building kit: procedural extrusion with stylized materials vs. authored low-poly models snapped to footprints.
-- Faction recolouring path: material property blocks vs. per-kit texture variants.
+- Own-building tint path: material property blocks vs. per-kit texture variants.
+- Camera zoom band: limits from device-tier profiling; whether zoom level changes what is rendered.
 - Interest cell resolution: confirm r9 against real subscription sizes in a dense core.
 - Region resolution: r8 vs. r7 — trade-off between actor count and cross-boundary handoffs.
 - Progress resync interval: fixed ~5 s vs. derived from the entity's speed and route length.

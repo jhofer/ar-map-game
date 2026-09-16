@@ -13,12 +13,12 @@ One view: a 3D world map with the player avatar at the GPS position. **AR Founda
 | Tile cache | CDN, immutable per data version | On cell enter, disk-cached |
 | Street / ground | Geometry tiles | With tile |
 | Buildings | Geometry tiles, extruded + authored models | With tile; material swap on ownership delta |
-| Live entities (units, towers, gates, avatars) | WebSocket deltas | Per tick |
+| Live entities (units, towers, gates, drops, avatars) | WebSocket deltas | Per tick |
 | Avatar | Local GPS pipeline | 0.2–1 Hz fix, interpolated per frame |
 | Interaction ring | Server-sent radius constant | On constant change |
 | HUD | Local state cache | Per state change |
 
-Ownership, HP and selection are material/overlay changes on already-loaded meshes — a delta never triggers a tile reload.
+Own-building tint, HP and selection are material/overlay changes on already-loaded meshes — a delta never triggers a tile reload.
 
 ## Camera
 
@@ -27,8 +27,8 @@ Ownership, HP and selection are material/overlay changes on already-loaded meshe
 | Type | Follow camera, locked to the avatar |
 | Pitch | Tilted top-down, user-adjustable inside a clamped band |
 | Yaw | User rotation; snap-to-north control |
-| Zoom | Clamped band; drives LOD and entity label density |
-| Free pan | Temporary; recentres on the avatar on release or timeout |
+| Zoom | Clamped band, limits from device profiling; drives LOD and entity label density |
+| Free pan | Temporary, clamped to the subscribed area; recentres on the avatar on release or timeout |
 
 Camera state is client-local and never sent to the server. Interest subscription follows the **GPS position**, not the camera — panning does not widen the subscription set.
 
@@ -67,7 +67,7 @@ The low-poly art direction is a budget decision as much as a look:
 | Low triangle counts per asset | Vertex cost stays flat as building density rises |
 | Shared texture atlas per kit | Same material → instancing and batching actually apply |
 | Baked lighting and AO in the albedo | One directional light; no per-pixel light loops on mobile GPUs |
-| Faction colour as material property | Ownership deltas recolour instances, no mesh or atlas swap |
+| Ownership colour as material property | Own-building tint toggles per instance, no mesh or atlas swap |
 | No mesh destruction | Damage is a material/decal state — no runtime mesh generation |
 
 Background and foreground churn is a streaming case, not a rendering case — see [Reconnect & Offline](streaming.md#reconnect--offline).

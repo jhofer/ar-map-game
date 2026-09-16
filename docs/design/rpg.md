@@ -61,6 +61,7 @@ Two acquisition paths, both with **randomly rolled stats**. This is the endless-
 ### Acquisition
 
 - Crafting happens **only at a workshop**, and the player must be standing there. No remote crafting.
+- No crafting cooldown: a player at a workshop crafts as often as their Essence allows.
 - Materials drop from demons; Essence pays the craft cost.
 - Every roll is independent: crafting the same armor set twice yields different stats.
 - Higher-tier gates raise base-item tier and rarity odds, not just drop volume.
@@ -78,6 +79,28 @@ flowchart LR
     A --> P
     P --> D
 ```
+
+### Ground Drops
+
+Essence and loot are not credited on kill — they drop on the map and must be picked up.
+
+| Property | Rule |
+|---|---|
+| Drops | Essence, weapons, materials |
+| Position | Kill position on the map |
+| Pickup | Tap the drop, or walk over it |
+| Presence | Required — a drop is collected in person |
+| Roll | Contents rolled server-side at drop time |
+
+```mermaid
+flowchart LR
+    K[Demon killed] --> D[Drop spawns at kill position]
+    D --> C{Player taps or walks over it?}
+    C -->|yes| S[Server validates presence]
+    S --> I[Credited to inventory]
+```
+
+Points are the contrast: credited passively per tick, never dropped.
 
 ### Roll Model
 

@@ -47,6 +47,7 @@ flowchart LR
 ## Engagement Rules
 
 - Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
+- Target choice: by target type first, then nearest.
 - No hostile engagement resolves inside a workshop safe zone (see Workshops — Neutral Ground).
 - Units vs. building: **towers must fall first** — building HP is untouchable while any tower stands (see Towers).
 - Units stationed on or near a building engage attackers independently of the tower layer.
@@ -54,6 +55,8 @@ flowchart LR
 - Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
 - Destroyed ≠ deleted: building persists, conquerable again.
+- Factory destroyed → removed, drops nothing.
+- Demon killed → Essence and loot drop on the ground at the kill position (see [Ground Drops](rpg.md#ground-drops)).
 
 ## Weapon Range Bands
 

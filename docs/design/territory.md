@@ -8,7 +8,7 @@
 
 | Condition | Requirement |
 |---|---|
-| Proximity | User within conquest radius — **fixed global value**, identical everywhere |
+| Proximity | User within conquest radius — **5 m, fixed global value**, identical everywhere |
 | Target state | Neutral only (not owned by another faction) |
 | Action | Player-initiated conquer action, may include a timer/minigame |
 
@@ -27,7 +27,7 @@ points/tick = base_rate(building_kind) × volume_multiplier(building) × scarcit
 | Landmark | Very rare | 8x |
 
 - Volume multiplier scales with building footprint × estimated height (from map data).
-- Points accrue while building is owned, paid out per tick (e.g. every 60s) or on collection.
+- Points accrue while building is owned, credited passively per tick (e.g. every 60s). No collection visit.
 - `scarcity_bonus` normalizes rural income against city income (see Coverage & Density).
 
 ## Building State Machine

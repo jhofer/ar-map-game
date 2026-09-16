@@ -20,6 +20,7 @@
 | Footprint | Gebäudegrundriss als Polygon |
 | GERS | Stabile Objekt-ID in Overture Maps |
 | GNSS | Oberbegriff für Satellitennavigation (GPS, Galileo, …) |
+| Ground Drop | Beute als kurzlebiges Objekt auf der Karte, bis zum Aufheben |
 | H3 | Hexagonales Zellsystem von Uber |
 | Heading | Blickrichtung des Avatars, aus der Bewegungsrichtung abgeleitet |
 | Interest Area | Abonnierter Weltausschnitt eines Clients |
@@ -51,6 +52,7 @@
 | Kapitel 6 — PostGIS | [Components](../architecture/backend.md#components) |
 | Kapitel 7 — Streaming | [Message Flow](../architecture/streaming.md#message-flow), [Wire Budget](../architecture/streaming.md#wire-budget) |
 | Kapitel 7 — Route + Fortschritt, Fog of War | [Entity Streaming](../architecture/streaming.md#entity-streaming), [Subscription Set](../architecture/streaming.md#subscription-set) |
+| Kapitel 7 — Ground Drops | [Entity Classes](../architecture/streaming.md#entity-classes), [Game Design § Ground Drops](../design/rpg.md#ground-drops) |
 | Kapitel 4, 7 — statisch vs. live | [Tile Payload](../architecture/map-data.md#tile-payload) |
 | Kapitel 8 — Tick, Autorität | [Region Actors](../architecture/backend.md#region-actors), [Transport & Protocol](../architecture/transport.md#transport--protocol) |
 | Kapitel 9 — Unity, Floating Origin | [Chosen: Custom Tile Pipeline](../architecture/map-data.md#chosen-custom-tile-pipeline) |

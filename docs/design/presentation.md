@@ -7,10 +7,13 @@ One view, always the same: a 3D world map with the player's avatar on it, Pokém
 | Element | Rule |
 |---|---|
 | Camera | Tilted top-down, locked to the avatar; user may rotate, pitch, zoom |
+| Zoom band | Set by what the device renders within budget — no fixed design value |
 | Avatar | Rendered at the user's live GPS position, facing the direction of travel |
-| Buildings | Stylized low-poly models at real coordinates, tinted by owning faction |
-| Units, towers, gates | Rendered on the same map from live state |
+| Buildings | Stylized low-poly models at real coordinates; one model per building kind at launch |
+| Ownership colour | Own buildings in a separate colour; all other buildings untinted |
+| Units, towers, gates, drops | Rendered on the same map from live state |
 | Interaction ring | Circle around the avatar showing the current action radius |
+| Free pan | Nearby area around the avatar, under fog of war — see [Visibility](#visibility) |
 | Remote view | Map pans to own assets for orders; conquest-type actions stay radius-gated |
 | HUD | Screen-space overlay: currencies, unit orders, alerts |
 
@@ -32,7 +35,7 @@ Reference point: *League of Legends* — stylized low-poly geometry with hand-pa
 |---|---|
 | Geometry | Low-poly; shape carries the read, not mesh density |
 | Texturing | Hand-painted, baked lighting and AO into the albedo; few real-time lights |
-| Colour | Saturated, high-contrast; faction colour is the strongest signal on the map |
+| Colour | Saturated, high-contrast; own-ownership colour is the strongest signal on the map |
 | Silhouette | Readable at map zoom — a unit type is identifiable by outline alone |
 | Scale | Exaggerated: units and towers read larger than real-world proportion against buildings |
 | Damage states | Colour and decal shift, not mesh destruction |
@@ -46,7 +49,7 @@ Why it fits this game:
 | Mobile budget | Low poly counts and shared atlases keep draw calls and memory in range |
 | Mass instancing | Hundreds of buildings per view; stylized kits repeat without looking wrong |
 | Real-world data gaps | Stylized buildings tolerate approximated footprints and estimated heights; photoreal does not |
-| Faction readability | Territory ownership must be legible at a glance, at any zoom |
+| Ownership readability | Own territory must be legible at a glance, at any zoom |
 
 ## Map Interaction
 
@@ -72,14 +75,16 @@ Not everything inside the streamed area is shown. **Vision comes from what you o
 | Object | Visible when |
 |---|---|
 | Buildings, streets, workshops | Always, in the streamed area — this is the map itself |
-| Building ownership + HP | Always, in the streamed area |
+| Building ownership + HP | Own buildings always; others only inside the sight radius of an own asset |
 | Own avatar, units, factories, towers | Always, at any distance |
 | **Rival units, factories, towers** | Only inside the sight radius of an own asset (avatar, unit, building, factory, tower) |
 | **Demons** | Same rule as rival units |
 | **Hellgates** | Always, in the streamed area — gates exist to attract players |
 | **Rival avatars** | **Never on the open map.** Only at a shared site (workshop, hellgate), inside that site's radius |
 
-- Sight radius is a server constant, derived from the same density normalization as the other constants.
+- **Fog of war:** outside own sight, the nearby map shows only static geometry — buildings, streets, workshops. No owners, units, factories, towers, or demons.
+- Free panning is limited to the nearby streamed area; it never reveals more than fog of war allows.
+- Sight radius is one server constant for all asset types, derived from the same density normalization as the other constants. Per-type ranges are deferred until more unit and tower types exist.
 - An unseen attacker is a real outcome: a rival can station units outside your sight and close in. Owning more ground buys more warning.
 - The server sends only what is visible — invisible entities are not in the stream at all, so the rule cannot be bypassed by a modified client.
 

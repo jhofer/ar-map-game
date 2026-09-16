@@ -14,8 +14,13 @@ Three loops, two currencies. No loop is self-sufficient; each feeds the others.
 
 | Currency | Working name | Source | Spent on |
 |---|---|---|---|
-| Territory | **Points** | Owned buildings, per tick | Factories, units, defenses |
-| Demon | **Essence** | Demon kills, gate closures | Avatar levels, gear, crafting |
+| Territory | **Points** | Owned buildings, passive per tick | Factories, units, defenses |
+| Demon | **Essence** | Demon kills, gate closures — dropped on the ground | Avatar levels, gear, crafting |
+
+| Currency | Payout |
+|---|---|
+| Points | Credited automatically every tick; no collection visit |
+| Essence | Drops on the ground as a pickup, together with loot — see [Ground Drops](rpg.md#ground-drops) |
 
 **Rule: no conversion between currencies.** Points cannot buy gear; Essence cannot buy units. Each loop must be played for its own reward — this is what keeps all three active.
 

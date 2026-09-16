@@ -40,9 +40,10 @@ Subscription decides what a client *could* receive; a second filter decides what
 visible = subscribed ∩ (always-visible ∪ inside sight radius of an own asset)
 ```
 
-- Always-visible: buildings, streets, workshop sites, building ownership, hellgates.
-- Sight-gated: rival units, factories, towers, demons — see [Game Design § Visibility](../design/presentation.md#visibility).
+- Always-visible: buildings, streets, workshop sites, hellgates.
+- Sight-gated: rival building ownership + HP, rival units, factories, towers, demons — see [Game Design § Visibility](../design/presentation.md#visibility).
 - Rival avatars are never streamed outside a shared site, at any subscription level.
+- Sight radius is one constant for all asset types.
 - The vision set is the union of small radii around a player's own assets; assets are few and mostly static, so it is recomputed only on asset or position change, not per tick.
 - Filtering happens **before** the delta is written. An entity a player cannot see produces no bytes, so a modified client cannot reveal it.
 
@@ -113,7 +114,7 @@ How live objects reach the client and how their positions are represented.
 | Static-anchored | Building state, workshop occupancy | From the tile, by `entityId` / `siteId` | Map data |
 | Placed | Factory, tower | Sent once on spawn, never changes | Factory: own position. Tower: `buildingId` + slot |
 | Mobile | Unit, demon, own avatar | Route-based, see below | — |
-| Event | Hellgate | Sent on spawn | Own position |
+| Event | Hellgate, ground drop | Sent on spawn; drop removed on pickup or despawn | Own position |
 
 Placed and event entities carry no geometry — only a kind, an owner and a transform. The mesh comes from the client's low-poly kit.
 

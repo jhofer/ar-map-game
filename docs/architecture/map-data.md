@@ -73,7 +73,7 @@ What a geometry tile contains — the admission rule is **immutable per data ver
 | Building | `entityId`, footprint ring(s), `height`, `kind`, centroid | `entityId` derived from GERS/OSM — the key the server uses too |
 | Street | polyline, `class`, width class | Rendering only; the routing graph stays server-side |
 | Ground / landuse | polygon, `class` | Optional per region |
-| Workshop site | `siteId`, position, POI category | Static per data version — ships in the tile, not as a live entity |
+| Workshop site | `siteId`, position, POI category (school, train station) | Static per data version — ships in the tile, not as a live entity |
 
 - Coordinates are tile-local fixed point: `uint16` per axis against the tile origin ≈ 2 cm resolution at z15. No doubles in the payload.
 - Heights are `uint16` in decimetres.

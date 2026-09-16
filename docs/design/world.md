@@ -59,7 +59,7 @@ flowchart TD
     C -->|no| X[Mark tile unplayable]
 ```
 
-Workshops draw on the same POI data, so workshop availability varies by region too. Sparse regions need a fallback so the crafting half of the RPG loop stays reachable — see Open Questions.
+Workshops draw on the same POI data (schools, train stations), so workshop availability varies by region too. **Workshops are never synthesized** — where none exist nearby, the player travels to one.
 
 | Source | Provides | Used when |
 |---|---|---|
@@ -70,7 +70,8 @@ Workshops draw on the same POI data, so workshop availability varies by region t
 
 - Missing height → estimate from kind + regional defaults (level-count heuristic).
 - Missing kind → classify from tags / POI category; default to House.
-- Synthetic targets are marked as such server-side; they may carry reduced value to discourage farming low-quality regions.
+- Synthetic targets are marked as such server-side; they may carry reduced value to discourage farming low-quality regions (open).
+- The cascade applies to conquerable targets only, never to workshops.
 
 ### Regional Play
 

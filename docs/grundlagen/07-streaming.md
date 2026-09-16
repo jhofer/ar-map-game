@@ -69,6 +69,28 @@ Grössenordnung: ein Zustands-Delta ist 8–24 Byte. Bewegung wird nicht pro Tic
 | Serverkosten | Jeder Mover pro Tick serialisiert | Nur bei Zustandswechsel |
 | Preis | — | Der Client kennt den geplanten Weg vorab |
 
+## Ereignis-Objekte: Ground Drops
+
+**Problem:** Beute soll nicht direkt gutgeschrieben werden, sondern als Objekt auf der Karte liegen, bis jemand sie aufhebt.
+
+**Analogie:** Ein Paket, das vor der Tür abgelegt wird. Es hat eine Position und einen Inhalt, existiert nur bis zur Abholung — und die Übergabe quittiert der Zusteller, nicht der Empfänger.
+
+| Eigenschaft | Bedeutung |
+|---|---|
+| Ground Drop (Loot Drop) | Kurzlebiges Objekt auf der Karte mit Inhalt (z. B. Währung, Ausrüstung) |
+| Lebenszyklus | Spawn → Aufheben oder Ablauf → entfernt |
+| Streaming | Wie jedes Ereignis-Objekt: einmal beim Spawn senden, einmal beim Entfernen |
+| Inhalt | Wird beim Spawn serverseitig ausgewürfelt, nicht beim Aufheben im Client |
+
+**Fallstricke**
+
+| Fehler | Folge |
+|---|---|
+| Aufheben per Client-Meldung „habe eingesammelt" | Einsammeln aus beliebiger Entfernung |
+| Inhalt erst im Client bestimmen | Manipulierbare Beute |
+| Kein Ablauf | Karte füllt sich mit liegengebliebenen Objekten |
+| Zwei Spieler heben gleichzeitig auf | Doppelte Gutschrift ohne serverseitige Sperre |
+
 ## Sichtbarkeit ist nicht dasselbe wie Interest
 
 Zwei Filter, die oft verwechselt werden:
@@ -79,6 +101,7 @@ Zwei Filter, die oft verwechselt werden:
 | Sichtbarkeit (**Fog of War**) | Was davon darf dieser Spieler wissen? | Spielregel |
 
 - Interest ist eine technische Grenze, Fog of War eine Design-Entscheidung — sie fallen selten zusammen.
+- Unter Fog of War bleibt die statische Karte (Gebäude, Strassen) sichtbar; ausgeblendet werden nur Live-Objekte und Zustände wie Besitzer.
 - Beide müssen **serverseitig** greifen. Wer ungesehene Objekte mitschickt und den Client ausblenden lässt, hat die Regel nicht implementiert, sondern nur versteckt (Maphack-Klassiker).
 
 **Fallstricke**

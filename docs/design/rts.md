@@ -10,12 +10,22 @@ Constructs are placed by the player and cost Points. **Placement always requires
 
 | Construct | Placement | Function | Cost |
 |---|---|---|---|
-| Factory | **Free space only** — never on a building | Produces units | Points |
-| Tower | **On an owned building only** | Auto-defense + damage shield | Points |
+| Factory | **Free land only** — never on a building or road | Produces units | Points |
+| Tower | **On an owned building's roof only** | Auto-defense + damage shield | Points |
 
-- **Free space** = a map position not intersecting any building footprint. Validated server-side.
+- **Free space** = a land position whose factory footprint intersects no building footprint and no road. No minimum spacing to roads or other factories. Validated server-side.
+- Ownership of nearby buildings is irrelevant — a factory may stand next to rival territory.
+- Placement range: within **5 m** of the player — same as the conquest radius.
 - Factory and Tower are complementary and never overlap: factories go in the gaps between buildings, towers go on top of them.
 - Workshops are **not** constructs — they are neutral world sites (see World Sites).
+
+## Factories
+
+| Property | Rule |
+|---|---|
+| Placement | Free land within 5 m of the player |
+| Destructible | **Yes** — attacked and destroyed like units and towers |
+| On destruction | Removed; drops nothing |
 
 ## Towers
 
@@ -23,13 +33,16 @@ Towers are the building's armour layer. A building cannot be damaged while its t
 
 | Property | Rule |
 |---|---|
-| Placement | On top of an **owned building**, and only within player range of it |
+| Placement | On the roof of an **owned building**, and only within player range of it |
+| Count per building | Limited by roof space — each tower footprint must fit inside the building footprint |
 | Placement check | Player proximity only — no line-of-sight test (the target building is the anchor) |
 | Mobility | Fixed to the building; never moves |
 | Targeting | Auto-attacks hostiles in its radius |
 | Shield role | **Building takes no damage while any tower on it stands** |
 | Order of destruction | All towers first, then building HP |
 | On building loss | Towers are destroyed with the building |
+| Damaged tower | Repairable |
+| Destroyed tower | Rebuildable on the same roof |
 
 ```mermaid
 flowchart TD
@@ -54,10 +67,12 @@ Crafted at factories, paid in Points. A unit spawns at the factory that made it,
 | Property | Rule |
 |---|---|
 | Production | Crafted at a factory; costs Points |
+| Unit cap | **Hard cap: 100 units per player** |
 | Station | A map position assigned to the unit |
 | Engagement radius | Fixed radius around the **station** |
-| Targets in radius | Demons, rival units, rival buildings |
+| Targets in radius | Demons, rival units, rival factories, rival towers, rival buildings |
 | Targeting | Automatic — no player input |
+| Target priority | By target type first, then nearest |
 | When radius is clear | Return to station |
 | Player control | Set / re-set the station. Nothing else. |
 | Movement | Street routes (see Pathfinding) |
