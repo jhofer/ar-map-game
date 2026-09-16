@@ -41,6 +41,8 @@ Reference point: *League of Legends* — stylized low-poly geometry with hand-pa
 | Damage states | Colour and decal shift, not mesh destruction |
 | Basemap | Stylized ground and streets; never photorealistic imagery |
 
+Production of assets in this style: [Architecture § Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline).
+
 Why it fits this game:
 
 | Driver | Effect |

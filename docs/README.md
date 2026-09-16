@@ -17,6 +17,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity, map view 
 | What does the client render, and from where? | [architecture/client.md](architecture/client.md), [architecture/map-data.md](architecture/map-data.md) |
 | How does live state reach the client? | [architecture/streaming.md](architecture/streaming.md) |
 | Which libraries, and how is the code structured? | [architecture/tech-stack.md](architecture/tech-stack.md), [architecture/code-patterns.md](architecture/code-patterns.md) |
+| How are 3D assets made? | [architecture/asset-pipeline.md](architecture/asset-pipeline.md) |
 | What does it cost to run? | [architecture/scaling.md](architecture/scaling.md) |
 | No maps / geodata / game-server background? | [grundlagen/README.md](grundlagen/README.md) (German) |
 | What is still undecided? | [design/open-questions.md](design/open-questions.md), [architecture/open-questions.md](architecture/open-questions.md) |

@@ -35,3 +35,6 @@
 - Unity CoreCLR scripting runtime: adoption point, and whether `Game.Shared` then moves to a current .NET target.
 - Earcut robustness on real footprints with holes and invalid rings: fix in pipeline vs. client fallback.
 - Native location plugin: own thin plugin vs. an existing asset; background location policy per store.
+- Asset pipeline: Rodin plan with commercial output rights vs. local TRELLIS; cost per generated unit.
+- Rigging: one shared humanoid skeleton for all factions vs. per-faction skeletons; Mixamo terms for release use.
+- glTF (glTFast) vs. FBX import once the kit exists.

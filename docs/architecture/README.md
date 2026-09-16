@@ -19,6 +19,7 @@ Scope: high-level structure and technology decisions. Not per-loop mechanics, no
 | [backend.md](backend.md) | Backend & Frameworks |
 | [tech-stack.md](tech-stack.md) | Tech Stack: runtimes, libraries, tooling |
 | [code-patterns.md](code-patterns.md) | Implementation Patterns: layout, shared code, server and client patterns |
+| [asset-pipeline.md](asset-pipeline.md) | Asset Pipeline: sketch → Gemini concept → Blender MCP → Unity prefab |
 | [scaling.md](scaling.md) | Scaling & Cost |
 | [anti-cheat.md](anti-cheat.md) | Anti-Cheat |
 | [live-ops.md](live-ops.md) | Game Config & Metrics |
@@ -59,6 +60,7 @@ C3 and C6 together are the dominant forces: **the world is planet-sized, the sim
 | Spatial index | H3 (simulation + interest), XYZ tiles (static geometry) | Hex neighbourhood, uniform k-ring, stable IDs |
 | Deployment | Single container on one small VPS → horizontal shards later | C3 |
 | Simulation | Region actors, lazy wake, analytic catch-up for accrual | C3, C6 |
+| Asset creation | Paper sketch → Gemini concept → Blender MCP (primitives or Rodin image-to-3D) → manual cleanup → FBX | Solo team throughput; see [Asset Pipeline](asset-pipeline.md#asset-pipeline) |
 | Game config | Versioned parameter sets in PostgreSQL, hot reload at tick boundary | Balance tuning without release — see [Game Config & Metrics](live-ops.md#game-config--metrics) |
 | Gameplay metrics | Prometheus (aggregates) + event table → ClickHouse later; Grafana dashboards | Measure effect of config changes |
 

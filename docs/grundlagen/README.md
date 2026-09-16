@@ -31,6 +31,7 @@ Jedes Kapitel folgt demselben Muster:
 | [11-groessenordnungen.md](11-groessenordnungen.md) | 11. Grössenordnungen |
 | [12-live-konfiguration.md](12-live-konfiguration.md) | 12. Live-Konfiguration und Spielmetriken |
 | [13-unity-dotnet.md](13-unity-dotnet.md) | 13. Unity und .NET: ein Code, zwei Laufzeiten |
+| [14-3d-assets.md](14-3d-assets.md) | 14. 3D-Assets: von der Skizze zum Prefab |
 | [glossar.md](glossar.md) | Glossar und Verweise |
 
 ## Lesepfad
@@ -42,6 +43,7 @@ Jedes Kapitel folgt demselben Muster:
 | Am Server arbeiten | [5](05-indizes.md), [6](06-postgis.md), [7](07-streaming.md), [8](08-server-tick.md), [11](11-groessenordnungen.md), [12](12-live-konfiguration.md), [13](13-unity-dotnet.md) |
 | Balancing auswerten | [8](08-server-tick.md), [12](12-live-konfiguration.md) |
 | Am Unity-Client arbeiten | [1](01-koordinaten.md), [2](02-gps.md), [4](04-kacheln.md), [7](07-streaming.md), [9](09-rendering.md), [13](13-unity-dotnet.md) |
+| 3D-Assets erstellen | [9](09-rendering.md), [14](14-3d-assets.md) |
 | Kosten beurteilen | [4](04-kacheln.md), [11](11-groessenordnungen.md) |
 
 ## Mentales Modell
