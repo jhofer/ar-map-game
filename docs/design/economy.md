@@ -57,7 +57,7 @@ flowchart LR
 | RTS | Territory | Units take and hold buildings |
 | RTS | RPG | Units escort the avatar and absorb waves at high-tier gates |
 | RPG | RPG | Better gear makes higher-tier gates survivable → more Essence |
-| RPG | RTS | Avatar level unlocks unit/structure tiers; avatar fights alongside units |
+| RPG | RTS | Avatar level unlocks unit tiers (hard gate); avatar fights alongside units |
 | Demons | Territory | Destroyed buildings revert to Neutral → new conquest targets |
 
 Design rule: **territory is the win condition; the RPG loop is the personal power that makes holding it possible.**

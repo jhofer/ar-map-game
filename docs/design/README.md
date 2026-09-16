@@ -17,7 +17,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity. Pokémon 
 | [factions.md](factions.md) | Factions & Demons |
 | [authority.md](authority.md) | Server Authority |
 | [balance.md](balance.md) | Balance Parameters |
-| [open-questions.md](open-questions.md) | Open Questions |
+| [open-questions.md](open-questions.md) | Open Questions & Decision Log |
 
 ## Setting
 

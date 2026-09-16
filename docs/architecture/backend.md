@@ -4,7 +4,7 @@
 
 ## Backend Architecture
 
-*Grundlagen: [Autoritativer Server und Tick](../grundlagen/08-server-tick.md#8-autoritativer-server-und-tick), [PostGIS](../grundlagen/06-postgis.md#6-räumliche-abfragen-mit-postgis), [Routing](../grundlagen/10-routing.md#10-routing-auf-strassengraphen).*
+*Grundlagen: [Autoritativer Server und Tick](../grundlagen/08-server-tick.md#8-autoritativer-server-und-tick), [PostGIS](../grundlagen/06-postgis.md#6-räumliche-abfragen-mit-postgis), [Routing](../grundlagen/10-routing.md#10-routing-auf-strassengraphen), [Spielbegriffe](../grundlagen/15-spielbegriffe.md#15-spielbegriffe-vokabular-aus-game-design-und-netcode).*
 
 ### Components
 
@@ -13,10 +13,12 @@
 | Gateway | TLS, session auth, attestation, rate limits, WS fan-out | Connection state | Connections |
 | Interest manager | Cell subscription sets, delta filtering | Per-session cell set | Connections |
 | Region actor | Authoritative tick for one H3 r8 region: combat, movement, accrual, conquest | Hot entity state | Active regions |
-| Routing service | Street-graph routes for unit movement | Preprocessed graph | Requests, cacheable |
+| Routing service | Street-graph routes for unit movement — **Valhalla** in its own container, pedestrian costing, behind `IRouteProvider` | Preprocessed graph | Requests, cacheable |
 | Demon director | Hellgate spawn weighting by player presence, wave scheduling | Schedules | Active players |
 | Economy / inventory | Points, Essence, loot rolls, crafting, gear | Durable | Players |
 | Persistence | Write-behind snapshots + journal to PostgreSQL | Durable | World size |
+| Timer queue | Scheduled events (gate spawn, escalation, wave, drop expiry, unit arrival in a dormant region) — **PostgreSQL-backed**, in-memory heap per node | Durable | Scheduled events |
+| Notifications | Offline event journal per player → push via FCM (Android) and APNs (iOS) | Durable | Players |
 
 Deployment shape at stage 0: **one process, all components as modules.** The boundaries above are module boundaries, not network boundaries, until load requires splitting. Region actors are the only component that must eventually shard.
 
@@ -45,6 +47,47 @@ This is the mechanism that satisfies C3 and C6: **cost is proportional to live r
 
 Accrual is closed-form (`points = rate × elapsed`), so dormant buildings need no ticks. Anything not closed-form (combat, unit movement) only occurs where an attacker exists, and an attacker is either a player (present → region live) or a demon wave (scheduled → wakes the region on its timer).
 
+### Routing Engine
+
+| Engine | Verdict | Why |
+|---|---|---|
+| **Valhalla** | **Chosen** | Tiled graph loads per ingested region, so memory follows coverage; pedestrian costing built in; C++ container with HTTP API; active project |
+| OSRM | No | Contraction hierarchies need a full rebuild per data change and hold the whole graph in RAM |
+| GraphHopper | No | Java runtime next to .NET; otherwise comparable |
+| Itinero (.NET) | No | In-process would be ideal, but maintenance has stalled |
+
+- Route request: unit's nearest street point → street point nearest the goal; the off-road leg is computed by the region actor — see [Game Design § Reachability](../design/rts.md#reachability).
+- Cache key `(origin r10 cell, goal r10 cell, costing)`; entries expire with the data version.
+
+### Timer Queue
+
+| Rule | Detail |
+|---|---|
+| Source of truth | `scheduled_events` table: `due_at`, region, payload, `dedupe_key` |
+| Runtime | Per node, an in-memory heap loaded for the node's regions on start and refilled every minute for the next window |
+| Wake | A due event for a dormant region wakes it |
+| Restart | Nothing is lost; events due during downtime fire on start, in order |
+| Reason | Gate escalation, wave timers, drop expiry and unit arrivals must survive a deploy — losing them silently breaks the demon loop |
+
+### Persistence Cadence
+
+| Write | Cadence | Loss window on crash |
+|---|---|---|
+| Journal (domain events) | Batched `COPY` every 1 s | ≤ 1 s of region events |
+| Region snapshot | Every 5 min and on drain | None beyond the journal window |
+| Economy, inventory, loot | Durable-first, before the response | None |
+| Player position | Last accepted fix, every 30 s | 30 s — only affects the "active player" window |
+
+### Push Notifications
+
+| Rule | Detail |
+|---|---|
+| Provider | Firebase Cloud Messaging for Android, APNs for iOS, both through one server library (`FirebaseAdmin`) |
+| Trigger | Events in the offline journal: building attacked, building lost, tower destroyed, gate opened near own buildings |
+| Batching | At most one push per player per 10 min; the push aggregates ("3 buildings under attack") |
+| Opt-in | System permission prompt on the first offline attack event, not on install |
+| Content | No positions, no rival names — counts and building kinds only |
+
 ### Sharding
 
 | Stage | Shape |
@@ -52,6 +95,15 @@ Accrual is closed-form (`points = rate × elapsed`), so dormant buildings need n
 | Single node | All regions in one process |
 | Sharded | Consistent-hash H3 r8 cell → shard; gateway routes by cell; shard map in Redis |
 | Cross-shard | Rare: unit or player crossing a region boundary. Handoff = serialize entity, transfer, ack. Buildings never move, so most entities are shard-static |
+
+| Handoff step | Detail |
+|---|---|
+| 1 | Source region freezes the entity, serializes it (MemoryPack), sends `Handoff(entity, seq)` to the target node |
+| 2 | Target region inserts the entity, journals it, acks with `seq` |
+| 3 | Source deletes its copy and journals the removal; until the ack, the entity stays frozen on the source |
+| Retry | Source retries with the same `seq`; the target treats a repeated `seq` as idempotent |
+| Shard restart | Regions are reloaded from snapshot + journal on whichever node the shard map now assigns; an unacked handoff is re-sent by the source on its next tick |
+| Redis | Introduced with the first multi-node deploy (stage 2) — for the shard map and player presence, nothing earlier |
 
 Gateways are stateless with respect to the world and can scale independently of sim shards.
 

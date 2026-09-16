@@ -74,11 +74,11 @@ Contents of `Game.Shared`: message contracts, IDs, enums, config schema, tile co
 | WebSocket | `System.Net.WebSockets.ClientWebSocket` behind `IConnection` | NativeWebSocket | Built into the BCL; no plugin |
 | Tile download | `UnityWebRequest` + own disk cache | Addressables | Tiles are own binary format, not Unity assets |
 | Mesh generation | `Mesh.MeshDataArray` + Burst + Jobs | Main-thread `Mesh` API | Extrusion off the main thread |
-| Polygon triangulation | Earcut port, Burst-compiled | LibTessDotNet | Footprints are simple rings; earcut is small and fast |
+| Polygon triangulation | Earcut port, Burst-compiled | LibTessDotNet | Rings arrive validated from the pipeline; on a failed triangulation the client extrudes the bounding rectangle — never a missing building |
 | UI | UI Toolkit (screen HUD, menus) | uGUI | Unity 6 default; world-space markers are scene meshes, not UI |
 | Camera | Cinemachine 3 | Own camera rig | Follow, clamped orbit, damping out of the box |
 | Input | Input System package | Legacy Input Manager | Touch gestures, testable actions |
-| Location | Native plugin per platform (Fused Location / CoreLocation) behind `ILocationSource` | `Input.location` | Needs accuracy, course, update interval control; `Input.location` only for P1 |
+| Location | Own thin native plugin per platform (Kotlin Fused Location Provider, Swift CoreLocation) behind `ILocationSource`; **foreground only** — no background location at launch | `Input.location`, asset-store plugins | Needs accuracy, course, update interval control; store review risk of background location not worth it before there is a feature that needs it. `Input.location` only for P1 |
 | Attestation | Native plugins: Play Integrity, App Attest | — | See [Anti-Cheat](anti-cheat.md#anti-cheat) |
 | Content bundles | Built-in first; Addressables when art kits must update without store release | — | Avoid build complexity before it pays |
 | Crash / errors | Sentry Unity SDK | Unity Cloud Diagnostics | Same tool as server |
@@ -98,14 +98,14 @@ Not used: DOTS / Entities, Netcode for GameObjects, AR Foundation, Photon. Live 
 | Database access | Npgsql + Dapper | EF Core | Explicit SQL, binary `COPY`, no change tracking on hot paths |
 | Geometry types | NetTopologySuite + `Npgsql.NetTopologySuite` | Raw WKB | PostGIS ↔ C# mapping |
 | Migrations | Plain SQL files + DbUp | EF migrations | Matches Dapper; PostGIS DDL stays readable |
-| Spatial index | H3 .NET port (`pocketken.H3`) | Native H3 via P/Invoke | Pure managed; verify API parity with H3 v4 before P2 |
+| Spatial index | H3 .NET port (`pocketken.H3`) | Native H3 via P/Invoke | Pure managed. Gate: a parity test in CI against the H3 v4 reference vectors (cell IDs, `kRing`, `polygonToCells`) — a mismatch switches to P/Invoke before P2 |
 | Config change feed | PostgreSQL `LISTEN/NOTIFY` via Npgsql | Polling | See [Game Config](live-ops.md#game-config) |
 | Redis (stage 2+) | StackExchange.Redis | — | Presence, shard map |
 | Auth | Sign in with Apple / Google ID token → own JWT (`JwtBearer`) | Nakama auth | No extra service at stage 0 |
 | Metrics / traces | OpenTelemetry .NET (`System.Diagnostics.Metrics`) → Prometheus endpoint | prometheus-net | Vendor-neutral; built-in meters for Kestrel and runtime |
 | Logging | `Microsoft.Extensions.Logging`, JSON console formatter | Serilog | Built in; structured |
 | Errors | Sentry .NET SDK | — | Same project as client |
-| Routing engine | Separate container behind `IRouteProvider` | — | Engine still open — see [Open Technical Questions](open-questions.md) |
+| Routing engine | Valhalla, separate container behind `IRouteProvider` | OSRM, GraphHopper, Itinero | See [Routing Engine](backend.md#routing-engine) |
 | Tests | NUnit, Testcontainers (PostgreSQL + PostGIS), NetArchTest for module boundaries | xUnit | One test framework across Unity and .NET |
 | Benchmarks | BenchmarkDotNet | — | Tick, codec, vision filter |
 
@@ -118,7 +118,7 @@ Not used: DOTS / Entities, Netcode for GameObjects, AR Foundation, Photon. Live 
 | Akka.NET | Manual | Scheduler messages | Cluster config | No — larger API than needed |
 | Proto.Actor | Manual | Manual | Low | No clear gain over Channels |
 
-Region host sits behind `IRegionHost` so a switch to Orleans during scale-out does not touch simulation code.
+Region host sits behind `IRegionHost` so a switch to Orleans during scale-out does not touch simulation code. Decision for scale-out: **own shard map first** ([Sharding](backend.md#sharding)); Orleans only if the handoff protocol proves unreliable in the P2 load test.
 
 ## Map Pipeline
 
@@ -144,7 +144,7 @@ Region host sits behind `IRegionHost` so a switch to Orleans during scale-out do
 | Unity build | GameCI (`game-ci/unity-builder`, `unity-test-runner`) on Linux; iOS archive on macOS runner |
 | Store upload | fastlane (TestFlight, Play internal track) |
 | Deploy stage 0–1 | `docker compose` on the VPS, pulled image — see [Operations](operations.md#operations) |
-| Art assets | Blender + Blender MCP (Claude Code), Gemini image model, Hyper3D Rodin; FBX into Unity — see [Asset Pipeline](asset-pipeline.md#asset-pipeline) |
+| Art assets | Blender + Blender MCP (Claude Code), Gemini image model, Hyper3D Rodin on a plan with commercial output rights (local TRELLIS only for experiments); FBX into Unity, glTF not used — see [Asset Pipeline](asset-pipeline.md#asset-pipeline) |
 | Binary files | Git LFS for `.blend`, textures, FBX, concept images |
 | Local dev | `docker compose` with Postgres/PostGIS, server, Grafana; Unity editor against `localhost` with GPX replay location |
 
@@ -152,7 +152,7 @@ Region host sits behind `IRegionHost` so a switch to Orleans during scale-out do
 
 | Component | Version | Upgrade trigger |
 |---|---|---|
-| Unity | 6 LTS | Next LTS; CoreCLR scripting runtime once shipped in an LTS — lifts the C# 9 / netstandard2.1 limit |
+| Unity | 6 LTS | Next LTS. CoreCLR scripting runtime adopted only once it ships in an LTS; `Game.Shared` then moves to the current .NET target in the same change |
 | .NET (server, pipeline) | 10 LTS | .NET 12 LTS |
 | Shared target | netstandard2.1, C# 9 | Unity CoreCLR |
 | PostgreSQL / PostGIS | 18 / 3.6 | Managed provider support |

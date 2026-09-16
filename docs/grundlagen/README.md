@@ -32,6 +32,7 @@ Jedes Kapitel folgt demselben Muster:
 | [12-live-konfiguration.md](12-live-konfiguration.md) | 12. Live-Konfiguration und Spielmetriken |
 | [13-unity-dotnet.md](13-unity-dotnet.md) | 13. Unity und .NET: ein Code, zwei Laufzeiten |
 | [14-3d-assets.md](14-3d-assets.md) | 14. 3D-Assets: von der Skizze zum Prefab |
+| [15-spielbegriffe.md](15-spielbegriffe.md) | 15. Spielbegriffe: Vokabular aus Game Design und Netcode |
 | [glossar.md](glossar.md) | Glossar und Verweise |
 
 ## Lesepfad
@@ -39,8 +40,9 @@ Jedes Kapitel folgt demselben Muster:
 | Ziel | Kapitel |
 |---|---|
 | Nur die Architektur verstehen | [1](01-koordinaten.md), [4](04-kacheln.md), [5](05-indizes.md), [7](07-streaming.md), [8](08-server-tick.md) |
+| Das Game Design lesen | [15](15-spielbegriffe.md), [2](02-gps.md), [10](10-routing.md) |
 | Am Map-Pipeline-Code arbeiten | [1](01-koordinaten.md), [3](03-geodaten.md), [4](04-kacheln.md), [5](05-indizes.md), [6](06-postgis.md), [10](10-routing.md) |
-| Am Server arbeiten | [5](05-indizes.md), [6](06-postgis.md), [7](07-streaming.md), [8](08-server-tick.md), [11](11-groessenordnungen.md), [12](12-live-konfiguration.md), [13](13-unity-dotnet.md) |
+| Am Server arbeiten | [5](05-indizes.md), [6](06-postgis.md), [7](07-streaming.md), [8](08-server-tick.md), [10](10-routing.md), [11](11-groessenordnungen.md), [12](12-live-konfiguration.md), [13](13-unity-dotnet.md), [15](15-spielbegriffe.md) |
 | Balancing auswerten | [8](08-server-tick.md), [12](12-live-konfiguration.md) |
 | Am Unity-Client arbeiten | [1](01-koordinaten.md), [2](02-gps.md), [4](04-kacheln.md), [7](07-streaming.md), [9](09-rendering.md), [13](13-unity-dotnet.md) |
 | 3D-Assets erstellen | [9](09-rendering.md), [14](14-3d-assets.md) |

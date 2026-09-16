@@ -54,7 +54,7 @@ A workshop and a radius around it are a **safe zone**. Nothing hostile resolves 
 | Faction access | All three factions, simultaneously |
 | Claiming | Impossible — a workshop can never be owned |
 | Radius | **5 m** around the POI anchor |
-| Qualifying POIs | Schools, train stations |
+| Qualifying POIs | Schools, train stations — the building itself stays conquerable, see [Workshop-Site Buildings](territory.md#workshop-site-buildings) |
 | Sparse regions | No synthesized workshops — players travel to the nearest real one |
 | Crafting cooldown | None — craft whenever the Essence cost is covered |
 
@@ -92,7 +92,8 @@ The one exception to combat suppression — consensual, and with nothing at stak
 | Effect on the faction war | None — territory and income are untouched |
 | Cross-faction | Allowed; same-faction duels allowed too |
 | Tracking | Wins and losses recorded in player stats; no rating |
-| Leaderboard | Global, from duel stats |
+| Leaderboard | Global, **wins in a rolling 30-day window** |
+| Trading protection | At most **3 counted duels per pair of players per day**; further duels run but do not count |
 
 ```mermaid
 stateDiagram-v2
@@ -104,7 +105,7 @@ stateDiagram-v2
     Resolved --> Idle: Stats updated; no death, no loss, no reward
 ```
 
-Why duels pay nothing: any material reward would be farmable by two cooperating players. Duels exist to **test a build against another build**, not to earn. Stats and leaderboard carry no in-game value.
+Why duels pay nothing: any material reward would be farmable by two cooperating players. Duels exist to **test a build against another build**, not to earn. Stats and leaderboard carry no in-game value; the per-pair daily cap keeps the leaderboard from rewarding two players trading wins.
 
 ## Presence Rules
 
@@ -118,7 +119,9 @@ Physical presence is required to **place** and to **take**, never to **command**
 | Craft at a workshop | **Yes** |
 | Fight at a hellgate | **Yes** |
 | Collect a ground drop (Essence, loot) | **Yes** |
+| Repair or rebuild a construct | **Yes** |
 | Give orders to units | **No** — fully remote |
+| Change avatar stance | **No** |
 
 - Rationale: the map is claimed on foot, but an army is directed from anywhere.
 - Consequence: territory expansion is gated by real travel; tactical response is not. A player under attack can redirect units immediately, from anywhere.

@@ -24,7 +24,7 @@ Scope: high-level structure and technology decisions. Not per-loop mechanics, no
 | [anti-cheat.md](anti-cheat.md) | Anti-Cheat |
 | [live-ops.md](live-ops.md) | Game Config & Metrics |
 | [operations.md](operations.md) | Operations, Phases, Risks |
-| [open-questions.md](open-questions.md) | Open Technical Questions |
+| [open-questions.md](open-questions.md) | Open Technical Questions & Decision Log |
 
 ## Constraints
 
@@ -54,9 +54,11 @@ C3 and C6 together are the dominant forces: **the world is planet-sized, the sim
 | Client libraries | URP, VContainer, UniTask, R3, Burst/Jobs for mesh build | IL2CPP-safe, no reflection — see [Tech Stack § Client](tech-stack.md#client) |
 | Serialization | MemoryPack contracts + hand-written delta bit format | Same generated code on both sides |
 | Region actor runtime | Own actor on `System.Threading.Channels`; Orleans re-evaluated on scale-out | Tick-driven single writer — see [Actor Choice](tech-stack.md#actor-choice) |
+| Routing engine | Valhalla container, pedestrian costing | Tiled graph, memory follows coverage — see [Routing Engine](backend.md#routing-engine) |
+| Scheduled events | PostgreSQL-backed timer queue | Demon loop must survive restarts — see [Timer Queue](backend.md#timer-queue) |
 | Code structure | Modular monolith, unidirectional client store | See [Implementation Patterns](code-patterns.md#implementation-patterns) |
 | Backend framework | Custom service; OSS commodity backend (Nakama) optional for auth/social | C3 — managed game backends have a fixed monthly floor |
-| Persistence | PostgreSQL + PostGIS (durable), in-process region state (hot), Redis (presence/pubsub, added at scale) | C3, C4 |
+| Persistence | PostgreSQL + PostGIS (durable), in-process region state (hot), Redis (shard map + presence, from the first multi-node deploy) | C3, C4 |
 | Spatial index | H3 (simulation + interest), XYZ tiles (static geometry) | Hex neighbourhood, uniform k-ring, stable IDs |
 | Deployment | Single container on one small VPS → horizontal shards later | C3 |
 | Simulation | Region actors, lazy wake, analytic catch-up for accrual | C3, C6 |

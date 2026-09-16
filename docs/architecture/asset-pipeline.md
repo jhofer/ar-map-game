@@ -39,7 +39,7 @@ flowchart LR
 | 4b Model (organic) | Image-to-3D via Blender MCP (Hyper3D Rodin) | Front view or turnaround | High-poly mesh with generated texture | Reject bad generations |
 | 5 Retopology | Blender (Decimate, QuadriFlow Remesh, manual) — scripted via MCP | High-poly mesh | Mesh within triangle budget | Fix silhouette, clean artefacts |
 | 6 UV + texture | Blender | Low-poly mesh (+ high-poly for baking) | UVs in the kit atlas; albedo with baked AO and light | Hand-paint over the bake |
-| 7 Rig + animate | Blender (Rigify); Mixamo for humanoids | Textured mesh | Skeleton, clips: idle, walk, attack, hit, death | Mostly manual |
+| 7 Rig + animate | Blender (Rigify); Mixamo for humanoids — **one shared humanoid skeleton for all faction units**, one skeleton per demon body type (biped, quadruped); Mixamo terms allow game use, recorded in provenance | Textured mesh | Skeleton, clips: idle, walk, attack, hit, death | Mostly manual |
 | 8 Export | Blender FBX export preset | `.blend` | `.fbx` | — |
 | 9 Import | Unity `AssetPostprocessor` + validator | `.fbx` | Prefab / prefab variant | Fix validator failures |
 

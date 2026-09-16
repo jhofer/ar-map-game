@@ -1,63 +1,97 @@
-# Open Questions
+# Open Questions & Decision Log
 
 [← Game Design](README.md)
 
-## Gameplay
+## Open
+
+None. Every gameplay question raised so far has a recorded decision below. New questions get a row in [Open](#open) with a date; a decision moves the row to the log and the rule to its topic file.
+
+## Decision Log
+
+Decisions made 2026-09-16 to close the concept for detail specs. Rationale lives with the rule in the topic file; this table is the index.
 
 ### Units
 
-- Station engagement radius: one radius for every unit, a different radius per unit type, or a radius the player can upgrade.
-- Re-stationing cooldown: after `SetStation`, must the player wait before moving the **same unit** again — or can a unit be redirected any number of times in a row.
-- Target type order for the "by type, then nearest" rule: ranking of demons, rival units, rival towers, rival factories, rival buildings.
+| Question | Decision | Recorded in |
+|---|---|---|
+| Station engagement radius: one value, per type, or upgradable | Per unit type, not upgradable; 40 m for every type at launch | [RTS § Units](rts.md#units) |
+| Re-stationing cooldown | None; a new order replaces the route immediately. Order spam is a technical rate limit | [RTS § Station Placement Rules](rts.md#station-placement-rules) |
+| Target type order | Demons → rival units → aggressor avatar → towers → factories → buildings; then nearest, then lowest ID | [RTS § Target Order](rts.md#target-order) |
+| Unit roster before faction design | Three faction-symmetric archetypes (Infantry, Marksman, Siege); skins per faction | [RTS § Launch Roster](rts.md#launch-roster) |
+| Reachability of off-street targets | Street route plus one off-road leg ≤ 30 m; buildings further from a street are not conquerable | [RTS § Reachability](rts.md#reachability) |
 
 ### Structures
 
-- Tower repair and rebuild: Points cost, and whether repair requires physical presence like placement.
+| Question | Decision | Recorded in |
+|---|---|---|
+| Tower repair and rebuild | Repair: presence required, half build cost × missing fraction, not within 60 s of damage. Rebuild: full cost, presence | [RTS § Repair and Rebuild](rts.md#repair-and-rebuild) |
+| Tower count per building | One slot per 50 m² of roof, 1–4 | [RTS § Towers](rts.md#towers) |
+| Factory cap and queue | 5 factories per player, 5 orders per queue | [RTS § Factories](rts.md#factories) |
 
 ### Territory
 
-- Density normalization constants — the three numbers in `scarcity_bonus = clamp((d_ref / density)^a, 1.0, bonus_max)`:
-  - `d_ref`: building density that counts as "normal"; at or above it the bonus is 1.0.
-  - `a`: how steeply the bonus grows as density drops below `d_ref`.
-  - `bonus_max`: upper limit, so the emptiest areas are not overpaid.
-- Synthetic target value: where no footprint exists, a building is generated from a POI or road junction. Should it pay less than a real building (and by how much) — so players do not prefer regions with poor map data.
-- School and train-station buildings: they are workshop sites and ordinary conquerable buildings at once — conquerable, or excluded.
+| Question | Decision | Recorded in |
+|---|---|---|
+| Density constants | `d_ref` 1 000 /km², `a` 0.5, `bonus_max` 3.0 | [World § Density Normalization](world.md#density-normalization) |
+| Density classes | City ≥ 1 500, suburb 300–1 500, rural < 300 buildings/km², per H3 r8 cell | [World § Density Classes](world.md#density-classes) |
+| Synthetic target value | POI-synthesized 0.5×, junction-synthesized 0.25× | [World § Data Coverage Fallback](world.md#data-coverage-fallback) |
+| School and train-station buildings | Conquerable; the safe zone is the 5 m circle around the POI node, membership by centroid | [Territory § Workshop-Site Buildings](territory.md#workshop-site-buildings) |
+| Conquest action | Hold-to-conquer 10 s, presence checked at start and end; no minigame | [Territory § Conquest Rules](territory.md#conquest-rules) |
+| Building HP and regeneration | Base HP per kind × volume multiplier; 1 %/min regeneration after 60 s | [Territory § Building HP](territory.md#building-hp) |
+| Same-faction players | Allied: never attackable, never conquerable, no shared sight | [Factions § Relations](factions.md#relations) |
 
 ### Drops
 
-- Tap-to-collect range: interaction radius, or anywhere on screen.
-- Drop ownership: killer only, or anyone who reaches it first.
-- Drop lifetime before it despawns.
-- Drops from unit kills where no player is nearby: dropped anyway, or credited.
+| Question | Decision | Recorded in |
+|---|---|---|
+| Tap-to-collect range | 15 m by tap, 5 m automatic | [RPG § Ground Drops](rpg.md#ground-drops) |
+| Drop ownership | Killer's owner for 120 s, then anyone | [RPG § Ground Drops](rpg.md#ground-drops) |
+| Drop lifetime | 600 s | [RPG § Ground Drops](rpg.md#ground-drops) |
+| Unit kills with no player nearby | Dropped at the kill position anyway; never credited | [RPG § Ground Drops](rpg.md#ground-drops) |
 
 ### Visibility & Presentation
 
-- Hellgates under fog of war: still always visible, or sight-gated like demons.
-- Extent of "nearby" for free panning: the streamed area, or a fixed distance.
-- Rival vs. Neutral buildings: whether they need a distinct tint once inside sight.
-- Sight radius value.
+| Question | Decision | Recorded in |
+|---|---|---|
+| Hellgates under fog of war | Always visible in the streamed area | [Presentation § Visibility](presentation.md#visibility) |
+| Extent of free panning | The subscribed interest cells | [Presentation § View & Presentation](presentation.md#view--presentation) |
+| Rival vs. neutral tint | Inside sight: rival in rival faction colour desaturated, allied outlined, neutral untinted | [Factions § Relations](factions.md#relations) |
+| Sight radius | 75 / 100 / 150 m by density class | [World § Density Classes](world.md#density-classes) |
 
 ### Workshops & Duels
 
-- Leaderboard metric (wins, win rate, streak) and protection against two players trading wins.
+| Question | Decision | Recorded in |
+|---|---|---|
+| Leaderboard metric and win trading | Wins in a rolling 30-day window; at most 3 counted duels per pair per day | [Entities § Avatar Duels](entities.md#avatar-duels) |
 
-### Deferred and Unanswered
+### Avatar, Combat, Gear
 
-- Faction names, lore, visual style, unit rosters (deferred by decision).
-- Hellgate spawn weighting, cadence, escalation curve, and Essence reward scale.
-- Avatar defeat penalty: cooldown length, durability or Essence cost.
-- Whether avatar level gating of unit tiers is hard (locked) or soft (cost scaling).
-- Whether the avatar can solo low-tier gates without units, and at which level.
-- Melee and ranged band distances, and whether they overlap.
-- Speed-lock hysteresis: sustain window before locking and before unlocking.
-- Whether conquest and crafting are also speed-locked, or only attacking.
-- Passenger case: a passenger in a car is locked out identically — accepted, or mitigated.
-- Rarity tier count and affix count per tier.
-- Affix pool: which stats roll on weapons vs. armor, and whether ranged and melee share a pool.
-- Whether crafted armor can be re-rolled, and at what Essence cost.
-- Crafting inputs: Essence only, or Essence + materials.
-- Trading: whether gear is bound to the player or tradeable between players.
-- Power-gap control: how far random gear may separate two players in RTS hero combat.
+| Question | Decision | Recorded in |
+|---|---|---|
+| Hellgate spawn weighting, cadence, escalation, rewards | Director every 5 min; per active player; 1 gate / 6 h; tiers by nearby players; waves every 90 s; escalation every 10 min; reward table | [Factions § Hellgates](factions.md#hellgates) |
+| Avatar defeat penalty | 300 s knockout, no gear or Essence cost | [RPG § Defeat](rpg.md#defeat) |
+| Level gating hard or soft | Hard; T1/T2/T3 at level 1/5/12 | [RPG § Tech Access](rpg.md#tech-access) |
+| Avatar solo gates | T1 stage 0 soloable at level 1 in ~10 min; T2 from level ~5; T3 needs units | [Factions § Hellgates](factions.md#hellgates) |
+| Melee and ranged bands | 8 m / 30 m base, no overlap, melee wins inside its range; range is a weapon stat | [Combat § Weapon Range Bands](combat.md#weapon-range-bands) |
+| Speed-lock hysteresis | Lock > 30 km/h for 20 s; unlock < 20 km/h for 30 s | [Combat § Speed Lock](combat.md#speed-lock) |
+| Speed lock scope | Every presence-gated action | [Combat § Speed Lock](combat.md#speed-lock) |
+| Passenger case | Accepted, no mitigation | [Combat § Speed Lock](combat.md#speed-lock) |
+| Avatar vs. rival assets | Stance toggle (PvE only default); aggressor rule for return fire; avatars never damage avatars | [Combat § Avatar Targeting](combat.md#avatar-targeting) |
+| Rarity tiers and affix counts | 4 tiers, 0–3 affixes, weights per gate tier | [RPG § Roll Model](rpg.md#roll-model) |
+| Affix pool | Weapons share one pool; armor has its own; no duplicate affix per item | [RPG § Roll Model](rpg.md#roll-model) |
+| Armor re-roll | None; craft a new one | [RPG § Acquisition](rpg.md#acquisition) |
+| Crafting inputs | Essence + 5 materials of the tier | [RPG § Acquisition](rpg.md#acquisition) |
+| Trading | Bound to player; no trading | [RPG § Inventory and Binding](rpg.md#inventory-and-binding) |
+| Power-gap control | Affix sum ≤ 100 % per stat; ≤ 2× base at equal tier | [RPG § Power Gap](rpg.md#power-gap) |
+| Faction choice permanence | Permanent, one free change within 24 h | [Factions § Factions](factions.md#factions) |
+
+### Still Deferred by Decision
+
+| Topic | Why | Until |
+|---|---|---|
+| Faction names, lore, visual style | Art direction work, not a rule | Asset pilot |
+| Faction-asymmetric unit stats | Needs data from the symmetric roster first | After P3 metrics |
+| Per-type sight radius | Needs more unit and tower types | After the launch roster ships |
 
 ## Technical
 

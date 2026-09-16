@@ -10,10 +10,10 @@ One view, always the same: a 3D world map with the player's avatar on it, Pokém
 | Zoom band | Set by what the device renders within budget — no fixed design value |
 | Avatar | Rendered at the user's live GPS position, facing the direction of travel |
 | Buildings | Stylized low-poly models at real coordinates; one model per building kind at launch |
-| Ownership colour | Own buildings in a separate colour; all other buildings untinted |
+| Ownership colour | Own buildings in full faction colour. Inside sight: allied buildings outlined in faction colour, rival buildings in the rival faction's colour, desaturated. Neutral and out-of-sight buildings untinted — see [Relations](factions.md#relations) |
 | Units, towers, gates, drops | Rendered on the same map from live state |
 | Interaction ring | Circle around the avatar showing the current action radius |
-| Free pan | Nearby area around the avatar, under fog of war — see [Visibility](#visibility) |
+| Free pan | The **subscribed area** around the avatar (interest cells), under fog of war — see [Visibility](#visibility) |
 | Remote view | Map pans to own assets for orders; conquest-type actions stay radius-gated |
 | HUD | Screen-space overlay: currencies, unit orders, alerts |
 
@@ -77,16 +77,17 @@ Not everything inside the streamed area is shown. **Vision comes from what you o
 | Object | Visible when |
 |---|---|
 | Buildings, streets, workshops | Always, in the streamed area — this is the map itself |
-| Building ownership + HP | Own buildings always; others only inside the sight radius of an own asset |
+| Building ownership + HP | Own buildings always; allied and rival only inside the sight radius of an own asset |
 | Own avatar, units, factories, towers | Always, at any distance |
-| **Rival units, factories, towers** | Only inside the sight radius of an own asset (avatar, unit, building, factory, tower) |
+| **Rival and allied units, factories, towers** | Only inside the sight radius of an own asset (avatar, unit, building, factory, tower) |
 | **Demons** | Same rule as rival units |
-| **Hellgates** | Always, in the streamed area — gates exist to attract players |
-| **Rival avatars** | **Never on the open map.** Only at a shared site (workshop, hellgate), inside that site's radius |
+| **Hellgates** | Always, in the streamed area, never fogged — gates exist to attract players |
+| **Rival and allied avatars** | **Never on the open map.** Only at a shared site (workshop, hellgate), inside that site's radius |
 
 - **Fog of war:** outside own sight, the nearby map shows only static geometry — buildings, streets, workshops. No owners, units, factories, towers, or demons.
-- Free panning is limited to the nearby streamed area; it never reveals more than fog of war allows.
-- Sight radius is one server constant for all asset types, derived from the same density normalization as the other constants. Per-type ranges are deferred until more unit and tower types exist.
+- Free panning is limited to the subscribed cells; it never reveals more than fog of war allows.
+- Sight radius is one server value for all asset types, set per density class: **75 m city, 100 m suburb, 150 m rural** — see [Density Classes](world.md#density-classes). Per-type ranges are deferred until more unit and tower types exist.
+- Only **own** assets give sight. Allied assets do not — see [Relations](factions.md#relations).
 - An unseen attacker is a real outcome: a rival can station units outside your sight and close in. Owning more ground buys more warning.
 - The server sends only what is visible — invisible entities are not in the stream at all, so the rule cannot be bypassed by a modified client.
 

@@ -27,11 +27,11 @@ flowchart LR
 | Validation | Server rejects a version that fails the schema before activation |
 | Audit | Each version stores author, timestamp, change note |
 | Rollback | Re-activate an earlier version; no edit-in-place |
-| Scope | Global default; per-region override added only when needed (stage 2+) |
+| Scope | Global default. Per-region overrides **not before stage 2**; before/after comparison per version is enough for a single-city alpha |
 | Activation | Region actors switch at a tick boundary — one tick never mixes two versions |
 | Client | Receives only values it must display (e.g. interaction ring radius) via a `ConfigUpdate` message |
 | Authority | Client never sends a config value; every rule check reads the server's active version |
-| Admin access | Admin role only; stage 0–1: admin API + minimal page, later a proper UI |
+| Admin access | Admin role only. Stage 0–1: minimal API plus one static page served by the server — a schema-driven form over the config JSON with diff and activate. A generic admin tool is not adopted; the surface is one document |
 
 ```mermaid
 sequenceDiagram
@@ -69,7 +69,7 @@ Two data kinds, two stores — they answer different questions.
 | Write | Batched insert every few seconds |
 | Overload | Drop events and count the drops — simulation wins over telemetry |
 | Schema | Versioned event types in the shared model assembly |
-| Retention | Raw events time-limited; daily aggregates kept longer |
+| Retention | Raw events 90 days; daily aggregates per density class and config version 2 years |
 
 ### Privacy
 
@@ -93,4 +93,4 @@ Two data kinds, two stores — they answer different questions.
 | Stage | Config | Metrics |
 |---|---|---|
 | 0–1 | Postgres versions, admin API | Prometheus + Grafana OSS on the same host; events in Postgres |
-| 2+ | Per-region overrides | Events move to ClickHouse when Postgres queries slow down; Grafana Cloud or self-hosted |
+| 2+ | Per-region overrides | Events move to ClickHouse when a dashboard query exceeds 5 s p95 or the event table passes 50 M rows; Grafana Cloud or self-hosted |

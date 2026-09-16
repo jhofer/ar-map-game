@@ -35,6 +35,8 @@ Eine Region (H3 r8) wird von genau einem Akteur simuliert — ein Schreiber, kei
 | Live | 2–4 Hz | Alles |
 | Schlafend | Keiner | Punkte werden beim Aufwachen per Formel nachgerechnet; geplante Ereignisse liegen in einer Timer-Queue |
 
+Die **Timer-Queue** ist eine Tabelle fälliger Ereignisse (Zeitpunkt, Region, Nutzlast) in PostgreSQL — wie geplante Jobs in einer Job-Tabelle — mit einer In-Memory-Kopie pro Knoten für den schnellen Zugriff. Sie ist dauerhaft, weil eine verlorene Dämonenwelle oder ein vergessener Ablauf eines Drops für den Spieler wie ein Bug aussieht.
+
 Das ist der zentrale Kostenhebel: `Punkte = Rate × verstrichene Zeit` braucht keinen Tick. Nur wo ein Angreifer ist, muss simuliert werden — und ein Angreifer ist entweder ein Spieler (also ist die Region ohnehin wach) oder eine geplante Dämonenwelle (weckt die Region per Timer).
 
 > Rechenkosten skalieren mit **aktiven Spielern**, nicht mit der Grösse der Welt. Genau das macht fünf Spieler für wenige Euro im Monat möglich.
@@ -74,6 +76,7 @@ flowchart LR
 | Zustand einer Region aus einem anderen Thread lesen | Race Conditions, die nur unter Last auftreten |
 | Write-Behind für Beute und Währung | Absturz nach Mitteilung an den Client → Gegenstand verloren oder doppelt; solche Änderungen zuerst dauerhaft schreiben |
 | `DateTime.UtcNow` direkt in der Simulation | Nicht testbar; Uhr injizieren |
+| Timer nur im Arbeitsspeicher | Nach einem Deploy fehlen Wellen, Eskalationen und Ablaufzeiten — die Region vergisst ihre Zukunft |
 
 **Im Projekt:** → [Architecture § Region Actors](../architecture/backend.md#region-actors) und [§ Cost Model](../architecture/scaling.md#cost-model). Code-Muster: [§ Region Actor](../architecture/code-patterns.md#region-actor), [§ Persistence](../architecture/code-patterns.md#persistence).
 

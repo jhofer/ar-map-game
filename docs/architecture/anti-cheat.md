@@ -2,7 +2,7 @@
 
 [← Technical Architecture](README.md)
 
-*Grundlagen: [GPS in der Praxis](../grundlagen/02-gps.md#2-gps-in-der-praxis).*
+*Grundlagen: [GPS in der Praxis](../grundlagen/02-gps.md#2-gps-in-der-praxis) — Plausibilität, Glättung, Hysterese.*
 
 Moved from the design doc; unchanged in substance.
 
@@ -21,3 +21,12 @@ Moved from the design doc; unchanged in substance.
 | Remote drop pickup | Pickup intent validated against the server's own position fix |
 | Reroll scumming | Roll committed before the client is told the outcome; disconnect does not undo it |
 | Automation / botting | Movement-pattern anomaly detection on the fix stream; per-account rate limits |
+| Order spam | `SetStation` limited to 20 per 10 s per player; excess rejected with `RateLimited`. Not a gameplay cooldown — see [Game Design § Station Placement Rules](../design/rts.md#station-placement-rules) |
+
+## Attestation Strictness
+
+| Stage | Policy |
+|---|---|
+| 0–1 | Attestation requested and logged; failures never block — the alpha runs on dev devices |
+| 2+ | Basic integrity required: rooted or jailbroken devices and emulators are rejected at login; sideloaded builds that pass integrity are allowed |
+| Always | A failed attestation is an event with `configVersion`, so the false-positive rate is measurable before enforcement |

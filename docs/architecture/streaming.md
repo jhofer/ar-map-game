@@ -4,14 +4,14 @@
 
 ## Streaming & Interest Management
 
-*Grundlagen: [Räumliche Indizes](../grundlagen/05-indizes.md#5-räumliche-indizes), [Streaming und Interest Management](../grundlagen/07-streaming.md#7-streaming-und-interest-management).*
+*Grundlagen: [Räumliche Indizes](../grundlagen/05-indizes.md#5-räumliche-indizes), [Streaming und Interest Management](../grundlagen/07-streaming.md#7-streaming-und-interest-management), [Spielbegriffe § Welt und Regeln](../grundlagen/15-spielbegriffe.md#welt-und-regeln).*
 
 ### Spatial Index
 
 | Purpose | Index | Resolution | Rationale |
 |---|---|---|---|
-| Simulation region (sharding, ticking) | H3 | r8 (~0.74 km², edge ~460 m) | Region actor granularity |
-| Subscription cell (interest, deltas) | H3 | r9 (~0.10 km², edge ~174 m) | Fine-grained visibility, cheap k-ring math |
+| Simulation region (sharding, ticking) | H3 | r8 (~0.74 km², edge ~460 m) | Region actor granularity; a unit walks ~460 m before a handoff, and actor count stays in the hundreds per city — r7 would make mass events hit one actor |
+| Subscription cell (interest, deltas) | H3 | r9 (~0.10 km², edge ~174 m) | Fine-grained visibility, cheap k-ring math. Confirmed as the starting value; P2 measures snapshot size in a dense core and moves to r10 only if a cell snapshot exceeds ~30 KB |
 | Static geometry tile | XYZ | z15 (~1.2 km) | CDN-friendly, aligns with mapping tooling |
 
 H3 over geohash: uniform neighbour distance, no rectangle distortion, `kRing` gives the interest set directly.
@@ -27,10 +27,10 @@ subscriptions = kRing(playerCell, k(density))
 |---|---|---|---|
 | City core | 1 | 7 | ~0.7 km² |
 | Suburb | 2 | 19 | ~2 km² |
-| Rural | 3–4 | 37–61 | ~4–6 km² |
+| Rural | 3 | 37 | ~4 km² |
 
-- `k` derives from the server-side density table — same normalization rule as gameplay constants, so rural players see a useful radius without a client-side setting.
-- Hysteresis: a cell is unsubscribed only after the player has been outside it for N seconds, to stop churn at boundaries.
+- `k` is the density class of the player's cell — see [Game Design § Density Classes](../design/world.md#density-classes).
+- Hysteresis: a cell is unsubscribed only after the player has been outside its k-ring for 30 s, to stop churn at boundaries.
 - Hard cap on total subscribed cells per session; owned-asset cells are prioritized over radius cells.
 - Owned-asset subscriptions are **notification-scoped** (state changes, attacks), not full detail, when far from the player.
 
@@ -44,8 +44,25 @@ visible = subscribed ∩ (always-visible ∪ inside sight radius of an own asset
 - Sight-gated: rival building ownership + HP, rival units, factories, towers, demons — see [Game Design § Visibility](../design/presentation.md#visibility).
 - Rival avatars are never streamed outside a shared site, at any subscription level.
 - Sight radius is one constant for all asset types.
-- The vision set is the union of small radii around a player's own assets; assets are few and mostly static, so it is recomputed only on asset or position change, not per tick.
+- The vision set is the union of small radii around a player's own assets; assets are few and mostly static, so it is recomputed only on asset or position change, not per tick — see [Vision Cache](#vision-cache).
 - Filtering happens **before** the delta is written. An entity a player cannot see produces no bytes, so a modified client cannot reveal it.
+
+### Vision Cache
+
+| Element | Detail |
+|---|---|
+| Per player | A list of sight circles (asset position, radius), bucketed by r9 cell |
+| Rebuild | On own-asset spawn, despawn or station change, and when the avatar moves more than 10 m |
+| Entity check | Look up circles in the entity's cell and its 6 neighbours; distance test against each — a handful of comparisons per entity |
+| Cost | Per delta, per subscriber: O(circles in 7 cells), typically < 10 |
+
+### Wake Latency
+
+| Budget | Value |
+|---|---|
+| Dormant region, subscribe → first `CellSnapshot` | ≤ 500 ms p95 |
+| Snapshot load + journal replay | ≤ 200 ms of that |
+| Client | Shows a loading state on the cells until the snapshot arrives; static tiles render meanwhile |
 
 ### Message Flow
 
@@ -140,7 +157,7 @@ A moving entity is streamed as **a path and a clock**, not as a stream of positi
 
 | Field | Meaning |
 |---|---|
-| `route` | Polyline of the server-computed street route, quantized like tile coordinates |
+| `route` | Polyline of the server-computed street route, simplified with 0.5 m tolerance and quantized like tile coordinates (≈ 2 cm) — well below the width of any street, so units never visibly clip corners |
 | `speed` | Server constant for the unit type |
 | `startTick` | Server tick at which the entity entered the route |
 | `state` | Moving / Holding / Engaging / Returning |
@@ -151,7 +168,7 @@ The client evaluates position locally: `position = route(speed × (now − start
 |---|---|
 | New station, retarget, blocked | New `route` record |
 | Stop, engage, return | `state` change |
-| Drift control | `progress` resync every ~5 s per moving entity |
+| Drift control | `progress` resync every **5 s, fixed**, per moving entity; none for holding entities |
 | Death | Despawn record |
 
 Why not per-tick positions:

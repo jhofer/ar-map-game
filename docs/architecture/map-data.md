@@ -54,7 +54,7 @@ flowchart LR
 
 | Artifact | Format | Consumer | Refresh | Notes |
 |---|---|---|---|---|
-| Geometry tiles | Binary, z15 XYZ, gzip/br | Client | Per data version | ~10–100 KB per urban tile |
+| Geometry tiles | Binary, z15 XYZ, gzip/br — one zoom level only | Client | Per data version | ~10–100 KB per urban tile |
 | Entity table | PostGIS rows | Server | Per data version | ID, centroid, footprint, kind, volume, cell |
 | Density / scarcity table | Per H3 r8 cell | Server | With entity table | Feeds `scarcity_bonus`, caps, interest radius |
 | Street graph | Routing-engine build (Valhalla / GraphHopper / OSRM) | Routing service | Per data version | Never shipped to client |
@@ -62,6 +62,40 @@ flowchart LR
 
 - Data versions are immutable; tile URLs carry the version (`/v/{dataVersion}/{z}/{x}/{y}.bin`) so CDN caching is unbounded and clients never see torn data.
 - Ingest is regional, on demand: ship the cities you have players in first. Planet ingest is a cost decision, not a prerequisite.
+
+### Ingest Trigger
+
+| Stage | Trigger |
+|---|---|
+| P1 | Manual: pipeline run per region on request |
+| P2 onward | Automatic: the first accepted `PositionFix` inside an uncovered H3 r6 cell (~36 km²) enqueues an ingest job for that cell; ops is notified; the player sees plain ground with a no-data hint until the job completes |
+| Guard | At most N queued jobs per day (config); a job never runs twice for the same cell and data version |
+
+### Data Refresh
+
+Ownership and constructs are keyed by `entityId`. A new data version may change or drop IDs.
+
+```mermaid
+flowchart TD
+    A[New data version] --> B{entityId still present?}
+    B -->|yes| C[Keep state; geometry updates]
+    B -->|no| D{Candidate: centroid within 5 m and footprint IoU > 0.5?}
+    D -->|yes| E[Transfer ownership, towers, HP to the new ID; journal the mapping]
+    D -->|no| F[Release: building removed, towers removed, owner notified; no refund]
+```
+
+- The mapping runs in the pipeline as part of the version switch, never in the tick.
+- Regions switch data version at a tick boundary, like a config version.
+
+### Geometry Processing
+
+| Step | Rule |
+|---|---|
+| Ring simplification | Douglas-Peucker, 0.5 m tolerance — below the 2 cm quantization is pointless, above 1 m visibly rounds corners |
+| Validity | NetTopologySuite `IsValid`; invalid rings repaired with `Buffer(0)`; still invalid → footprint replaced by its minimum bounding rectangle and flagged in the coverage report |
+| Holes | Kept; inner rings ship with the building record |
+| Reachability | Buildings more than 30 m from the street network are shipped as scenery (`kind = Scenery`, no `entityId` in the entity table) — see [Game Design § Reachability](../design/rts.md#reachability) |
+| LOD | None in the data. Detail reduction is a client decision — see [Client § LOD](client.md#lod) |
 
 ### Tile Payload
 

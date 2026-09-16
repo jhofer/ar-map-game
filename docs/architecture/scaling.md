@@ -24,6 +24,17 @@
 
 Rule of thumb: a region at 2 Hz with ~200 entities costs well under 1 ms of CPU per tick. A single modern core handles hundreds of live regions; players, not the world, set the bill.
 
+### Scale-Out Thresholds
+
+Provisional values until the P2 load test replaces them. Any one sustained for 10 min starts the [scale-out track](operations.md#scale-out-track).
+
+| Signal | Threshold |
+|---|---|
+| p95 tick duration of the busiest region | > 50 % of the tick period (250 ms at 2 Hz) |
+| Connections per node | > 2 000 |
+| Live regions per node | > 500 |
+| Write-behind queue depth | > 5 s of events |
+
 ### Load Shedding
 
 | Pressure | Response |

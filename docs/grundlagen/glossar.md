@@ -2,14 +2,17 @@
 
 [← Grundlagen](README.md)
 
-## 15. Glossar
+## 16. Glossar
 
 | Begriff | Kurz |
 |---|---|
+| Affix | Zufällige Zusatzeigenschaft eines Gegenstands mit Wert aus einem Bereich |
+| Aggressor | Avatar, der zuerst angreift und dadurch selbst zum Ziel wird |
 | Actor | Objekt mit privatem Zustand, nur über Nachrichten erreichbar |
 | Addressables | Unity-System für nachladbare, austauschbare Assets |
 | Assembly Definition (asmdef) | Unity-Gegenstück zur `.csproj` |
 | Attestation | Plattformprüfung, dass eine echte, unmanipulierte App spricht |
+| APNs / FCM | Push-Dienste von Apple und Google; der Server schickt Benachrichtigungen nur darüber |
 | Backpressure | Rückstau-Schutz bei langsamen Empfängern |
 | Balancing | Abstimmen der Spielwerte auf Fairness und Spannung |
 | Blender | Freie 3D-Software, per Python steuerbar |
@@ -19,9 +22,13 @@
 | CDN | Verteiltes Auslieferungsnetz für statische Dateien |
 | ClickHouse | Spaltenorientierte Datenbank für Event-Auswertungen |
 | Code Stripping | Entfernen scheinbar unbenutzten Codes beim IL2CPP-Build |
+| ComputeBuffer | GPU-Puffer mit Pro-Objekt-Daten, den der Shader per Index liest |
 | Concept Art | Gemaltes Zielbild eines Objekts |
 | Config-Version | Unveränderlicher Satz aller Balance-Parameter |
 | Dead Reckoning | Position fortschreiben aus Richtung und Tempo, wenn kein Messwert vorliegt |
+| Dichteklasse | City / Suburb / Rural pro H3-Zelle, nach Gebäuden pro km² |
+| Douglas-Peucker | Vereinfachung von Umrissen mit Fehlerschranke |
+| DPS | Schaden pro Sekunde |
 | Delta | Änderungsnachricht statt Vollzustand |
 | Domain Event | Fachliches Ereignis, Quelle für Deltas, Journal und Telemetrie |
 | DuckDB | Eingebettete SQL-Engine für Parquet-Dateien |
@@ -46,11 +53,14 @@
 | H3 | Hexagonales Zellsystem von Uber |
 | Heading | Blickrichtung des Avatars, aus der Bewegungsrichtung abgeleitet |
 | Hot Reload | Neue Konfiguration im Betrieb übernehmen, ohne Neustart |
+| Hysterese | Zwei Schwellen fürs Ein- und Ausschalten gegen Flackern |
 | IL2CPP | Unitys Übersetzung von C# nach C++ (AOT) |
 | Image-to-3D | KI erzeugt aus einem Bild ein 3D-Modell |
+| IoU | Überlappungsmass zweier Flächen, 0–1 |
 | Interest Area | Abonnierter Weltausschnitt eines Clients |
 | Jobs System | Unity-Arbeitsaufträge auf Worker-Threads |
 | Journal | Änderungsliste seit dem letzten Snapshot |
+| Kill Credit | Exklusiver Beuteanspruch des Spielers mit dem letzten Treffer, zeitlich begrenzt |
 | Kalman-Filter | Glättungsverfahren, das Messungen nach ihrer Genauigkeit gewichtet |
 | Kardinalität | Anzahl unterschiedlicher Label-Kombinationen einer Metrik |
 | LOD | Detailstufe abhängig von der Distanz |
@@ -63,6 +73,7 @@
 | MonoBehaviour | Unity-Klasse an einem Szenenobjekt, pro Bild aufgerufen |
 | MVT | Mapbox Vector Tile, Protobuf-Kachelformat |
 | NetTopologySuite | .NET-Geometriebibliothek |
+| Off-Road-Segment | Letztes Wegstück per Luftlinie, längenbegrenzt |
 | Object Pooling | Objekte wiederverwenden statt neu erzeugen |
 | ODbL | Open Database License (OSM) |
 | Orleans | Actor-Framework von Microsoft |
@@ -74,15 +85,23 @@
 | PostGIS | Räumliche Erweiterung für PostgreSQL |
 | Prefab | Vorgefertigtes Objekt im Client-Build, aus dem Instanzen entstehen |
 | Prometheus | Zeitreihen-Datenbank für aggregierte Metriken |
+| Rarity | Seltenheitsstufe eines Gegenstands; bestimmt die Anzahl Affixe |
+| Relation | Eigen / verbündet / rivalisierend / Dämon aus Sicht eines Spielers |
+| Ribbon-Mesh | Flaches Band entlang einer Polylinie, hier für Strassen |
 | R3 | Reactive Extensions für Unity und .NET |
 | Region Actor | Zuständiger Simulationsprozess für eine Weltregion |
 | Retopologie | Schlankes Mesh über ein dichtes legen |
 | Rig | Knochenhierarchie, die ein Mesh bewegt |
 | Root Motion | Animation, die das Objekt selbst verschiebt |
+| Roll | Serverseitiger Zufallsvorgang für Beute und Crafting |
+| Roster | Liste der Einheitentypen einer Fraktion |
 | Skinning | Zuordnung von Vertices zu Knochen |
+| Stance | Kampfhaltung des Avatars: nur Dämonen oder alles Feindliche |
 | Slippy Map | Übliche Kachelkarte mit XYZ-Schema |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
 | Telemetrie-Event | Einzelnes Spielereignis mit Details, für spätere Auswertung |
+| Tier | Stufe T1–T3 von Gegenständen, Einheiten und Gates |
+| Timer-Queue | Dauerhafte Tabelle geplanter Ereignisse mit In-Memory-Kopie |
 | Texture Atlas | Mehrere Texturen in einer Datei, damit ein Material genügt |
 | Texture Baking | Details und Licht in eine Textur vorberechnen |
 | Tick | Simulationsschritt in festem Takt |
@@ -93,12 +112,13 @@
 | URP | Universal Render Pipeline, Unitys Mobil-Renderpfad |
 | UV-Mapping | Abwicklung einer 3D-Oberfläche auf eine 2D-Textur |
 | VContainer | Dependency Injection für Unity ohne Reflection |
+| Valhalla | Gekachelte Routing-Engine (C++), hier für Fussgänger-Routen der Einheiten |
 | Vertical Slice | Ausbaustufe, die ein Feature durch alle Schichten (Client, Server, DB, Deployment) spielbar liefert |
 | Walking Skeleton | Erster Vertical Slice: dünnster lauffähiger Durchstich durch alle Schichten, noch ohne Fachlogik |
 | WGS84 | Weltweites geodätisches Bezugssystem (GPS-Koordinaten) |
 | Write-Behind | Zustand im Speicher, gebündelt asynchron persistiert |
 
-## 16. Begriff → Stelle in der Architektur
+## 17. Begriff → Stelle in der Architektur
 
 | Grundlage | Architekturabschnitt |
 |---|---|
@@ -124,8 +144,17 @@
 | Glossar — Vertical Slice, Walking Skeleton | [Build Phases](../architecture/operations.md#build-phases) |
 | Kapitel 13 — Unity und .NET, Shared Assembly, Frame-Budget | [Tech Stack](../architecture/tech-stack.md#tech-stack), [Implementation Patterns](../architecture/code-patterns.md#implementation-patterns) |
 | Kapitel 14 — 3D-Assets, Blender MCP, Image-to-3D | [Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline), [Game Design § Art Direction](../design/presentation.md#art-direction) |
+| Kapitel 2 — Hysterese, Glättung | [Game Design § Speed Lock](../design/combat.md#speed-lock), [Client § Avatar Position Pipeline](../architecture/client.md#avatar-position-pipeline) |
+| Kapitel 3 — Douglas-Peucker, IoU | [Map Data § Geometry Processing](../architecture/map-data.md#geometry-processing), [Map Data § Data Refresh](../architecture/map-data.md#data-refresh) |
+| Kapitel 8 — Timer-Queue | [Backend § Timer Queue](../architecture/backend.md#timer-queue) |
+| Kapitel 10 — Valhalla, Off-Road-Segment | [Backend § Routing Engine](../architecture/backend.md#routing-engine), [Game Design § Reachability](../design/rts.md#reachability) |
+| Kapitel 15 — Relation, Fog of War, Dichteklasse | [Game Design § Relations](../design/factions.md#relations), [Game Design § Density Classes](../design/world.md#density-classes), [Streaming § Vision Cache](../architecture/streaming.md#vision-cache) |
+| Kapitel 15 — Zielpriorität, Aggressor, Stance | [Game Design § Target Order](../design/rts.md#target-order), [Game Design § Avatar Targeting](../design/combat.md#avatar-targeting) |
+| Kapitel 15 — Tier, Rarity, Affix, Roll | [Game Design § Roll Model](../design/rpg.md#roll-model), [Game Design § Tech Access](../design/rpg.md#tech-access) |
+| Glossar — ComputeBuffer, Ribbon-Mesh | [Client § Building Tint](../architecture/client.md#building-tint), [Client § Client Layers](../architecture/client.md#client-layers) |
+| Glossar — APNs / FCM | [Backend § Push Notifications](../architecture/backend.md#push-notifications) |
 
-## 17. Weiterführend
+## 18. Weiterführend
 
 | Thema | Quelle |
 |---|---|
@@ -155,3 +184,7 @@
 | Bildgenerierung mit Gemini | [Gemini API: Image generation](https://ai.google.dev/gemini-api/docs/image-generation) |
 | Modellimport in Unity | [Unity Manual: Importing models](https://docs.unity3d.com/Manual/ImportingModelFiles.html) |
 | Model Context Protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io/) |
+| Routing-Engine | [Valhalla Docs](https://valhalla.github.io/valhalla/) |
+| Linienvereinfachung | [Wikipedia: Douglas-Peucker-Algorithmus](https://de.wikipedia.org/wiki/Douglas-Peucker-Algorithmus) |
+| Hysterese in der Regelung | [Wikipedia: Hysterese](https://de.wikipedia.org/wiki/Hysterese) |
+| Push-Benachrichtigungen | [Firebase Cloud Messaging](https://firebase.google.com/docs/cloud-messaging) |
