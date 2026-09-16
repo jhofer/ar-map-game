@@ -15,7 +15,7 @@ Constructs are placed by the player and cost Points. **Placement always requires
 
 - **Free space** = a land position whose factory footprint intersects no building footprint and no road. No minimum spacing to roads or other factories. Validated server-side.
 - Ownership of nearby buildings is irrelevant — a factory may stand next to rival territory.
-- Placement range: within **5 m** of the player — same as the conquest radius.
+- Placement range: within **15 m** of the player — same as the conquest radius.
 - Factory and Tower are complementary and never overlap: factories go in the gaps between buildings, towers go on top of them.
 - Workshops are **not** constructs — they are neutral world sites (see World Sites).
 
@@ -23,7 +23,7 @@ Constructs are placed by the player and cost Points. **Placement always requires
 
 | Property | Rule |
 |---|---|
-| Placement | Free land within 5 m of the player |
+| Placement | Free land within 15 m of the player |
 | Destructible | **Yes** — attacked and destroyed like units and towers |
 | On destruction | Removed; drops nothing |
 

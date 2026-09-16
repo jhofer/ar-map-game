@@ -8,7 +8,7 @@
 
 | Condition | Requirement |
 |---|---|
-| Proximity | User within conquest radius — **5 m, fixed global value**, identical everywhere |
+| Proximity | User within conquest radius — **15 m, fixed global value**, identical everywhere |
 | Target state | Neutral only (not owned by another faction) |
 | Action | Player-initiated conquer action, may include a timer/minigame |
 
