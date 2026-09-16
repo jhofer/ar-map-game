@@ -7,9 +7,9 @@
 | Concern | Stage 0–1 | Stage 2+ |
 |---|---|---|
 | Deploy | `docker compose` on one host, image from CI | Rolling deploy, multiple nodes |
-| Config | Env vars + server-side game constants table | Same, with hot reload |
+| Config | Env vars (infrastructure); versioned game config with hot reload — see [Game Config](live-ops.md#game-config) | Per-region overrides |
 | Logs | Structured JSON to disk | Shipped to a log service (free tier first) |
-| Metrics | Prometheus + Grafana on box | Grafana Cloud / self-hosted stack |
+| Metrics | Prometheus + Grafana on box; gameplay events in Postgres — see [Gameplay Metrics](live-ops.md#gameplay-metrics) | Grafana Cloud / self-hosted stack; events in ClickHouse |
 | Errors | Sentry free tier | Paid tier |
 | Backups | `pg_dump` to object storage, nightly | Managed PITR |
 | Map data refresh | Manual pipeline run | Scheduled, with coverage diff report |
@@ -19,7 +19,7 @@
 | Phase | Deliverable | Stack added |
 |---|---|---|
 | P0 | Map pipeline for one city; tiles render in Unity; GPS avatar with follow camera | Pipeline, tile format, renderer |
-| P1 | Conquest + points, server-authoritative, one region | Gateway, region actor, Postgres |
+| P1 | Conquest + points, server-authoritative, one region; config versions + first balance dashboard | Gateway, region actor, Postgres, Prometheus, Grafana |
 | P2 | Interest streaming across cells; multiple players | Interest manager, deltas, reconnect |
 | P3 | RTS: units, routing, stations, combat tick | Routing service, combat |
 | P4 | Demons, hellgates, Essence, gear | Demon director, economy service |

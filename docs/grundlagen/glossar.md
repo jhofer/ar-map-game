@@ -2,16 +2,19 @@
 
 [← Grundlagen](README.md)
 
-## 12. Glossar
+## 13. Glossar
 
 | Begriff | Kurz |
 |---|---|
 | Attestation | Plattformprüfung, dass eine echte, unmanipulierte App spricht |
+| Balancing | Abstimmen der Spielwerte auf Fairness und Spannung |
 | Backpressure | Rückstau-Schutz bei langsamen Empfängern |
 | CDN | Verteiltes Auslieferungsnetz für statische Dateien |
+| ClickHouse | Spaltenorientierte Datenbank für Event-Auswertungen |
 | Dead Reckoning | Position fortschreiben aus Richtung und Tempo, wenn kein Messwert vorliegt |
 | Delta | Änderungsnachricht statt Vollzustand |
 | ENU | Lokales Meter-Koordinatensystem (East, North, Up) |
+| Config-Version | Unveränderlicher Satz aller Balance-Parameter |
 | Feature | Geoobjekt: Geometrie + Attribute |
 | Feldmaske | Bitmaske im Delta: welche Felder folgen |
 | Fog of War | Spielregel, welche fremden Objekte ein Spieler sehen darf |
@@ -21,9 +24,12 @@
 | GERS | Stabile Objekt-ID in Overture Maps |
 | GNSS | Oberbegriff für Satellitennavigation (GPS, Galileo, …) |
 | Ground Drop | Beute als kurzlebiges Objekt auf der Karte, bis zum Aufheben |
+| Grafana | Dashboard-Werkzeug über Metrik- und SQL-Quellen |
 | H3 | Hexagonales Zellsystem von Uber |
 | Heading | Blickrichtung des Avatars, aus der Bewegungsrichtung abgeleitet |
+| Hot Reload | Neue Konfiguration im Betrieb übernehmen, ohne Neustart |
 | Interest Area | Abonnierter Weltausschnitt eines Clients |
+| Kardinalität | Anzahl unterschiedlicher Label-Kombinationen einer Metrik |
 | Kalman-Filter | Glättungsverfahren, das Messungen nach ihrer Genauigkeit gewichtet |
 | LOD | Detailstufe abhängig von der Distanz |
 | MVT | Mapbox Vector Tile, Protobuf-Kachelformat |
@@ -32,16 +38,18 @@
 | POI | Point of Interest |
 | Polylinie | Streckenzug aus Punkten — hier: eine Route |
 | Polycount | Anzahl Dreiecke eines Modells |
+| Prometheus | Zeitreihen-Datenbank für aggregierte Metriken |
 | PostGIS | Räumliche Erweiterung für PostgreSQL |
 | Prefab | Vorgefertigtes Objekt im Client-Build, aus dem Instanzen entstehen |
 | Region Actor | Zuständiger Simulationsprozess für eine Weltregion |
 | Slippy Map | Übliche Kachelkarte mit XYZ-Schema |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
+| Telemetrie-Event | Einzelnes Spielereignis mit Details, für spätere Auswertung |
 | Texture Atlas | Mehrere Texturen in einer Datei, damit ein Material genügt |
 | Tick | Simulationsschritt in festem Takt |
 | WGS84 | Weltweites geodätisches Bezugssystem (GPS-Koordinaten) |
 
-## 13. Begriff → Stelle in der Architektur
+## 14. Begriff → Stelle in der Architektur
 
 | Grundlage | Architekturabschnitt |
 |---|---|
@@ -60,8 +68,9 @@
 | Kapitel 9 — Low-Poly, Darstellungskosten | [Client Presentation](../architecture/client.md#client-presentation), [Game Design § Art Direction](../design/presentation.md#art-direction) |
 | Kapitel 10 — Routing | [Components](../architecture/backend.md#components) |
 | Kapitel 11 — Grössenordnungen | [Scaling Model](../architecture/scaling.md#scaling-model), [Cost Model](../architecture/scaling.md#cost-model) |
+| Kapitel 12 — Live-Konfiguration, Metriken | [Game Config & Metrics](../architecture/live-ops.md#game-config--metrics), [Operations](../architecture/operations.md#operations) |
 
-## 14. Weiterführend
+## 15. Weiterführend
 
 | Thema | Quelle |
 |---|---|
@@ -77,3 +86,6 @@
 | Standortdienste auf Mobilgeräten | [Android: Location strategies](https://developer.android.com/develop/sensors-and-location/location/strategies) |
 | Rendering-Kosten auf Mobilgeräten | [Unity: Optimizing graphics performance](https://docs.unity3d.com/Manual/OptimizingGraphicsPerformance.html) |
 | Asset-Budget und Modellierung | [Unity: Art asset best practice guide](https://docs.unity3d.com/Manual/HOWTO-ArtAssetBestPracticeGuide.html) |
+| Metrik-Labels, Kardinalität | [Prometheus: Metric and label naming](https://prometheus.io/docs/practices/naming/) |
+| Dashboards, Annotationen | [Grafana: Annotations](https://grafana.com/docs/grafana/latest/dashboards/build-dashboards/annotate-visualizations/) |
+| Spaltenorientierte Auswertung | [ClickHouse Docs](https://clickhouse.com/docs) |

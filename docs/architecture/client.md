@@ -15,7 +15,7 @@ One view: a 3D world map with the player avatar at the GPS position. **AR Founda
 | Buildings | Geometry tiles, extruded + authored models | With tile; material swap on ownership delta |
 | Live entities (units, towers, gates, drops, avatars) | WebSocket deltas | Per tick |
 | Avatar | Local GPS pipeline | 0.2–1 Hz fix, interpolated per frame |
-| Interaction ring | Server-sent radius constant | On constant change |
+| Interaction ring | Server-sent radius from active game config | On `ConfigUpdate` |
 | HUD | Local state cache | Per state change |
 
 Own-building tint, HP and selection are material/overlay changes on already-loaded meshes — a delta never triggers a tile reload.

@@ -16,6 +16,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity. Pokémon 
 | [combat.md](combat.md) | Combat |
 | [factions.md](factions.md) | Factions & Demons |
 | [authority.md](authority.md) | Server Authority |
+| [balance.md](balance.md) | Balance Parameters |
 | [open-questions.md](open-questions.md) | Open Questions |
 
 ## Setting
@@ -37,6 +38,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity. Pokémon 
 | Art style | Stylized low-poly, *League of Legends*-like — hand-painted, non-photoreal |
 | Session type | Persistent world, asynchronous multiplayer |
 | Authority | Server-authoritative simulation; client is renderer + intent |
+| Balance | All gameplay values are backend configuration, tuned by metrics — see [Balance Parameters](balance.md#balance-parameters) |
 | Data model | Interest-scoped streaming (client never holds global state) |
 | Coverage | Anywhere people live: city, suburb, village, rural |
 | Factions | 3 playable + 1 NPC (demons) |

@@ -19,6 +19,7 @@ Scope: high-level structure and technology decisions. Not per-loop mechanics, no
 | [backend.md](backend.md) | Backend & Frameworks |
 | [scaling.md](scaling.md) | Scaling & Cost |
 | [anti-cheat.md](anti-cheat.md) | Anti-Cheat |
+| [live-ops.md](live-ops.md) | Game Config & Metrics |
 | [operations.md](operations.md) | Operations, Phases, Risks |
 | [open-questions.md](open-questions.md) | Open Technical Questions |
 
@@ -52,6 +53,8 @@ C3 and C6 together are the dominant forces: **the world is planet-sized, the sim
 | Spatial index | H3 (simulation + interest), XYZ tiles (static geometry) | Hex neighbourhood, uniform k-ring, stable IDs |
 | Deployment | Single container on one small VPS → horizontal shards later | C3 |
 | Simulation | Region actors, lazy wake, analytic catch-up for accrual | C3, C6 |
+| Game config | Versioned parameter sets in PostgreSQL, hot reload at tick boundary | Balance tuning without release — see [Game Config & Metrics](live-ops.md#game-config--metrics) |
+| Gameplay metrics | Prometheus (aggregates) + event table → ClickHouse later; Grafana dashboards | Measure effect of config changes |
 
 ## System Overview
 

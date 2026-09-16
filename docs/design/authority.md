@@ -13,6 +13,7 @@ Design-relevant summary of the technical architecture:
 | Authority | Server simulates; client renders and sends intent |
 | Client state | Interest-scoped only — the client never holds global world state |
 | Position | All presence checks run against the server's own accepted GPS fix |
+| Balance values | Backend configuration, never client-side — see [Balance Parameters](balance.md#balance-parameters) |
 | RNG | Loot and craft rolls execute server-side, committed before the client is told |
 | Routing | Street-graph pathfinding is server-side; the client cannot submit paths |
 | Anti-cheat | See [Architecture § Anti-Cheat](../architecture/anti-cheat.md#anti-cheat) |

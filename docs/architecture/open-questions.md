@@ -24,3 +24,7 @@
 - Data refresh: how ownership survives a building disappearing or changing ID between data versions.
 - Whether to adopt SpacetimeDB for the live plane instead of a custom actor layer.
 - Attestation strictness vs. player friction (rooted devices, emulators, sideloads).
+- Admin UI for game config: minimal own page vs. generic admin tool.
+- Event store switch point: Postgres query latency or event volume that triggers ClickHouse.
+- Per-region config overrides: needed for region-split A/B comparison, or before/after per version is enough.
+- Gameplay event retention window and aggregate granularity.

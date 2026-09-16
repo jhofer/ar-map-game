@@ -23,7 +23,7 @@ Target: playable anywhere people live — dense city, suburb, village, rural. Pl
 
 ### Density Normalization
 
-Server computes local density per tile; game constants derive from it. Constants are **server-side**, so the client cannot tamper with them.
+Server computes local density per tile; game constants derive from it. Constants are **server-side**, so the client cannot tamper with them, and backend-configurable (see [Balance Parameters](balance.md#balance-parameters)).
 
 **Conquest radius is fixed and global.** It does not scale with density — the player must physically stand near a building everywhere, city or countryside. Normalization happens through income and content, not reach.
 
