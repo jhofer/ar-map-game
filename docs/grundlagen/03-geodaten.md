@@ -36,6 +36,21 @@
 | Nur Strassennetz | Sehr dünn besiedelt | Knoten an Kreuzungen erzeugen |
 | Nichts | Unbewohnt | Kachel als unspielbar markieren |
 
+## Werkzeuge in der Pipeline
+
+| Werkzeug | Was es ist | Business-Gegenstück |
+|---|---|---|
+| GeoParquet | Parquet-Dateien mit Geometriespalte; Veröffentlichungsformat von Overture | Parquet-Export eines Data Lakes |
+| DuckDB (+ `spatial`) | Eingebettete SQL-Engine, liest Parquet direkt aus Object Storage, mit Geometriefunktionen | SQLite für Analysen / Ad-hoc-ETL |
+| NetTopologySuite (NTS) | .NET-Bibliothek für Geometrie: Clippen, Vereinfachen, Gültigkeit prüfen | Fachbibliothek für einen Datentyp |
+
+**Fallstricke**
+
+| Fehler | Folge |
+|---|---|
+| Ganze Overture-Release herunterladen | Hunderte GB; per Bounding Box direkt aus Object Storage abfragen |
+| Ungültige Polygone (Selbstüberschneidung) ungeprüft übernehmen | Triangulierung im Client schlägt fehl, Gebäude fehlt |
+
 **ODbL in einem Satz:** Nutzung frei, Namensnennung Pflicht, und eine veränderte *Datenbank*, die man veröffentlicht, muss wieder unter ODbL stehen. Ein Spiel, das die Daten nur benutzt, veröffentlicht keine Datenbank — die abgeleiteten Kacheln sollten aber sauber vom Spielzustand getrennt bleiben.
 
 **Im Projekt:** → [Architecture § Map Data Pipeline](../architecture/map-data.md#map-data-pipeline) und die Coverage-Kaskade in [Game Design § Data Coverage Fallback](../design/world.md#data-coverage-fallback).

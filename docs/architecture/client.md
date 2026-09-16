@@ -18,6 +18,8 @@ One view: a 3D world map with the player avatar at the GPS position. **AR Founda
 | Interaction ring | Server-sent radius from active game config | On `ConfigUpdate` |
 | HUD | Local state cache | Per state change |
 
+Uncovered area (no ingested tiles): avatar, camera and connection work unchanged; ground renders as a plain surface with a no-data hint.
+
 Own-building tint, HP and selection are material/overlay changes on already-loaded meshes — a delta never triggers a tile reload.
 
 ## Camera

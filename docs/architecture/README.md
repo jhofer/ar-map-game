@@ -17,6 +17,8 @@ Scope: high-level structure and technology decisions. Not per-loop mechanics, no
 | [streaming.md](streaming.md) | Streaming & Entity State |
 | [transport.md](transport.md) | Transport & Protocol |
 | [backend.md](backend.md) | Backend & Frameworks |
+| [tech-stack.md](tech-stack.md) | Tech Stack: runtimes, libraries, tooling |
+| [code-patterns.md](code-patterns.md) | Implementation Patterns: layout, shared code, server and client patterns |
 | [scaling.md](scaling.md) | Scaling & Cost |
 | [anti-cheat.md](anti-cheat.md) | Anti-Cheat |
 | [live-ops.md](live-ops.md) | Game Config & Metrics |
@@ -47,7 +49,11 @@ C3 and C6 together are the dominant forces: **the world is planet-sized, the sim
 | Map data source | Overture Maps (buildings) + OSM (streets, POI) | Open license, global, height attributes, no per-user fee |
 | Static delivery | Immutable versioned tiles on object storage + CDN | Flat cost, offline cache, no per-MAU fee |
 | Dynamic delivery | WebSocket + binary deltas, H3-cell scoped | C1, C5 |
-| Server language | C# / .NET (shared model assembly with Unity) | C4 — one language, shared simulation types |
+| Server language | C# / .NET 10 LTS (shared `netstandard2.1` assembly with Unity) | C4 — one language, shared contracts — see [Tech Stack](tech-stack.md#tech-stack) |
+| Client libraries | URP, VContainer, UniTask, R3, Burst/Jobs for mesh build | IL2CPP-safe, no reflection — see [Tech Stack § Client](tech-stack.md#client) |
+| Serialization | MemoryPack contracts + hand-written delta bit format | Same generated code on both sides |
+| Region actor runtime | Own actor on `System.Threading.Channels`; Orleans re-evaluated on scale-out | Tick-driven single writer — see [Actor Choice](tech-stack.md#actor-choice) |
+| Code structure | Modular monolith, unidirectional client store | See [Implementation Patterns](code-patterns.md#implementation-patterns) |
 | Backend framework | Custom service; OSS commodity backend (Nakama) optional for auth/social | C3 — managed game backends have a fixed monthly floor |
 | Persistence | PostgreSQL + PostGIS (durable), in-process region state (hot), Redis (presence/pubsub, added at scale) | C3, C4 |
 | Spatial index | H3 (simulation + interest), XYZ tiles (static geometry) | Hex neighbourhood, uniform k-ring, stable IDs |

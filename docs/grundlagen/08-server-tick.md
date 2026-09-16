@@ -39,6 +39,42 @@ Das ist der zentrale Kostenhebel: `Punkte = Rate × verstrichene Zeit` braucht k
 
 > Rechenkosten skalieren mit **aktiven Spielern**, nicht mit der Grösse der Welt. Genau das macht fünf Spieler für wenige Euro im Monat möglich.
 
-**Im Projekt:** → [Architecture § Region Actors](../architecture/backend.md#region-actors) und [§ Cost Model](../architecture/scaling.md#cost-model).
+## Mailbox und Write-Behind
+
+**Problem:** Viele Verbindungen schicken gleichzeitig Absichten an dieselbe Region, aber nur ein Schreiber darf den Zustand ändern — und die Datenbank darf den Tick nicht bremsen.
+
+**Analogie:** Eine Message-Queue mit genau einem Consumer pro Aggregat (z. B. pro Auftrag). Reihenfolge ist garantiert, Sperren sind unnötig. Datenbank-Schreibzugriffe laufen wie ein Outbox-Worker im Hintergrund.
+
+| Begriff | Bedeutung | Business-Gegenstück |
+|---|---|---|
+| Actor | Objekt mit privatem Zustand, das nur über Nachrichten angesprochen wird | Aggregat mit eigener Queue |
+| Mailbox | Eingangs-Queue eines Actors; wird sequenziell abgearbeitet | Queue mit einem Consumer |
+| `Channel<T>` | .NET-Queue im Arbeitsspeicher (`System.Threading.Channels`), begrenzt oder unbegrenzt | In-Memory-Queue |
+| System | Zustandslose Funktion, die pro Tick einen Aspekt fortschreibt (Bewegung, Kampf, …) | Verarbeitungsschritt einer Pipeline |
+| Domain Event | Fachliches Ereignis („Gebäude erobert"), aus dem Deltas, Journal und Telemetrie entstehen | Domain Event / Outbox-Eintrag |
+| Write-Behind | Änderungen erst im Speicher, dann gebündelt und asynchron in die Datenbank | Outbox-Worker, Batch-Insert |
+| Journal | Fortlaufende Liste der Änderungen seit dem letzten Snapshot | Event Log / WAL |
+| Orleans | Actor-Framework von Microsoft; Actors werden bei Bedarf automatisch aktiviert | Managed Actor-Runtime |
+
+```mermaid
+flowchart LR
+    A[Absichten vieler Clients] --> MB[(Mailbox)]
+    MB --> T[Tick: ein Schreiber]
+    T --> EV[Domain Events]
+    EV --> DL[Deltas an Clients]
+    EV --> WB[(Write-Behind-Queue)] --> DB[(PostgreSQL)]
+```
+
+**Fallstricke**
+
+| Fehler | Folge |
+|---|---|
+| `await` auf die Datenbank mitten im Tick | Tick wartet auf I/O; alle Spieler der Region ruckeln |
+| Unbegrenzte Mailbox | Bei Last wächst der Speicher, bis der Prozess stirbt |
+| Zustand einer Region aus einem anderen Thread lesen | Race Conditions, die nur unter Last auftreten |
+| Write-Behind für Beute und Währung | Absturz nach Mitteilung an den Client → Gegenstand verloren oder doppelt; solche Änderungen zuerst dauerhaft schreiben |
+| `DateTime.UtcNow` direkt in der Simulation | Nicht testbar; Uhr injizieren |
+
+**Im Projekt:** → [Architecture § Region Actors](../architecture/backend.md#region-actors) und [§ Cost Model](../architecture/scaling.md#cost-model). Code-Muster: [§ Region Actor](../architecture/code-patterns.md#region-actor), [§ Persistence](../architecture/code-patterns.md#persistence).
 
 ---

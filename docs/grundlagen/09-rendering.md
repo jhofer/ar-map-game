@@ -34,6 +34,7 @@ flowchart LR
 | LOD | Weniger Details in der Distanz | Ferne Gebäude als Blöcke |
 | Culling | Nicht Sichtbares gar nicht zeichnen | Vor allem sonst nichts hilft |
 | Extrusion | Grundriss-Polygon × Höhe → Körper | Erzeugt unsere Gebäude-Meshes |
+| Triangulierung (Earcut) | Polygon in Dreiecke zerlegen — GPUs zeichnen nur Dreiecke | Nötig für Dach und Boden jedes Grundrisses; im Hintergrund-Thread |
 
 ## Kartenansicht statt Kamera-AR
 

@@ -16,14 +16,42 @@
 
 ## Build Phases
 
-| Phase | Deliverable | Stack added |
-|---|---|---|
-| P0 | Map pipeline for one city; tiles render in Unity; GPS avatar with follow camera | Pipeline, tile format, renderer |
-| P1 | Conquest + points, server-authoritative, one region; config versions + first balance dashboard | Gateway, region actor, Postgres, Prometheus, Grafana |
-| P2 | Interest streaming across cells; multiple players | Interest manager, deltas, reconnect |
-| P3 | RTS: units, routing, stations, combat tick | Routing service, combat |
-| P4 | Demons, hellgates, Essence, gear | Demon director, economy service |
-| P5 | Scale-out: shards, gateways, monitoring | Redis shard map, multi-node |
+Each phase is a **vertical slice**: a playable increment through client, server, persistence and deployment. No phase delivers one layer alone.
+
+```mermaid
+flowchart LR
+    P1[P1 Walking skeleton] --> P2[P2 Territory] --> P3[P3 Army] --> P4[P4 Defense] --> P5[P5 Demons] --> P6[P6 Avatar RPG]
+    M{{Scale-out trigger}} -.->|any time a threshold is hit| SO[Scale-out track]
+```
+
+| Phase | Slice | Player can | Stack added |
+|---|---|---|---|
+| P1 | Walking skeleton | Log in, see own avatar walking on the map anywhere; full map detail in ingested regions, plain ground elsewhere | Sign in with Apple / Google + JWT, WebSocket gateway, `PositionFix` with server plausibility check, map pipeline for first regions, tile renderer, follow camera, CI, container deploy, Sentry, first metric, TestFlight / Play internal track |
+| P2 | Territory | Choose a faction, conquer neutral buildings, earn Points, see rival ownership inside sight radius | Region actor, PostGIS entities, interest manager, deltas, vision filter, reconnect, GPS anti-cheat, native location plugin, game config versions, balance dashboard |
+| P3 | Army | Place factories, produce units, set stations, attack rival buildings | Routing service, combat tick, route + progress streaming, write-behind persistence |
+| P4 | Defense | Place towers, shield buildings, repair; get notified of attacks while offline | Tower shield rules, event journal per player, push notifications |
+| P5 | Demons | Face hellgates and demon waves attacking buildings, close gates, pick up Essence | Demon director, timer queue for dormant regions, ground drops |
+| P6 | Avatar RPG | Level up, equip and craft gear, use workshops, duel | Economy / inventory service, server-side rolls, workshop sites |
+
+### Slice Rules
+
+| Rule | Detail |
+|---|---|
+| Done means deployed | A phase ends with a store test build against the deployed server, not a local demo |
+| Thin first | Each slice ships the minimum of every layer; depth is added in later slices |
+| Map coverage | Regions ingested on demand; uncovered areas render plain ground with a no-data hint — no planet ingest before stage 2 |
+| Order change | P4 and P5 may swap if buildings need a threat before towers are useful |
+
+### Scale-Out Track
+
+Not a phase. Starts when a measured threshold is reached, independent of the slice in progress. Stages: [Scaling Model](scaling.md#scaling-model).
+
+| Trigger (any) | Action |
+|---|---|
+| Peak tick duration of busiest region near its budget | Profile first, then split regions across processes |
+| Live regions or connections beyond one node's measured capacity | Shard map, stateless gateway tier, Redis |
+| Postgres write latency affects the write-behind queue | Separate database host, then managed Postgres |
+| Sustained growth toward stage 2 player counts | Planet tile ingest, multi-node deploy |
 
 ## Risks
 
