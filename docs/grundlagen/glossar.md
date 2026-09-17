@@ -37,11 +37,13 @@
 | ENU | Lokales Meter-Koordinatensystem (East, North, Up) |
 | FBX / glTF | Austauschformate für 3D-Modelle mit Skelett und Animation |
 | Facing | Ausrichtung eines Objekts, unabhängig von seiner Bewegungsrichtung |
-| Feature | Geoobjekt: Geometrie + Attribute |
+| Feature (Arbeitspaket) | Nummeriertes Lieferpaket `F<nn>` mit Abnahmekriterien; **nicht** das Geoobjekt |
+| Feature (Geodaten) | Geoobjekt: Geometrie + Attribute |
 | Feuerbogen | Winkelfenster um die Zielrichtung, in dem ein Angriff überhaupt zählt |
 | Feldmaske | Bitmaske im Delta: welche Felder folgen |
 | Floating Origin | Mitwandernder lokaler Nullpunkt gegen Float-Ungenauigkeit |
 | Fog of War | Spielregel, welche fremden Objekte ein Spieler sehen darf |
+| fastlane | Werkzeugkette, die Store-Uploads (TestFlight, Play) automatisiert |
 | Follow-Kamera | Kamera, die starr am Avatar hängt und ihm folgt |
 | Footprint | Gebäudegrundriss als Polygon |
 | GameCI | Open-Source-Actions für Unity-Builds in CI |
@@ -70,6 +72,7 @@
 | Kardinalität | Anzahl unterschiedlicher Label-Kombinationen einer Metrik |
 | LOD | Detailstufe abhängig von der Distanz |
 | Mailbox | Eingangs-Queue eines Actors |
+| MinIO | Selbst gehosteter Objektspeicher mit S3-API; lokaler Ersatz für den Cloud-Speicher |
 | Main Thread | Einziger Thread mit Zugriff auf Unity-Objekte |
 | MCP | Model Context Protocol: offenes Protokoll für Werkzeugaufrufe durch KI-Assistenten |
 | MemoryPack | Binärer C#-Serialisierer mit Source Generator |
@@ -112,6 +115,7 @@
 | Slerp | Gleichmässige Interpolation zwischen zwei Drehungen |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
 | Telemetrie-Event | Einzelnes Spielereignis mit Details, für spätere Auswertung |
+| Testcontainers | Bibliothek, die echte Dienste (z. B. PostgreSQL) als Container für Tests startet |
 | Tier | Stufe T1–T3 von Gegenständen, Einheiten und Gates |
 | Turret | Aufbau oder Oberkörper, der sich unabhängig vom Unterbau dreht |
 | Timer-Queue | Dauerhafte Tabelle geplanter Ereignisse mit In-Memory-Kopie |
@@ -156,7 +160,7 @@
 | Kapitel 10 — Routing | [Components](../architecture/backend.md#components) |
 | Kapitel 11 — Grössenordnungen | [Scaling Model](../architecture/scaling.md#scaling-model), [Cost Model](../architecture/scaling.md#cost-model) |
 | Kapitel 12 — Live-Konfiguration, Metriken | [Game Config & Metrics](../architecture/live-ops.md#game-config--metrics), [Operations](../architecture/operations.md#operations) |
-| Glossar — Vertical Slice, Walking Skeleton | [Build Phases](../architecture/operations.md#build-phases) |
+| Glossar — Vertical Slice, Walking Skeleton | [Build Phases](../architecture/operations.md#build-phases), [Feature Backlog](../features/README.md) |
 | Kapitel 13 — Unity und .NET, Shared Assembly, Frame-Budget | [Tech Stack](../architecture/tech-stack.md#tech-stack), [Implementation Patterns](../architecture/code-patterns.md#implementation-patterns) |
 | Kapitel 14 — 3D-Assets, Blender MCP, Image-to-3D | [Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline), [Game Design § Art Direction](../design/presentation.md#art-direction) |
 | Kapitel 14 — Platzhalter, Prefab-Vertrag, Validator | [Placeholder Assets](../architecture/placeholder-assets.md#placeholder-assets), [Asset Pipeline § Model Conventions](../architecture/asset-pipeline.md#model-conventions) |

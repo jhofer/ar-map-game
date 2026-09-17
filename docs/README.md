@@ -7,6 +7,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity, map view 
 | [design/](design/README.md) | Gameplay rules, entities, loops, balance | English |
 | [architecture/](architecture/README.md) | Technical architecture, frameworks, scaling, cost | English |
 | [grundlagen/](grundlagen/README.md) | Foundations for developers without geodata / game-server background | **German** |
+| [features/](features/README.md) | Delivery scope: what gets built next, and when it counts as done | English |
 
 ## Where to start
 
@@ -23,6 +24,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity, map view 
 | What does it cost to run? | [architecture/scaling.md](architecture/scaling.md) |
 | No maps / geodata / game-server background? | [grundlagen/README.md](grundlagen/README.md) (German) |
 | What was decided, and why? | [design/open-questions.md](design/open-questions.md), [architecture/open-questions.md](architecture/open-questions.md) — decision logs; open items listed at the top of each |
+| What is being built right now? | [features/README.md](features/README.md) — F01–F05 are phase P1 |
 
 ## Layout
 
@@ -31,10 +33,14 @@ flowchart LR
     D[design/] -->|rules the architecture must serve| A[architecture/]
     A -->|concepts a reader may lack| G[grundlagen/]
     G -->|explains, never decides| A
+    D --> F[features/]
+    A --> F
+    F -->|implements, never decides| A
 ```
 
 | Rule | Detail |
 |---|---|
 | Decisions | Gameplay in `design/`, technical in `architecture/` |
 | Explanation | `grundlagen/` explains concepts; it never holds a rule of its own |
+| Delivery | `features/` says what is built next; it implements decisions, it never makes them |
 | New concept | Any term a business-application developer would look up needs a `grundlagen/` entry in the same commit — see [CLAUDE.md](../CLAUDE.md) |
