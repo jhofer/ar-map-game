@@ -1,0 +1,6 @@
+dotnet 10.0
+node 22
+docker 27
+git-lfs 3
+jq 1.7
+unity 6000
