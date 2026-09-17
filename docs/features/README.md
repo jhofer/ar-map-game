@@ -6,7 +6,7 @@ Delivery scope: what gets built, in which order, and when it counts as done. Rul
 
 | # | Feature | Delivers | Size (est.) | Status |
 |---|---|---|---|---|
-| [F01](f01-dev-environment.md) | Dev Environment | One command builds, runs and tests the stack on a fresh machine | M | Not started |
+| [F01](f01-dev-environment.md) | Dev Environment | One command builds, runs and tests the stack on a fresh machine | M | In review |
 | [F02](f02-solution-and-ci.md) | Solution Skeleton & CI/CD | The repository layout, the shared package, and a green pipeline to GHCR and the VPS | L | Not started |
 | [F03](f03-session-and-transport.md) | Identity, Session & Transport | A signed-in client holding a live binary WebSocket session | M | Not started |
 | [F04](f04-avatar-position.md) | Avatar on the Map | The player's avatar moving at their real GPS position, fixes accepted server-side | L | Not started |
