@@ -47,7 +47,7 @@
 | `PositionFix`, interest subscription, cell snapshots | F04 and P2 |
 | Entity deltas, the bit-level delta format | P2 |
 | Platform attestation | P2 — see [Attestation Strictness](../architecture/anti-cheat.md#attestation-strictness) |
-| Account deletion, data export | Before the first public release |
+| Account deletion, data export | [F06](f06-store-delivery.md#store-compliance) |
 
 ## Acceptance
 

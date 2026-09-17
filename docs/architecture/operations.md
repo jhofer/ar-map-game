@@ -18,7 +18,7 @@
 
 Each phase is a **vertical slice**: a playable increment through client, server, persistence and deployment. No phase delivers one layer alone.
 
-Phases are cut into features in [Feature Backlog](../features/README.md). P1 is [F01–F05](../features/README.md#contents).
+Phases are cut into features in [Feature Backlog](../features/README.md). P1 is [F01–F06](../features/README.md#contents); P2 starts at F07.
 
 ```mermaid
 flowchart LR

@@ -48,7 +48,7 @@
 | Item | Goes to |
 |---|---|
 | Ownership tint, HP, any live entity state | P2 |
-| Automatic ingest on first fix in an uncovered cell | P2 — see [Ingest Trigger](../architecture/map-data.md#ingest-trigger) |
+| Automatic ingest on first fix in an uncovered cell | P2 — see [Ingest Trigger](../architecture/map-data.md#ingest-trigger) and [Not Yet Scheduled](README.md#not-yet-scheduled) |
 | Routing graph build and the Valhalla container | P3 |
 | Authored kit models for Landmark and Hospital | After the asset pilot — see [Placeholder Assets](../architecture/placeholder-assets.md#phase-mapping) |
 | CDN in front of object storage | When egress makes it worth it; MinIO and R2 share the S3 API |
