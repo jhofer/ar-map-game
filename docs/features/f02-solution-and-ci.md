@@ -59,8 +59,8 @@
 |---|---|
 | Any message contract beyond `ProtocolVersion` | F03 |
 | Auth, WebSocket endpoint | F03 |
-| Store upload lanes (fastlane) | End-of-P1 feature — see [After F05](README.md#after-f05) |
-| iOS build on a macOS runner | End-of-P1 feature; Android proves the pipeline first |
+| Store upload lanes (fastlane) | [F06](f06-store-delivery.md#release-lanes) |
+| iOS build on a macOS runner | [F06](f06-store-delivery.md#signing-and-accounts); Android proves the pipeline first |
 | Database schema, migrations with content | F04 (first table: accepted fixes) |
 
 ## Acceptance

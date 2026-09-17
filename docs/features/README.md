@@ -11,8 +11,10 @@ Delivery scope: what gets built, in which order, and when it counts as done. Rul
 | [F03](f03-session-and-transport.md) | Identity, Session & Transport | A signed-in client holding a live binary WebSocket session | M | Not started |
 | [F04](f04-avatar-position.md) | Avatar on the Map | The player's avatar moving at their real GPS position, fixes accepted server-side | L | Not started |
 | [F05](f05-first-region-tiles.md) | First Region & Tile Renderer | One real district rendered from own geometry tiles | L | Not started |
+| [F06](f06-store-delivery.md) | Store Delivery & P1 Release | Testers installing from TestFlight and Play internal; P1 closed | M | Not started |
+| [F07](f07-region-actors-interest.md) | Region Actors & Interest Streaming | Live state: ticking regions, subscribed cells, snapshots and deltas | L | Not started |
 
-F01–F05 together are phase **P1, the walking skeleton** — see [Build Phases](../architecture/operations.md#build-phases). No gameplay rule is implemented in any of them.
+F01–F06 are phase **P1, the walking skeleton**, and F06 closes it: a phase ends with a store test build against the deployed server, not a local demo. F07 opens **P2** with the live plane. No gameplay rule is implemented in any of the seven — see [Build Phases](../architecture/operations.md#build-phases).
 
 ## Dependencies
 
@@ -22,10 +24,15 @@ flowchart LR
     F02 --> F03[F03 Session & Transport]
     F02 --> F05[F05 First Region & Tiles]
     F03 --> F04[F04 Avatar on the Map]
-    F05 -.->|avatar renders on plain ground until tiles exist| F04
+    F04 --> F06[F06 Store Delivery]
+    F05 --> F06
+    F04 --> F07[F07 Region Actors & Interest]
+    F05 --> F07
+    F06 -.->|P1 closes before P2 opens| F07
 ```
 
 - F04 and F05 can run in parallel once F03 is in: the avatar renders on plain ground without tiles, and tiles render without an avatar.
+- F07 needs F04's accepted fix and F05's entity rows and density table, not F06 — but P1 closes before P2 opens, so F06 goes first.
 - Nothing after F02 may bypass CI; a feature that cannot be verified by the pipeline is not done.
 
 ## Spec Format
@@ -53,14 +60,16 @@ Every feature file carries the same sections, in this order:
 | Numbering | `F<nn>`, never reused; a dropped feature keeps its number and a `Dropped` status |
 | Index maintenance | A new feature file gets a row in the table above in the same commit |
 
-## After F05
+## Not Yet Scheduled
 
-P1 is complete when F01–F05 are deployed and installable. These P1-adjacent items are deliberately deferred and need their own features:
+Known work with no feature number yet. Each gets one when it is next.
 
 | Item | Why not now | Earliest |
 |---|---|---|
-| Store upload lanes (fastlane, TestFlight, Play internal) | CI produces installable artifacts first; store plumbing is its own fight | End of P1 |
+| Faction choice, conquest, ownership, Points | Needs the live plane F07 delivers | P2, right after F07 |
+| Fog of war and the vision cache | Nothing to hide until buildings have owners | P2 |
+| Game config versions and the balance dashboard | Nothing to tune until there are gameplay values in play | P2 |
 | Native location plugin | `Input.location` is enough to validate the loop — see [Tech Stack § Client](../architecture/tech-stack.md#client) | P2 |
 | Platform attestation | Nothing worth cheating at exists yet — see [Attestation Strictness](../architecture/anti-cheat.md#attestation-strictness) | P2 |
 | Automatic region ingest | Manual pipeline runs cover P1 — see [Ingest Trigger](../architecture/map-data.md#ingest-trigger) | P2 |
-| Region actors, interest management, deltas | First gameplay state arrives with territory | P2 |
+| Routing service, units, combat tick | P3 by the phase plan | P3 |

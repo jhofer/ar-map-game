@@ -24,7 +24,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity, map view 
 | What does it cost to run? | [architecture/scaling.md](architecture/scaling.md) |
 | No maps / geodata / game-server background? | [grundlagen/README.md](grundlagen/README.md) (German) |
 | What was decided, and why? | [design/open-questions.md](design/open-questions.md), [architecture/open-questions.md](architecture/open-questions.md) — decision logs; open items listed at the top of each |
-| What is being built right now? | [features/README.md](features/README.md) — F01–F05 are phase P1 |
+| What is being built right now? | [features/README.md](features/README.md) — F01–F06 are phase P1, F07 opens P2 |
 
 ## Layout
 
