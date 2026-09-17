@@ -2,17 +2,17 @@
 
 [← Game Design](README.md)
 
-Design target: **simple, glanceable, no twitch input.** Closer to tower defense than to an action game. Nothing in combat requires aiming, dodging, or fast taps — the phone can be in a pocket.
+Design target: **simple, glanceable, no twitch input.** Closer to tower defense than to an action game. Nothing requires aiming, dodging or fast taps — the phone can be in a pocket. The one input that exists is a tap on the avatar's target, and even that has a fallback.
 
 | Property | Rule |
 |---|---|
-| Input during combat | None — everything auto-attacks |
+| Input during combat | One optional tap: the avatar's target. Units, towers and demons attack without input |
 | Avatar position | **Locked to the player's real GPS position**; not movable in-game |
-| Avatar targeting | Auto-attacks hostiles in range, filtered by stance — see [Avatar Targeting](#avatar-targeting) |
+| Avatar targeting | **Player picks the target**; the avatar then attacks it automatically, filtered by stance — see [Target Selection](#target-selection) |
 | Weapon selection | Automatic by target distance — melee close, ranged far |
 | Avatar facing | Base from the direction of travel above 1.0 m/s, free while standing; ± 90° upper-body arc — see [Avatar Facing](facing.md#avatar-facing) |
 | Unit position | Player-assigned **station**; unit guards a radius around it |
-| Unit targeting | Auto-engage any hostile inside the station radius |
+| Unit targeting | Auto-engage any hostile inside the station radius; a valid avatar first, otherwise the nearest |
 | Unit movement | Along street routes, to the station and to targets within radius |
 | Resolution | Server-side simulation tick |
 
@@ -42,8 +42,8 @@ flowchart LR
 | Type | Stakes | Where |
 |---|---|---|
 | Unit / tower / demon combat | Real — buildings and units are lost | Anywhere except workshop safe zones |
-| Avatar vs. demons | Real — avatar can be knocked out | Anywhere hostile |
-| Avatar vs. rival units and towers | Real — avatar can be knocked out; only while the avatar is an aggressor | Anywhere except workshop safe zones |
+| Avatar vs. demons | Real — a defeated avatar becomes a ghost | Anywhere hostile |
+| Avatar vs. rival units and towers | Real — a defeated avatar becomes a ghost; only while the avatar is an aggressor | Anywhere except workshop safe zones |
 | **Avatar vs. avatar** | **Never outside a duel.** Avatars cannot damage avatars on the open map or at a gate | — |
 | **Avatar duel** | **None** — no death, no loss, no reward | Workshop safe zones only |
 
@@ -68,12 +68,13 @@ Every value is backend config — see [Balance Parameters](balance.md#balance-pa
 ## Engagement Rules
 
 - Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
-- Target choice: by target type first, then nearest, then lowest entity ID — see [Target Order](rts.md#target-order).
+- Target choice: a legally attackable avatar first, then the nearest hostile of any type — see [Target Order](rts.md#target-order).
 - Facing gates the attack, never the target choice: an entity holds its target while it turns onto it — see [Turning to Fire](facing.md#turning-to-fire).
 - No hostile engagement resolves inside a workshop safe zone (see Workshops — Neutral Ground).
 - Units vs. building: **towers must fall first** — building HP is untouchable while any tower stands (see Towers).
 - Units stationed on or near a building engage attackers independently of the tower layer.
-- Avatar vs. anything hostile in range: continuous auto-attack, no player action — subject to stance.
+- Avatar vs. its selected target, or the nearest valid hostile: continuous auto-attack — subject to stance.
+- Everything hostile that may attack an avatar attacks **that avatar before anything else** — see [Target Order](rts.md#target-order).
 - Demon units use the same combat and pathfinding rules, server-driven, with no owning player.
 - Building destroyed (HP = 0) → ownership reset to **Neutral**, open to reconquest by any faction.
 - Destroyed ≠ deleted: building persists, conquerable again.
@@ -82,7 +83,7 @@ Every value is backend config — see [Balance Parameters](balance.md#balance-pa
 
 ## Avatar Targeting
 
-An avatar auto-attacks, so walking past rival territory must not start a war by itself. Two rules handle this.
+An avatar auto-attacks, and anything that can attack it does so first, so walking past rival territory must not start a war by itself. Two rules handle this.
 
 ### Stance
 
@@ -92,7 +93,23 @@ An avatar auto-attacks, so walking past rival territory must not start a war by 
 | **All hostiles** | Demons, rival units, rival towers, rival factories, rival buildings | No |
 
 - A HUD toggle; changes take effect at the next tick. Stored server-side.
-- Target order for the avatar is the same as for units.
+- Stance filters what the player may select, it does not select for them.
+
+### Target Selection
+
+The avatar is the one attacker the player aims. It has **no target order**.
+
+| Rule | Detail |
+|---|---|
+| Selection | Tap a visible hostile inside weapon range; the avatar attacks it every tick until it dies, leaves range, or the player selects another |
+| Valid targets | Whatever the current stance allows, and nothing a workshop safe zone protects |
+| No selection | The avatar falls back to the **nearest** valid hostile, so walking into a demon wave still fights back without input |
+| Switching | Free, any time, no cooldown; a technical rate limit applies — see [Anti-Cheat](../architecture/anti-cheat.md#anti-cheat) |
+| Out of range | Selection is kept while the target stays visible; the avatar resumes when the player walks back into range |
+| Target dies | Selection clears; the fallback takes over until the player picks again |
+| Facing | Unchanged — the selected target still has to be inside the firing arc — see [Avatar Facing](facing.md#avatar-facing) |
+
+Why the avatar and nothing else: the player is standing there and can see the fight. Choosing what to hit is the one tactical decision that costs a single tap and never needs a second one — everything else on the map keeps running without input.
 
 ### Aggressor Rule
 
@@ -101,11 +118,11 @@ Rival units and towers never see a rival avatar on their map. They attack it onl
 | Rule | Value |
 |---|---|
 | Aggressor flag | Set on the avatar when it damages a rival asset; cleared 10 s after its last such attack |
-| Targetable by rival units and towers | Only while the flag is set |
+| Targetable by rival units and towers | Only while the flag is set — and while it is set, the avatar is their **first** target |
 | Position leak | None — the defender's map shows damage to their asset, not the attacker's position |
-| Demons | Attack avatars always; no flag needed |
+| Demons | Attack avatars always, before any other target; no flag needed |
 
-Consequence: a player in PvE stance can never be attacked by another player's assets. A player who chooses to hit rival assets accepts return fire for as long as they keep attacking.
+Consequence: a player in PvE stance can never be attacked by another player's assets. A player who chooses to hit rival assets accepts return fire for as long as they keep attacking — and under the new target order that return fire is **everything in range at once**, because a valid avatar outranks every other target. Attacking in person is the most decisive and the most dangerous thing a player can do.
 
 ## Weapon Range Bands
 

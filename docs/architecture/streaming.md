@@ -43,6 +43,8 @@ visible = subscribed ∩ (always-visible ∪ inside sight radius of an own asset
 - Always-visible: buildings, streets, workshop sites, hellgates.
 - Sight-gated: rival building ownership + HP, rival units, factories, towers, demons — see [Game Design § Visibility](../design/presentation.md#visibility).
 - Rival avatars are never streamed outside a shared site, at any subscription level.
+- A player's **respawn point** is never streamed to anyone but its owner, at any subscription level — it is usually a home address, see [Game Design § Respawn Point](../design/rpg.md#respawn-point).
+- A ghost avatar is not a valid target and is not streamed to rivals at all — see [Game Design § Defeat](../design/rpg.md#defeat).
 - Sight radius is one constant for all asset types.
 - The vision set is the union of small radii around a player's own assets; assets are few and mostly static, so it is recomputed only on asset or position change, not per tick — see [Vision Cache](#vision-cache).
 - Filtering happens **before** the delta is written. An entity a player cannot see produces no bytes, so a modified client cannot reveal it.
@@ -88,7 +90,7 @@ sequenceDiagram
         IM-->>C: EntityDelta(seq+1, changed fields only)
         IM-->>C: RouteSet(entity, path, startTick) on movement change
     end
-    C->>G: Intent(Conquer / Build / SetStation)
+    C->>G: Intent(Conquer / Build / SetStation / SetTarget / SetRespawnPoint)
     G->>R: Validate + apply
     R-->>C: Result + deltas
 ```
@@ -163,7 +165,7 @@ A moving entity is streamed as **a path and a clock**, not as a stream of positi
 | `startTick` | Server tick at which the entity entered the route |
 | `state` | Moving / Holding / Engaging / Returning |
 | `baseYaw` | Facing of the lower body, 1 B; sent on spawn and on every transition out of a moving state. While moving it is the route tangent and is not sent — see [Rotation & Facing](rotation.md#wire-fields) |
-| `target` | Cell-local id of the current target, 1–2 B; sent on retarget. The client derives turret facing from it |
+| `target` | Cell-local id of the current target, 1–2 B; sent on retarget. The client derives turret facing from it. For the own avatar it mirrors the player's selection — see [Game Design § Target Selection](../design/combat.md#target-selection) |
 
 The client evaluates position locally: `position = route(speed × (now − startTick))`, against the server clock.
 

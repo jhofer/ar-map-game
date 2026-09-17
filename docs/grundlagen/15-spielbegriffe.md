@@ -13,10 +13,12 @@
 | DPS | *Damage per second* — Schaden pro Sekunde; die eine Zahl, die Angriffskraft beschreibt | Durchsatz pro Sekunde |
 | Tick-Schaden | Schaden wird nicht pro Treffer, sondern pro Simulationsschritt verbucht: `DPS × Tick-Intervall` | Periodische Abrechnung statt Einzelbuchung |
 | Engagement-Radius | Kreis um einen festen Punkt (die *Station*), in dem eine Einheit Gegner angreift; ausserhalb ignoriert sie alles | Zuständigkeitsbereich |
-| Zielpriorität | Feste Rangfolge der Zieltypen; innerhalb eines Rangs das Nächste; bei Gleichstand die kleinste ID — damit Server und Client dasselbe erwarten | Deterministische Sortierreihenfolge |
+| Zielwahl (Target Order) | Regel, welches Ziel ein automatischer Angreifer nimmt. Hier **ohne Rangfolge nach Typ**: ein gültiger feindlicher Avatar zuerst, sonst das Nächste; bei Gleichstand die kleinste ID | Deterministische Sortierreihenfolge |
+| Zielauswahl durch den Spieler | Der eigene Avatar bekommt sein Ziel per Tipp; alles andere zielt automatisch | Manuelle Zuweisung statt Regelwerk |
 | Aggro / Aggressor | Wer zuerst angreift, wird zum gültigen Ziel für die Gegenseite. Ohne diesen Zustand greift niemand einen Spieler-Avatar an | „Wer die Transaktion anstösst, trägt das Risiko" |
 | Stance (Kampfhaltung) | Spielereinstellung, wen der Avatar automatisch angreift: nur Dämonen, oder alles Feindliche | Feature-Flag pro Benutzer |
-| Knockout | Avatar auf 0 HP: für eine Abklingzeit weder angreifbar noch kampffähig; nichts geht verloren | Sperrfrist |
+| Ghost (Geist) | Avatar auf 0 HP: bleibt sichtbar und beweglich, kann aber nichts mehr tun, was Anwesenheit braucht — und niemand kann ihn angreifen. Kein Timer | Gesperrtes Konto, das nur vor Ort entsperrt wird |
+| Respawnpunkt | Selbst gesetzter Ort, an dem ein Ghost wieder lebendig wird; nur alle 48 h verschiebbar | Hinterlegte Zustelladresse mit Änderungssperre |
 | Out of Combat | Zustand nach N Sekunden ohne Schaden; erst dann regeneriert etwas | Debounce |
 | Welle (Wave) | Gruppe von Dämonen, die ein Hellgate im festen Takt ausstösst | Batch-Job auf Timer |
 | Eskalation | Ein unbeachtetes Hellgate wird stufenweise stärker; Belohnung steigt mit | Eskalationsstufe im Incident-Management |
@@ -90,6 +92,8 @@ Zwei Bauarten, ein Modell: ein Panzer hat vollen Schwenkbereich und dreht langsa
 | Fehler | Folge |
 |---|---|
 | Zielwahl ohne deterministischen Tie-Break | Client zeigt einen anderen Angriff als der Server rechnet |
+| Rangfolge nach Zieltyp als selbstverständlich annehmen | In diesem Projekt gibt es keine — nur „Avatar zuerst", danach entscheidet die Distanz |
+| Respawnpunkt wie eine normale Entität streamen | Das ist in der Regel die Wohnadresse des Spielers; sie darf nie in fremden Daten auftauchen |
 | Avatar greift automatisch alles an | Spaziergang durch fremdes Gebiet startet ungewollt einen Krieg; darum Stance + Aggressor-Regel |
 | Schwelle ohne Hysterese | Speed-Lock schaltet an jeder Ampel um |
 | Zufall auf dem Client | Roll ist manipulierbar; deshalb serverseitig und vor der Antwort festgeschrieben |

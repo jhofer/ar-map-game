@@ -46,6 +46,7 @@
 | Footprint | Gebäudegrundriss als Polygon |
 | GameCI | Open-Source-Actions für Unity-Builds in CI |
 | GC-Spike | Ruckler durch Pause des Garbage Collectors |
+| Ghost | Besiegter Avatar: beweglich und sichtbar, aber handlungsunfähig, bis er seinen Respawnpunkt erreicht |
 | GeoParquet | Parquet mit Geometriespalte |
 | GERS | Stabile Objekt-ID in Overture Maps |
 | Git LFS | Git-Erweiterung für grosse Binärdateien |
@@ -98,6 +99,7 @@
 | Ribbon-Mesh | Flaches Band entlang einer Polylinie, hier für Strassen |
 | R3 | Reactive Extensions für Unity und .NET |
 | Region Actor | Zuständiger Simulationsprozess für eine Weltregion |
+| Respawnpunkt | Selbst gesetzter Ort, an dem ein Ghost wieder lebendig wird; alle 48 h verschiebbar |
 | Retopologie | Schlankes Mesh über ein dichtes legen |
 | Rig | Knochenhierarchie, die ein Mesh bewegt |
 | Root Motion | Animation, die das Objekt selbst verschiebt |
@@ -165,7 +167,8 @@
 | Kapitel 8 — Timer-Queue | [Backend § Timer Queue](../architecture/backend.md#timer-queue) |
 | Kapitel 10 — Valhalla, Off-Road-Segment | [Backend § Routing Engine](../architecture/backend.md#routing-engine), [Game Design § Reachability](../design/rts.md#reachability) |
 | Kapitel 15 — Relation, Fog of War, Dichteklasse | [Game Design § Relations](../design/factions.md#relations), [Game Design § Density Classes](../design/world.md#density-classes), [Streaming § Vision Cache](../architecture/streaming.md#vision-cache) |
-| Kapitel 15 — Zielpriorität, Aggressor, Stance | [Game Design § Target Order](../design/rts.md#target-order), [Game Design § Avatar Targeting](../design/combat.md#avatar-targeting) |
+| Kapitel 15 — Zielwahl, Aggressor, Stance | [Game Design § Target Order](../design/rts.md#target-order), [Game Design § Avatar Targeting](../design/combat.md#avatar-targeting), [Game Design § Target Selection](../design/combat.md#target-selection) |
+| Kapitel 15 — Ghost, Respawnpunkt | [Game Design § Defeat](../design/rpg.md#defeat), [Anti-Cheat](../architecture/anti-cheat.md#anti-cheat) |
 | Kapitel 15 — Tier, Rarity, Affix, Roll | [Game Design § Roll Model](../design/rpg.md#roll-model), [Game Design § Tech Access](../design/rpg.md#tech-access) |
 | Glossar — ComputeBuffer, Ribbon-Mesh | [Client § Building Tint](../architecture/client.md#building-tint), [Client § Client Layers](../architecture/client.md#client-layers) |
 | Glossar — APNs / FCM | [Backend § Push Notifications](../architecture/backend.md#push-notifications) |

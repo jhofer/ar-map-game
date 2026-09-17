@@ -51,7 +51,7 @@ sequenceDiagram
     participant IM as Interest manager
     participant C as Client (per frame)
 
-    R->>R: Select target (target order)
+    R->>R: Select target (avatar first, else nearest)
     R->>R: Step facing → aimError
     alt aimError ≤ 5°
         R->>R: Apply damage this tick
@@ -106,5 +106,5 @@ sequenceDiagram
 | Stream both yaw values per tick | Two extra bytes per entity per tick, for every mover — the cost movement streaming was designed to avoid |
 | Client-only facing, no server rule | Facing would not gate damage; the "cannot shoot backwards" rule would be cosmetic and trivially patched out |
 | Full quaternion per entity | Pitch and roll are never used; yaw is one byte |
-| Facing as a player order | A second order type for a loop whose whole point is one order — see [Game Design § Orders](../design/rts.md#orders) |
+| Facing as a player order | Aiming is expressed by target selection, not by a rotation order — see [Game Design § Target Selection](../design/combat.md#target-selection) |
 | Animation-driven turning (root motion) | Angle would depend on clip timing, which differs per authored asset and breaks the shared step function |

@@ -220,23 +220,64 @@ Random gear must not decide RTS hero fights on its own.
 
 ## Avatar in RTS Combat
 
-- Avatar acts as a hero unit with its own stats and gear, but **cannot be sent anywhere**: it sits at the player's real GPS position and auto-attacks what comes in range.
+- Avatar acts as a hero unit with its own stats and gear, but **cannot be sent anywhere**: it sits at the player's real GPS position and attacks what the player picks, or the nearest hostile when nothing is picked — see [Target Selection](combat.md#target-selection).
 - Contributing to a battle means physically being near it.
 - Presence is optional — the RTS loop runs asynchronously without the player on site.
 - Whether the avatar engages rival assets at all is a player setting — see [Avatar Targeting](combat.md#avatar-targeting).
 
 ### Defeat
 
+A defeated avatar does not wait out a timer. It becomes a **ghost**, and the player walks home.
+
 | Property | Rule |
 |---|---|
 | Trigger | Avatar HP reaches 0 |
-| State | **Knocked out** for 300 s: cannot attack, cannot be attacked, cannot be challenged |
-| Movement | Unaffected — the avatar still follows the GPS position |
-| Other actions | Conquest, placement, pickup and crafting stay available |
-| Gear | No loss, no durability, no Essence cost |
-| Recovery | Full HP after the cooldown |
+| State | **Ghost**: cannot attack, cannot be attacked, cannot be targeted, cannot be challenged |
+| Duration | **No timer.** The ghost state ends only at the respawn point |
+| Movement | Unaffected — the ghost still follows the player's GPS position |
+| Presence actions | **All blocked**: conquer, place, repair, craft, fight a gate, pick up drops |
+| Remote actions | **Unaffected** — unit orders, stance and the map work as always; commanding is not a physical act, see [Presence Rules](entities.md#presence-rules) |
+| Sight | Unchanged — the avatar still grants its sight radius |
+| Gear, Essence, XP, Points | No loss, no durability, no cost |
+| Recovery | Full HP on reaching the respawn point |
+| Persistence | Survives logout, app restart and server restart |
 
-The penalty is time only. A gear or Essence cost would punish the players the RPG loop most needs — those attempting gates above their level.
+```mermaid
+stateDiagram-v2
+    [*] --> Alive
+    Alive --> Ghost: HP reaches 0
+    Ghost --> Ghost: Player moves; orders still work, nothing else does
+    Ghost --> Alive: Player is within 15 m of the respawn point
+    Alive --> Alive: Respawn point moved (at most once per 48 h)
+```
+
+| Driver | Effect |
+|---|---|
+| The game is about being somewhere | The penalty is **distance**, the one currency this genre already has |
+| No gear or Essence cost | The players the RPG loop most needs — those attempting gates above their level — are not punished for trying |
+| The army keeps running | A ghost still commands; being defeated costs the RPG loop, never the RTS loop |
+| Placement is the choice | Where the respawn point sits decides how expensive death is — a frontier point is aggressive, a home point is safe |
+
+Accepted: a player defeated far from home can stay a ghost for days. That is the point of choosing a respawn point, and the army stays under their control the whole time.
+
+### Respawn Point
+
+| Property | Rule |
+|---|---|
+| Count | **One per player** |
+| What it is | A map position the avatar revives at — typically home |
+| Setting it | Presence-gated action at the player's current position; any position the player can legally stand at |
+| First one | Set automatically at the player's position on the first accepted fix after faction choice; movable from then on |
+| Change cooldown | **Once every 48 h**, server-side, per player |
+| While a ghost | **Cannot be changed** — the player revives at the point they had when they fell |
+| Revival | Automatic within **15 m** of the point, at full HP; no cost, no confirmation |
+| Speed lock | Applies: revival is presence-gated, so it does not resolve at driving speed — see [Speed Lock](combat.md#speed-lock) |
+| Visibility | **Private.** Never streamed to any other player, at any range, in any state |
+| Combat | The point itself is not an entity: nothing spawns there, nothing can attack or destroy it |
+
+Why the 48 h cooldown: without it the respawn point is a free teleport target that is re-placed before every risky fight. With it, placement is a standing decision about where the player actually lives and plays.
+
+Why it is never visible to anyone else: for most players the respawn point will be their home address. It is the single most sensitive position in the game, and the same reasoning that keeps rival avatars off the map applies to it — see [Why rival avatars stay hidden](presentation.md#visibility).
 
 ## Loop Separation
 

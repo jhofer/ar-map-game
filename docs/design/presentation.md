@@ -15,7 +15,9 @@ One view, always the same: a 3D world map with the player's avatar on it, Pokém
 | Interaction ring | Circle around the avatar showing the current action radius |
 | Free pan | The **subscribed area** around the avatar (interest cells), under fog of war — see [Visibility](#visibility) |
 | Remote view | Map pans to own assets for orders; conquest-type actions stay radius-gated |
-| HUD | Screen-space overlay: currencies, unit orders, alerts |
+| HUD | Screen-space overlay: currencies, unit orders, alerts, selected target |
+| Target selection | Tap a visible hostile to aim the avatar at it — see [Target Selection](combat.md#target-selection) |
+| Ghost | A defeated avatar renders translucent; the respawn point shows as a private marker on the owner's map only — see [Defeat](rpg.md#defeat) |
 
 ## Why No Camera AR
 
