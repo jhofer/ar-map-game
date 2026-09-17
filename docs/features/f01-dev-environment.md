@@ -15,7 +15,7 @@ Implementation plan: [f01-dev-environment-plan.md](f01-dev-environment-plan.md).
 | Deliverable | Detail |
 |---|---|
 | `global.json` | Pins the .NET 10 SDK feature band; a mismatched SDK fails loudly, not silently |
-| `.tool-versions` | Declares every required tool and version in one file: .NET SDK, Node 22 (for the docs check), Unity 6 LTS, Docker, Git LFS, `jq` |
+| `.tool-versions` | Declares every required tool and version in one file: .NET SDK, Node 24 (for the docs check), Unity 6 LTS, Docker, Git LFS, `jq` |
 | `scripts/bootstrap.sh` | Checks each tool against `.tool-versions`, prints a table of found vs. required, installs Git LFS and the git hooks, exits non-zero on any mismatch |
 | Windows | Supported through WSL2 only; documented, not scripted twice |
 
