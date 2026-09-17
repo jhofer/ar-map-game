@@ -18,6 +18,8 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity, map view 
 | How does live state reach the client? | [architecture/streaming.md](architecture/streaming.md) |
 | Which libraries, and how is the code structured? | [architecture/tech-stack.md](architecture/tech-stack.md), [architecture/code-patterns.md](architecture/code-patterns.md) |
 | How are 3D assets made? | [architecture/asset-pipeline.md](architecture/asset-pipeline.md) |
+| What does it look like before the art exists? | [architecture/placeholder-assets.md](architecture/placeholder-assets.md) |
+| Which way does a unit face, and what may it shoot? | [design/facing.md](design/facing.md), [architecture/rotation.md](architecture/rotation.md) |
 | What does it cost to run? | [architecture/scaling.md](architecture/scaling.md) |
 | No maps / geodata / game-server background? | [grundlagen/README.md](grundlagen/README.md) (German) |
 | What was decided, and why? | [design/open-questions.md](design/open-questions.md), [architecture/open-questions.md](architecture/open-questions.md) — decision logs; open items listed at the top of each |

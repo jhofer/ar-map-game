@@ -20,6 +20,8 @@ Scope: high-level structure and technology decisions. Not per-loop mechanics, no
 | [tech-stack.md](tech-stack.md) | Tech Stack: runtimes, libraries, tooling |
 | [code-patterns.md](code-patterns.md) | Implementation Patterns: layout, shared code, server and client patterns |
 | [asset-pipeline.md](asset-pipeline.md) | Asset Pipeline: sketch → Gemini concept → Blender MCP → Unity prefab |
+| [placeholder-assets.md](placeholder-assets.md) | Placeholder Assets: primitives during the build phases |
+| [rotation.md](rotation.md) | Rotation & Facing: two-segment orientation, derived not streamed |
 | [scaling.md](scaling.md) | Scaling & Cost |
 | [anti-cheat.md](anti-cheat.md) | Anti-Cheat |
 | [live-ops.md](live-ops.md) | Game Config & Metrics |
@@ -63,6 +65,8 @@ C3 and C6 together are the dominant forces: **the world is planet-sized, the sim
 | Deployment | Single container on one small VPS → horizontal shards later | C3 |
 | Simulation | Region actors, lazy wake, analytic catch-up for accrual | C3, C6 |
 | Asset creation | Paper sketch → Gemini concept → Blender MCP (primitives or Rodin image-to-3D) → manual cleanup → FBX | Solo team throughput; see [Asset Pipeline](asset-pipeline.md#asset-pipeline) |
+| Development art | Unity primitives per entity kind, swapped per asset via a prefab contract | Art is never a phase gate — see [Placeholder Assets](placeholder-assets.md#placeholder-assets) |
+| Entity orientation | Base yaw from the route, turret yaw from the target; derived on both sides, never streamed per tick | C1, C5 — see [Rotation & Facing](rotation.md#rotation--facing) |
 | Game config | Versioned parameter sets in PostgreSQL, hot reload at tick boundary | Balance tuning without release — see [Game Config & Metrics](live-ops.md#game-config--metrics) |
 | Gameplay metrics | Prometheus (aggregates) + event table → ClickHouse later; Grafana dashboards | Measure effect of config changes |
 

@@ -26,9 +26,9 @@ flowchart LR
 
 | Phase | Slice | Player can | Stack added |
 |---|---|---|---|
-| P1 | Walking skeleton | Log in, see own avatar walking on the map anywhere; full map detail in ingested regions, plain ground elsewhere | Sign in with Apple / Google + JWT, WebSocket gateway, `PositionFix` with server plausibility check, map pipeline for first regions, tile renderer, follow camera, CI, container deploy, Sentry, first metric, TestFlight / Play internal track |
+| P1 | Walking skeleton | Log in, see own avatar walking on the map anywhere; full map detail in ingested regions, plain ground elsewhere | Sign in with Apple / Google + JWT, WebSocket gateway, `PositionFix` with server plausibility check, map pipeline for first regions, tile renderer, follow camera, placeholder primitive kit, CI, container deploy, Sentry, first metric, TestFlight / Play internal track |
 | P2 | Territory | Choose a faction, conquer neutral buildings, earn Points, see rival ownership inside sight radius | Region actor, PostGIS entities, interest manager, deltas, vision filter, reconnect, GPS anti-cheat, native location plugin, game config versions, balance dashboard |
-| P3 | Army | Place factories, produce units, set stations, attack rival buildings | Routing service, combat tick, route + progress streaming, write-behind persistence |
+| P3 | Army | Place factories, produce units, set stations, attack rival buildings | Routing service, combat tick, route + progress streaming, facing model and fire gate, write-behind persistence |
 | P4 | Defense | Place towers, shield buildings, repair; get notified of attacks while offline | Tower shield rules, event journal per player, push notifications |
 | P5 | Demons | Face hellgates and demon waves attacking buildings, close gates, pick up Essence | Demon director, timer queue for dormant regions, ground drops |
 | P6 | Avatar RPG | Level up, equip and craft gear, use workshops, duel | Economy / inventory service, server-side rolls, workshop sites |
@@ -41,6 +41,7 @@ flowchart LR
 | Thin first | Each slice ships the minimum of every layer; depth is added in later slices |
 | Map coverage | Regions ingested on demand; uncovered areas render plain ground with a no-data hint — no planet ingest before stage 2 |
 | Order change | P4 and P5 may swap if buildings need a threat before towers are useful |
+| Art is not a gate | Every entity kind ships as a primitive from its first phase; authored assets replace it later, per asset — see [Placeholder Assets](placeholder-assets.md#phase-mapping) |
 
 ### Scale-Out Track
 
@@ -64,3 +65,5 @@ Not a phase. Starts when a measured threshold is reached, independent of the sli
 | GPS accuracy vs. fixed conquest radius | Frustration | Accuracy-aware validation, snap tolerance, server-side smoothing |
 | Vendor free tiers change | Cost | No component depends on a single vendor's free tier; tiles and DB are portable |
 | Single-node failure at stage 0–1 | Downtime | Nightly backups, infrastructure as code, accepted for a private alpha |
+| Render budget measured on primitives only | Frame rate collapses when authored assets land | Stress fixture at worst-case triangle and material counts, profiled from P1 — see [Placeholder Assets § Risks](placeholder-assets.md#risks) |
+| Art production never catches up with the slices | Ships as programmer art | Pilot before P3; placeholder count per build reported in CI |

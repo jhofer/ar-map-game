@@ -6,6 +6,8 @@
 
 How units, structures and props go from a paper sketch to a Unity prefab. Look and feel: [Game Design § Art Direction](../design/presentation.md#art-direction). Render limits: [Render Budget](client.md#render-budget-mobile-target).
 
+Until an asset exists, its entity renders as a primitive with the same dimensions and the same transform names — see [Placeholder Assets](placeholder-assets.md#placeholder-assets). Nothing in a build phase waits on this pipeline.
+
 > Tools and licence terms: checked 2026-09. AI services change models and terms often — re-check before a production batch.
 
 ## Flow
@@ -105,9 +107,12 @@ Triangle counts are **estimates**; confirm with device profiling ([Render Budget
 | Units | 1 Blender unit = 1 m; apply scale before export |
 | Axes | Blender default; FBX export with "Apply Transform", Unity Z-forward verified per import preset |
 | Pivot | Ground contact point, centred |
+| Transform names | `root` → `base` → `turret` → `muzzle`, on every asset that rotates; bound by name — see [Prefab Contract](placeholder-assets.md#prefab-contract) |
+| Rotation split | Lower body under `base`, upper body under `turret`; the two are driven by code, never by a clip — see [Rotation & Facing](rotation.md#client-rendering) |
+| Dimensions | Height and footprint within ± 20 % of the kind's placeholder; the validator rejects larger drift |
 | Naming | `<class>_<faction>_<name>_<variant>` e.g. `unit_f1_scout_a` |
 | Materials | One material per asset, atlas-based; faction tint via material property, not texture copies |
-| Animation clips | `idle`, `walk`, `attack`, `hit`, `death`; in-place, root motion off (movement comes from routes) |
+| Animation clips | `idle`, `walk`, `attack`, `hit`, `death`; in-place, root motion off (movement and rotation come from the server model) |
 | Damage states | Material / decal parameters, no extra meshes — see [Art Direction](../design/presentation.md#art-direction) |
 | Export | FBX; glTF only if a tool needs it |
 
@@ -116,7 +121,7 @@ Triangle counts are **estimates**; confirm with device profiling ([Render Budget
 | Mechanism | Checks |
 |---|---|
 | Import preset per folder | Scale, mesh compression, read/write off, animation type (Generic / Humanoid) |
-| `AssetPostprocessor` validator | Triangle count vs. class budget, material count = 1, texture size, pivot at ground, clip names |
+| `AssetPostprocessor` validator | Triangle count vs. class budget, material count = 1, texture size, pivot at ground, clip names, transform names, dimensions vs. placeholder |
 | Result | Failure → console error + asset excluded from the kit catalogue; CI runs the validator in batch mode |
 
 ## Repository

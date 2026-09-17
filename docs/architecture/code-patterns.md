@@ -240,6 +240,8 @@ flowchart TD
 | Store is a mirror | `WorldStore` applies snapshots and deltas only; gap in `seq` → request cell snapshot |
 | Thread boundary | Socket receive and decode on worker threads; store mutation on the main thread via inbox drain, capped per frame |
 | Views are dumb | `MonoBehaviour` sets transform, material properties, animation; no game rules |
+| Facing | `base` and `turret` yaw come from the shared step function in `Game.Shared`, called per frame by the presenter — the same code the region actor calls per tick; see [Rotation & Facing](rotation.md#shared-step-function) |
+| Prefab binding | Views resolve `base` / `turret` / `muzzle` by name, so a placeholder primitive and an authored model are interchangeable — see [Prefab Contract](placeholder-assets.md#prefab-contract) |
 | Pooling | Units, demons, drops, markers come from pools; no `Instantiate` / `Destroy` per delta |
 | Buildings | No GameObject per building; one mesh per tile chunk, ownership tint as per-instance property |
 | Replaceable edges | `IConnection`, `ILocationSource`, `ITileSource`, `IMapRenderer` — interfaces in Core, implementations in Unity layer |

@@ -17,6 +17,8 @@ Decisions that stand until a named measurement says otherwise. The decision is m
 | Scale-out thresholds | Replaced by P2 load-test numbers | P2 |
 | Camera zoom band 40–400 m | Device-tier profiling | P1 |
 | Wire budget estimates | Confirmed against a real region | P2 |
+| Render budget on placeholder primitives | Stress fixture at worst-case triangle and material counts | P1, re-checked per authored batch |
+| Traverse arcs and turn rates | Share of tick time spent turning, per archetype | P3 |
 | Own shard map over Orleans | Handoff reliability in the P2 load test | P2 |
 
 ## Decision Log
@@ -58,6 +60,9 @@ Decisions made 2026-09-16.
 | SpacetimeDB for the live plane | No — custom actor layer stays; vendor and billing risk | [Backend § Framework Evaluation](backend.md#framework-evaluation-backend) |
 | Own actor vs. Orleans on scale-out | Own shard map first | [Tech Stack § Actor Choice](tech-stack.md#actor-choice) |
 | Order spam | Technical rate limit, 20 orders per 10 s | [Anti-Cheat](anti-cheat.md#anti-cheat) |
+| Facing representation (2026-09-17) | Derived on both sides from route, `baseYaw` and `target`; no yaw per tick | [Rotation § Principle](rotation.md#principle) |
+| Facing determinism (2026-09-17) | One step function in `Game.Shared`, integrated by `dt`; client divergence is presentation only | [Rotation § Shared Step Function](rotation.md#shared-step-function) |
+| Fire gate authority (2026-09-17) | Server-side per tick; the client's angle never decides damage | [Rotation § Server Evaluation](rotation.md#server-evaluation) |
 
 ### Security and Operations
 
@@ -79,3 +84,6 @@ Decisions made 2026-09-16.
 | Image-to-3D service | Rodin on a commercial plan; TRELLIS for experiments only | [Tech Stack § Tooling & Delivery](tech-stack.md#tooling--delivery) |
 | Rigging | One humanoid skeleton for all faction units; one per demon body type | [Asset Pipeline § Flow](asset-pipeline.md#flow) |
 | glTF vs. FBX | FBX | [Asset Pipeline § Model Conventions](asset-pipeline.md#model-conventions) |
+| Art for the build phases (2026-09-17) | Unity built-in primitives per entity kind, final dimensions, no authored meshes | [Placeholder Assets § Primitive Catalogue](placeholder-assets.md#primitive-catalogue) |
+| Swapping placeholder for authored asset (2026-09-17) | Prefab contract: transform names bound by name, ± 20 % dimension check in the validator | [Placeholder Assets § Prefab Contract](placeholder-assets.md#prefab-contract) |
+| Whether art gates a phase (2026-09-17) | No — a slice ships on primitives; assets land per asset | [Placeholder Assets § Phase Mapping](placeholder-assets.md#phase-mapping) |

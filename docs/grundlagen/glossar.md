@@ -27,6 +27,7 @@
 | Config-Version | Unveränderlicher Satz aller Balance-Parameter |
 | Dead Reckoning | Position fortschreiben aus Richtung und Tempo, wenn kein Messwert vorliegt |
 | Dichteklasse | City / Suburb / Rural pro H3-Zelle, nach Gebäuden pro km² |
+| Drehrate | Zulässige Winkeländerung pro Sekunde eines Unter- oder Aufbaus |
 | Douglas-Peucker | Vereinfachung von Umrissen mit Fehlerschranke |
 | DPS | Schaden pro Sekunde |
 | Delta | Änderungsnachricht statt Vollzustand |
@@ -35,7 +36,9 @@
 | Earcut | Verfahren, ein Polygon in Dreiecke zu zerlegen |
 | ENU | Lokales Meter-Koordinatensystem (East, North, Up) |
 | FBX / glTF | Austauschformate für 3D-Modelle mit Skelett und Animation |
+| Facing | Ausrichtung eines Objekts, unabhängig von seiner Bewegungsrichtung |
 | Feature | Geoobjekt: Geometrie + Attribute |
+| Feuerbogen | Winkelfenster um die Zielrichtung, in dem ein Angriff überhaupt zählt |
 | Feldmaske | Bitmaske im Delta: welche Felder folgen |
 | Floating Origin | Mitwandernder lokaler Nullpunkt gegen Float-Ungenauigkeit |
 | Fog of War | Spielregel, welche fremden Objekte ein Spieler sehen darf |
@@ -48,6 +51,7 @@
 | Git LFS | Git-Erweiterung für grosse Binärdateien |
 | GNSS | Oberbegriff für Satellitennavigation (GPS, Galileo, …) |
 | GPX | XML-Format für aufgezeichnete GPS-Strecken |
+| Greybox | Szene oder Objekt vollständig aus grauen Grundkörpern |
 | Grafana | Dashboard-Werkzeug über Metrik- und SQL-Quellen |
 | Ground Drop | Beute als kurzlebiges Objekt auf der Karte, bis zum Aufheben |
 | H3 | Hexagonales Zellsystem von Uber |
@@ -78,13 +82,17 @@
 | ODbL | Open Database License (OSM) |
 | Orleans | Actor-Framework von Microsoft |
 | Pivot | Bezugspunkt eines Modells für Position und Drehung |
+| Platzhalter-Asset | Grundkörper mit den Massen des späteren Modells, als Zwischenstand |
 | PMTiles | Einzeldatei-Kachelarchiv mit HTTP-Range-Zugriff |
 | POI | Point of Interest |
 | Polycount | Anzahl Dreiecke eines Modells |
 | Polylinie | Streckenzug aus Punkten — hier: eine Route |
 | PostGIS | Räumliche Erweiterung für PostgreSQL |
 | Prefab | Vorgefertigtes Objekt im Client-Build, aus dem Instanzen entstehen |
+| Prefab-Vertrag | Vereinbarte Objektnamen, Masse und Pivot für Platzhalter und fertiges Modell |
+| Primitive | Von der Engine mitgelieferter Grundkörper: Würfel, Kugel, Kapsel, Zylinder, Quad |
 | Prometheus | Zeitreihen-Datenbank für aggregierte Metriken |
+| Quaternion | Drehungsdarstellung ohne Gimbal Lock |
 | Rarity | Seltenheitsstufe eines Gegenstands; bestimmt die Anzahl Affixe |
 | Relation | Eigen / verbündet / rivalisierend / Dämon aus Sicht eines Spielers |
 | Ribbon-Mesh | Flaches Band entlang einer Polylinie, hier für Strassen |
@@ -95,12 +103,15 @@
 | Root Motion | Animation, die das Objekt selbst verschiebt |
 | Roll | Serverseitiger Zufallsvorgang für Beute und Crafting |
 | Roster | Liste der Einheitentypen einer Fraktion |
+| Schwenkbereich (Traverse Arc) | Wie weit der Aufbau gegen den Unterbau verdreht werden darf |
 | Skinning | Zuordnung von Vertices zu Knochen |
 | Stance | Kampfhaltung des Avatars: nur Dämonen oder alles Feindliche |
 | Slippy Map | Übliche Kachelkarte mit XYZ-Schema |
+| Slerp | Gleichmässige Interpolation zwischen zwei Drehungen |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
 | Telemetrie-Event | Einzelnes Spielereignis mit Details, für spätere Auswertung |
 | Tier | Stufe T1–T3 von Gegenständen, Einheiten und Gates |
+| Turret | Aufbau oder Oberkörper, der sich unabhängig vom Unterbau dreht |
 | Timer-Queue | Dauerhafte Tabelle geplanter Ereignisse mit In-Memory-Kopie |
 | Texture Atlas | Mehrere Texturen in einer Datei, damit ein Material genügt |
 | Texture Baking | Details und Licht in eine Textur vorberechnen |
@@ -111,10 +122,12 @@
 | UPM | Unity Package Manager |
 | URP | Universal Render Pipeline, Unitys Mobil-Renderpfad |
 | UV-Mapping | Abwicklung einer 3D-Oberfläche auf eine 2D-Textur |
+| Validator | Import-Prüfung eines Assets gegen Budget, Masse und Namensvertrag |
 | VContainer | Dependency Injection für Unity ohne Reflection |
 | Valhalla | Gekachelte Routing-Engine (C++), hier für Fussgänger-Routen der Einheiten |
 | Vertical Slice | Ausbaustufe, die ein Feature durch alle Schichten (Client, Server, DB, Deployment) spielbar liefert |
 | Walking Skeleton | Erster Vertical Slice: dünnster lauffähiger Durchstich durch alle Schichten, noch ohne Fachlogik |
+| Yaw (Gierwinkel) | Drehung um die Hochachse — die einzige in der Draufsicht sichtbare Drehachse |
 | WGS84 | Weltweites geodätisches Bezugssystem (GPS-Koordinaten) |
 | Write-Behind | Zustand im Speicher, gebündelt asynchron persistiert |
 
@@ -144,6 +157,9 @@
 | Glossar — Vertical Slice, Walking Skeleton | [Build Phases](../architecture/operations.md#build-phases) |
 | Kapitel 13 — Unity und .NET, Shared Assembly, Frame-Budget | [Tech Stack](../architecture/tech-stack.md#tech-stack), [Implementation Patterns](../architecture/code-patterns.md#implementation-patterns) |
 | Kapitel 14 — 3D-Assets, Blender MCP, Image-to-3D | [Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline), [Game Design § Art Direction](../design/presentation.md#art-direction) |
+| Kapitel 14 — Platzhalter, Prefab-Vertrag, Validator | [Placeholder Assets](../architecture/placeholder-assets.md#placeholder-assets), [Asset Pipeline § Model Conventions](../architecture/asset-pipeline.md#model-conventions) |
+| Kapitel 15 — Facing, Schwenkbereich, Feuerbogen | [Game Design § Facing & Rotation](../design/facing.md#facing--rotation), [Rotation & Facing](../architecture/rotation.md#rotation--facing) |
+| Kapitel 9 — Ausrichtung, Transform-Hierarchie, Slerp | [Rotation & Facing § Client Rendering](../architecture/rotation.md#client-rendering), [Client § Client Layers](../architecture/client.md#client-layers) |
 | Kapitel 2 — Hysterese, Glättung | [Game Design § Speed Lock](../design/combat.md#speed-lock), [Client § Avatar Position Pipeline](../architecture/client.md#avatar-position-pipeline) |
 | Kapitel 3 — Douglas-Peucker, IoU | [Map Data § Geometry Processing](../architecture/map-data.md#geometry-processing), [Map Data § Data Refresh](../architecture/map-data.md#data-refresh) |
 | Kapitel 8 — Timer-Queue | [Backend § Timer Queue](../architecture/backend.md#timer-queue) |
@@ -183,6 +199,9 @@
 | Blender-Grundlagen, Modifier, UV | [Blender Manual](https://docs.blender.org/manual/en/latest/) |
 | Bildgenerierung mit Gemini | [Gemini API: Image generation](https://ai.google.dev/gemini-api/docs/image-generation) |
 | Modellimport in Unity | [Unity Manual: Importing models](https://docs.unity3d.com/Manual/ImportingModelFiles.html) |
+| Grundkörper der Engine | [Unity Manual: Primitive objects](https://docs.unity3d.com/Manual/PrimitiveObjects.html) |
+| Prefab-Varianten | [Unity Manual: Prefab Variants](https://docs.unity3d.com/Manual/PrefabVariants.html) |
+| Drehungen und Interpolation | [Unity Scripting: Quaternion](https://docs.unity3d.com/ScriptReference/Quaternion.html) |
 | Model Context Protocol | [modelcontextprotocol.io](https://modelcontextprotocol.io/) |
 | Routing-Engine | [Valhalla Docs](https://valhalla.github.io/valhalla/) |
 | Linienvereinfachung | [Wikipedia: Douglas-Peucker-Algorithmus](https://de.wikipedia.org/wiki/Douglas-Peucker-Algorithmus) |

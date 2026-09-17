@@ -91,6 +91,7 @@ Crafted at factories, paid in Points. A unit spawns at the factory that made it,
 | When radius is clear | Return to station |
 | Player control | Set / re-set the station. Nothing else. **No cooldown** between orders; a new order replaces the current route immediately |
 | Movement | Street routes (see Pathfinding) |
+| Facing | Base follows the route, turret follows the target within a per-type arc — see [Facing & Rotation](facing.md#facing--rotation) |
 | Unit types | Three archetypes, identical across factions at launch (see Launch Roster); skins differ by faction |
 
 ### Target Order
@@ -114,11 +115,12 @@ Faction-symmetric at launch. Values are starting config, tuned by metrics.
 |---|---|---|---|---|---|---|---|---|---|
 | Infantry | T1 | 1 | 250 | 120 | 12 | 2 m | 1.4 m/s | 60 s | Melee; the baseline |
 | Marksman | T2 | 5 | 600 | 70 | 9 | 25 m | 1.4 m/s | 180 s | Ranged; fragile |
-| Siege | T3 | 12 | 1 500 | 200 | 6, **×4 vs. structures** | 15 m | 1.0 m/s | 600 s | Anti-tower, anti-building |
+| Siege | T3 | 12 | 1 500 | 200 | 6, **×4 vs. structures** | 15 m | 1.0 m/s | 600 s | Anti-tower, anti-building; full traverse |
 
 - Tier access is **hard-gated** by avatar level: a factory cannot queue a tier the owner has not unlocked — see [Tech Access](rpg.md#tech-access).
 - Base speed is multiplied by the density-class speed factor — see [Density Classes](world.md#density-classes).
 - Damage is applied per tick with no miss chance; see [Damage Model](combat.md#damage-model).
+- Traverse arc and turn rates differ per archetype — Infantry and Marksman must face what they shoot, Siege does not; see [Traverse Arcs](facing.md#traverse-arcs).
 
 ## Unit Behavior
 
@@ -138,6 +140,7 @@ stateDiagram-v2
 
 - The radius is measured from the **station**, not from the unit's current position — a fleeing target cannot drag a unit away.
 - Hostiles outside the radius are ignored, even if adjacent to the unit.
+- A unit inside the radius still has to bring its weapon to bear: no damage until the target is inside the firing arc — see [Turning to Fire](facing.md#turning-to-fire).
 - Re-stationing is the only way to change what a unit fights.
 - Units left on a station keep working while the player is offline.
 

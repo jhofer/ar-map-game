@@ -106,6 +106,31 @@ Der Kunststil des Projekts ist stilisiertes Low-Poly (*League of Legends* als Re
 | Geglättete Client-Position für Spielregeln verwenden | Regeln laufen auf einer erfundenen Position — serverseitiger Fix ist die Wahrheit |
 | Dead Reckoning ohne Abbruch | Die Figur läuft bei GPS-Ausfall ins Nichts weiter |
 
-**Im Projekt:** → [Architecture § Client Presentation](../architecture/client.md#client-presentation), [Architecture § Chosen: Custom Tile Pipeline](../architecture/map-data.md#chosen-custom-tile-pipeline). Die Darstellung ist Präsentation; jede Präsenzregel rechnet gegen den Server-Fix (Kapitel 2).
+## Ausrichtung im Client rendern
+
+**Problem:** Ein Objekt, dessen Unterbau dem Weg folgt und dessen Aufbau dem Ziel folgt, braucht zwei Drehungen — und beide dürfen weder pro Tick über das Netz kommen noch pro Bild springen. Der Begriffsteil dazu steht in Kapitel [15](15-spielbegriffe.md#ausrichtung-und-drehung).
+
+**Analogie:** Ein berechnetes Feld in der Oberfläche. Der Server überträgt die Eingangsgrössen, die Anzeige rechnet den Wert bei jedem Rendern neu — statt ihn bei jeder Änderung mitzuschicken.
+
+| Begriff | Bedeutung |
+|---|---|
+| Transform-Hierarchie | Verschachtelte Objekte; die Drehung eines Kindes addiert sich auf die des Elternteils — deshalb Aufbau **unter** Unterbau |
+| Quaternion | Darstellung einer Drehung ohne Gimbal Lock; hier wird nur der Yaw-Anteil gesetzt |
+| Slerp | Gleichmässige Interpolation zwischen zwei Drehungen |
+| Ratenbegrenzung | Höchstens N Grad pro Sekunde — die Drehung selbst ist damit schon geglättet |
+| Bindung per Name | Teilobjekte werden über ihren Namen gefunden, nicht über ihre Position in der Hierarchie |
+
+**Fallstricke**
+
+| Fehler | Folge |
+|---|---|
+| Slerp auf einen bereits ratenbegrenzten Winkel | Verzögerung wirkt doppelt, der Aufbau hinkt sichtbar nach |
+| Drehung aus der Animation statt aus der Regel | Der Winkel hängt am Clip; jedes neue Asset ändert das Spielverhalten |
+| Teilobjekte über den Index statt über den Namen binden | Ein Modell mit anderer Hierarchie dreht das falsche Teil |
+| Winkel pro Tick vom Server schicken | Kosten für jedes bewegte Objekt, dauerhaft — obwohl beide Seiten ihn ausrechnen können |
+| Drehung auch weit entfernter Objekte berechnen | Rechenzeit ohne sichtbaren Nutzen |
+| Pitch und Roll mitführen | In der Draufsicht unsichtbar |
+
+**Im Projekt:** → [Architecture § Client Presentation](../architecture/client.md#client-presentation), [Architecture § Rotation & Facing](../architecture/rotation.md#rotation--facing), [Architecture § Chosen: Custom Tile Pipeline](../architecture/map-data.md#chosen-custom-tile-pipeline). Die Darstellung ist Präsentation; jede Präsenzregel rechnet gegen den Server-Fix (Kapitel 2).
 
 ---

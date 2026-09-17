@@ -10,6 +10,7 @@ Design target: **simple, glanceable, no twitch input.** Closer to tower defense 
 | Avatar position | **Locked to the player's real GPS position**; not movable in-game |
 | Avatar targeting | Auto-attacks hostiles in range, filtered by stance — see [Avatar Targeting](#avatar-targeting) |
 | Weapon selection | Automatic by target distance — melee close, ranged far |
+| Avatar facing | Base from the direction of travel above 1.0 m/s, free while standing; ± 90° upper-body arc — see [Avatar Facing](facing.md#avatar-facing) |
 | Unit position | Player-assigned **station**; unit guards a radius around it |
 | Unit targeting | Auto-engage any hostile inside the station radius |
 | Unit movement | Along street routes, to the station and to targets within radius |
@@ -53,6 +54,7 @@ flowchart LR
 | Tick | Combat resolves at the region tick, 2 Hz |
 | Damage per tick | `DPS × tick interval`, modified by attack-speed and damage affixes |
 | Hit chance | Always hits; no evasion, no miss |
+| Firing arc | Attack resolves only while the target is within 5° of the attacker's aim — see [Facing & Rotation](facing.md#facing--rotation) |
 | Critical | Weapon affix only: chance × 2 damage |
 | Damage reduction | Armor affix, flat percentage |
 | Siege bonus | ×4 against towers, factories, buildings, gates |
@@ -67,6 +69,7 @@ Every value is backend config — see [Balance Parameters](balance.md#balance-pa
 
 - Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
 - Target choice: by target type first, then nearest, then lowest entity ID — see [Target Order](rts.md#target-order).
+- Facing gates the attack, never the target choice: an entity holds its target while it turns onto it — see [Turning to Fire](facing.md#turning-to-fire).
 - No hostile engagement resolves inside a workshop safe zone (see Workshops — Neutral Ground).
 - Units vs. building: **towers must fall first** — building HP is untouchable while any tower stands (see Towers).
 - Units stationed on or near a building engage attackers independently of the tower layer.

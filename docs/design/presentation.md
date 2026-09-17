@@ -8,10 +8,10 @@ One view, always the same: a 3D world map with the player's avatar on it, Pokém
 |---|---|
 | Camera | Tilted top-down, locked to the avatar; user may rotate, pitch, zoom |
 | Zoom band | Set by what the device renders within budget — no fixed design value |
-| Avatar | Rendered at the user's live GPS position, facing the direction of travel |
+| Avatar | Rendered at the user's live GPS position, facing the direction of travel; upper body turns to the current target — see [Facing & Rotation](facing.md#facing--rotation) |
 | Buildings | Stylized low-poly models at real coordinates; one model per building kind at launch |
 | Ownership colour | Own buildings in full faction colour. Inside sight: allied buildings outlined in faction colour, rival buildings in the rival faction's colour, desaturated. Neutral and out-of-sight buildings untinted — see [Relations](factions.md#relations) |
-| Units, towers, gates, drops | Rendered on the same map from live state |
+| Units, towers, gates, drops | Rendered on the same map from live state; units, towers and demons carry a base and a turret facing — see [Facing & Rotation](facing.md#facing--rotation) |
 | Interaction ring | Circle around the avatar showing the current action radius |
 | Free pan | The **subscribed area** around the avatar (interest cells), under fog of war — see [Visibility](#visibility) |
 | Remote view | Map pans to own assets for orders; conquest-type actions stay radius-gated |
@@ -41,7 +41,7 @@ Reference point: *League of Legends* — stylized low-poly geometry with hand-pa
 | Damage states | Colour and decal shift, not mesh destruction |
 | Basemap | Stylized ground and streets; never photorealistic imagery |
 
-Production of assets in this style: [Architecture § Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline).
+Production of assets in this style: [Architecture § Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline). Until an asset exists, its entity renders as an untextured primitive of the same size — see [Architecture § Placeholder Assets](../architecture/placeholder-assets.md#placeholder-assets).
 
 Why it fits this game:
 

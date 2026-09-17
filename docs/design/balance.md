@@ -72,6 +72,19 @@ Starting values. Every value is a first guess to be tuned by metrics; none is a 
 | Speed-lock thresholds | Lock > 30 km/h, unlock < 20 km/h | [Combat](combat.md#speed-lock) |
 | Speed-lock windows | Lock after 20 s, unlock after 30 s | [Combat](combat.md#speed-lock) |
 
+### Facing and Rotation
+
+| Parameter | Value | Defined in |
+|---|---|---|
+| Aim tolerance (fire gate) | 5° | [Facing](facing.md#rules) |
+| Traverse arc (Infantry / Marksman / Siege) | ± 45° / ± 60° / ± 180° | [Facing](facing.md#traverse-arcs) |
+| Turret rate (Infantry / Marksman / Siege) | 180 / 120 / 60 °/s | [Facing](facing.md#traverse-arcs) |
+| Base turn rate (Infantry / Marksman / Siege) | 180 / 160 / 45 °/s | [Facing](facing.md#traverse-arcs) |
+| Tower traverse arc / rate | ± 180° / 90 °/s | [Facing](facing.md#traverse-arcs) |
+| Demon arc / turret rate / base rate (Imp / Brute) | ± 45°, 180, 200 °/s / ± 30°, 90, 90 °/s | [Facing](facing.md#traverse-arcs) |
+| Avatar traverse arc / rate | ± 90° / 180 °/s | [Facing](facing.md#avatar-facing) |
+| Avatar free-base speed threshold | 1.0 m/s | [Facing](facing.md#avatar-facing) |
+
 ### Avatar and Gear
 
 | Parameter | Value | Defined in |
@@ -150,6 +163,7 @@ flowchart LR
 | Drop parameters | Drops collected vs. expired; share collected by non-killer |
 | Speed lock | Lock events per session; lock events at walking-range speeds (false positives) |
 | Stance, aggressor rule | Share of sessions in All-hostiles stance; avatar knockouts by source |
+| Traverse arcs, turn rates | Share of tick time spent turning instead of firing, per archetype; time to first damage after a target enters the radius |
 | Tier gates | Level distribution at first T2 / T3 unit |
 | All | Session length, sessions per day, D1 / D7 retention, faction share per region |
 
