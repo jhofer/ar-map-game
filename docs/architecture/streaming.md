@@ -99,6 +99,7 @@ sequenceDiagram
 |---|---|---|
 | Entity delta (HP, state, ownership) | 8–24 B | Per changed field set, on change |
 | Route set (moving entity) | 40–200 B | On station change or retarget only |
+| Facing (`baseYaw` + `target`) | 2–3 B | On stop and on retarget; never per tick |
 | Progress resync | 6–10 B | Per moving entity, every ~5 s |
 | Cell snapshot (urban) | 5–15 KB | On cell enter |
 | Position fix (up) | ~24 B | 0.2–1 Hz |
@@ -133,7 +134,7 @@ How live objects reach the client and how their positions are represented.
 | Mobile | Unit, demon, own avatar | Route-based, see below | — |
 | Event | Hellgate, ground drop | Sent on spawn; drop removed on pickup or despawn | Own position |
 
-Placed and event entities carry no geometry — only a kind, an owner and a transform. The mesh comes from the client's low-poly kit.
+Placed and event entities carry no geometry — only a kind, an owner and a transform. The mesh comes from the client's low-poly kit, or from its placeholder primitive while no authored asset exists — see [Placeholder Assets](placeholder-assets.md#placeholder-assets).
 
 ### Delta Encoding
 
@@ -161,6 +162,8 @@ A moving entity is streamed as **a path and a clock**, not as a stream of positi
 | `speed` | Server constant for the unit type |
 | `startTick` | Server tick at which the entity entered the route |
 | `state` | Moving / Holding / Engaging / Returning |
+| `baseYaw` | Facing of the lower body, 1 B; sent on spawn and on every transition out of a moving state. While moving it is the route tangent and is not sent — see [Rotation & Facing](rotation.md#wire-fields) |
+| `target` | Cell-local id of the current target, 1–2 B; sent on retarget. The client derives turret facing from it |
 
 The client evaluates position locally: `position = route(speed × (now − startTick))`, against the server clock.
 

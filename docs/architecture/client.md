@@ -14,6 +14,8 @@ One view: a 3D world map with the player avatar at the GPS position. **AR Founda
 | Street / ground | Geometry tiles — streets as flat ribbon meshes from the polylines, ground as flat colour by landuse class; **no baked basemap texture** | With tile |
 | Buildings | Geometry tiles, extruded; authored kit models for Landmark and Hospital only at launch | With tile; tint state change on ownership delta |
 | Live entities (units, towers, gates, drops, avatars) | WebSocket deltas | Per tick |
+| Entity meshes | Authored prefab from the kit catalogue, or the kind's placeholder primitive — see [Placeholder Assets](placeholder-assets.md#placeholder-assets) | On spawn, from the pool |
+| Entity facing | Derived per frame from route, `baseYaw` and `target` — see [Rotation & Facing](rotation.md#client-rendering) | Per frame |
 | Avatar | Local GPS pipeline | 0.2–1 Hz fix, interpolated per frame |
 | Interaction ring | Server-sent radius from active game config | On `ConfigUpdate` |
 | HUD | Local state cache | Per state change |
@@ -87,7 +89,7 @@ The tile carries one detail level; the client reduces.
 | Camera distance to building | Rendering |
 |---|---|
 | ≤ 150 m | Full extrusion; authored kit model where one exists for the kind |
-| 150–400 m | Extrusion only, kit models swapped out; entity labels hidden beyond 200 m |
+| 150–400 m | Extrusion only, kit models swapped out; entity labels hidden beyond 200 m, turret tracking stopped with them |
 | Beyond the far plane | Not drawn; tile stays loaded while subscribed |
 | Dense core over budget | Buildings with `volume_multiplier < 0.5` dropped from the far band first |
 

@@ -56,6 +56,35 @@ flowchart LR
     R -->|Dämon| D[Sichtbar in Sichtweite, Ziel für alle]
 ```
 
+## Ausrichtung und Drehung
+
+Eine Figur hat zwei Richtungen: wohin sie läuft und wohin sie zielt. Ob beide auseinanderlaufen dürfen, ist eine **Spielregel**, kein Animationsdetail — sie entscheidet, ob eine Einheit im Rückwärtslaufen schiessen kann.
+
+| Begriff | Bedeutung | Business-Gegenstück |
+|---|---|---|
+| Yaw (Gierwinkel) | Drehung um die Hochachse. In einer Karten-Draufsicht die einzige Drehachse, die man sieht | Die eine Dimension, die zählt |
+| Heading | Bewegungsrichtung, aus zwei Positionen abgeleitet | Trend aus zwei Messpunkten |
+| Facing | Ausrichtung eines Objekts, unabhängig davon, wohin es sich bewegt | Gespeicherter Zustand statt Ableitung |
+| Base (Unterkörper, Fahrwerk) | Der Teil, der dem Weg folgt | — |
+| Turret (Oberkörper, Waffenaufbau) | Der Teil, der dem Ziel folgt | — |
+| Schwenkbereich (Traverse Arc) | Wie weit der Oberkörper gegen den Unterkörper verdreht werden darf, z. B. ± 45° | Erlaubter Abweichungsbereich |
+| Drehrate (Turn Rate) | Zulässige Winkeländerung pro Sekunde; je kleiner, desto träger das Objekt | Durchsatzgrenze |
+| Feuerbogen (Fire Gate) | Ein Angriff zählt nur, solange der Zielwinkel klein genug ist | Vorbedingung vor der Buchung |
+| Tangente der Route | Richtung des Weges an der Stelle, an der das Objekt gerade steht | Ableitung einer Kurve |
+| Abgeleiteter Zustand | Wert, den beide Seiten aus vorhandenen Daten berechnen, statt ihn zu übertragen | Berechnetes Feld statt gespeicherter Spalte |
+
+```mermaid
+flowchart LR
+    R[Route] -->|Tangente| B[Base: Laufrichtung]
+    Z[Ziel] -->|Peilung| T[Turret: Zielrichtung]
+    B -->|begrenzt durch Schwenkbereich| T
+    T --> F{Zielwinkel klein genug?}
+    F -->|ja| A[Angriff zählt]
+    F -->|nein| D[Erst drehen, kein Schaden]
+```
+
+Zwei Bauarten, ein Modell: ein Panzer hat vollen Schwenkbereich und dreht langsam, eine Fussfigur hat einen engen Bereich und dreht schnell. Drehen kostet **Zeit**, nicht eine Abklingzeit.
+
 **Fallstricke**
 
 | Fehler | Folge |
@@ -66,7 +95,11 @@ flowchart LR
 | Zufall auf dem Client | Roll ist manipulierbar; deshalb serverseitig und vor der Antwort festgeschrieben |
 | Beute ohne Anspruchsfenster | Fremde sammeln die Drops des Kämpfenden ein, bevor er hinkommt |
 | Klassen ohne Hysterese an der Dichtegrenze | Zelle wechselt bei jeder Datenversion die Klasse; Werte springen — Klassen deshalb pro Datenversion fixiert |
+| Zielwahl nach dem kleinsten Drehwinkel statt nach der Prioritätsliste | Einheiten wechseln das Ziel, sobald sie sich drehen; Server und Client erwarten Verschiedenes |
+| Drehung nur als Animation, ohne Regel dahinter | "Kann nicht rückwärts schiessen" ist reine Kosmetik und im Client abschaltbar |
+| Winkelgrenze ohne Toleranz | Das Objekt pendelt am Rand des Schwenkbereichs, statt zu schiessen |
+| Kürzesten Drehweg nicht über die 0°/360°-Grenze rechnen | Das Objekt dreht die lange Runde herum |
 
-**Im Projekt:** Die Regeln zu jedem Begriff stehen im Game Design — [Combat](../design/combat.md#combat), [RTS § Target Order](../design/rts.md#target-order), [RPG § Roll Model](../design/rpg.md#roll-model), [Factions § Relations](../design/factions.md#relations), [World § Density Classes](../design/world.md#density-classes). Werte: [Balance Parameters](../design/balance.md#balance-parameters).
+**Im Projekt:** Die Regeln zu jedem Begriff stehen im Game Design — [Combat](../design/combat.md#combat), [RTS § Target Order](../design/rts.md#target-order), [RPG § Roll Model](../design/rpg.md#roll-model), [Factions § Relations](../design/factions.md#relations), [World § Density Classes](../design/world.md#density-classes), [Facing & Rotation](../design/facing.md#facing--rotation). Werte: [Balance Parameters](../design/balance.md#balance-parameters). Technische Umsetzung der Ausrichtung: [Architecture § Rotation & Facing](../architecture/rotation.md#rotation--facing).
 
 ---

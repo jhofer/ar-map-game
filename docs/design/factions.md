@@ -75,6 +75,8 @@ Launch roster. Stats are starting values in the backend config — see [Balance 
 | Brute | Slow, tanky melee | 400 | 20 | 3 m | 1.0 m/s | 8 | 40 | 30 % |
 | Hellgate | Structure; the wave source | Per tier | — | — | — | Per tier | Per tier | — |
 
+Demons turn like every other combat entity — narrow arcs, so a Brute commits to a direction before it swings; see [Facing & Rotation](facing.md#traverse-arcs).
+
 ### Hellgates
 
 | Property | Rule |

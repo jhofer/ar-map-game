@@ -20,6 +20,20 @@ Decisions made 2026-09-16 to close the concept for detail specs. Rationale lives
 | Unit roster before faction design | Three faction-symmetric archetypes (Infantry, Marksman, Siege); skins per faction | [RTS § Launch Roster](rts.md#launch-roster) |
 | Reachability of off-street targets | Street route plus one off-road leg ≤ 30 m; buildings further from a street are not conquerable | [RTS § Reachability](rts.md#reachability) |
 
+### Facing & Rotation
+
+Decisions made 2026-09-17.
+
+| Question | Decision | Recorded in |
+|---|---|---|
+| How a unit is oriented | Two segments: base follows the route, turret follows the target | [Facing § Rules](facing.md#rules) |
+| Whether facing gates damage | Yes — an attack resolves only within 5° of the aim | [Facing § Rules](facing.md#rules) |
+| Rotation freedom per unit type | Traverse arc per type: ± 45° Infantry, ± 60° Marksman, ± 180° Siege; towers full, demons narrow | [Facing § Traverse Arcs](facing.md#traverse-arcs) |
+| Running one way and shooting another | Only inside the arc. A moving limited-arc unit cannot fire behind itself; Siege can | [Facing § Turning to Fire](facing.md#turning-to-fire) |
+| Cost of turning | Time (`angle / rate`), never a cooldown; target choice is unaffected by angle | [Facing § Turning to Fire](facing.md#turning-to-fire) |
+| Avatar, whose heading the player cannot steer | Base free below 1.0 m/s, course over ground above; ± 90° arc; never blocks a standing avatar | [Facing § Avatar Facing](facing.md#avatar-facing) |
+| Facing as a player order | No — the one-order model stands | [Facing § Not Modelled](facing.md#not-modelled) |
+
 ### Structures
 
 | Question | Decision | Recorded in |

@@ -55,6 +55,33 @@ flowchart LR
 | Retopologie, UV, Handbemalung | Niedrig — automatisierbar nur grob |
 | Rigging, Animation | Niedrig — weitgehend Handarbeit |
 
+## Platzhalter: Primitive statt Modelle
+
+**Problem:** Spiellogik, Streaming und Bedienung sind früher fertig als die Modelle. Wartet die Entwicklung auf Assets, steht sie still — und Assets, die vor der Regel entstehen, haben oft die falschen Masse.
+
+**Analogie:** Gegen einen Mock entwickeln. Der Mock hat dieselbe Schnittstelle wie der echte Dienst, nur keine Fachlogik; getauscht wird später, ohne den Aufrufer zu ändern. Beim Asset ist die Schnittstelle: Masse, Pivot und Objektnamen.
+
+| Begriff | Bedeutung | Business-Gegenstück |
+|---|---|---|
+| Primitive | Von der Engine mitgelieferter Grundkörper: Würfel, Kugel, Kapsel, Zylinder, Quad | Standardbibliothek statt Eigenbau |
+| Platzhalter (Placeholder, Programmer Art) | Bewusst schmuckloses Objekt mit den **richtigen Massen** am richtigen Platz | Mock / Stub |
+| Greybox | Ganze Szene aus grauen Grundkörpern, um Abläufe zu prüfen | Wireframe-Prototyp |
+| Prefab-Vertrag | Vereinbarte Objektnamen, Masse und Pivot, an die sich Platzhalter **und** fertiges Modell halten | Interface-Vertrag |
+| Prefab-Variante | Abwandlung eines Prefabs, die dessen Struktur erbt | Ableitung einer Basisklasse |
+| Asset-Katalog | Zuordnung Objekttyp → Prefab, zur Laufzeit auflösbar | Registry / Feature-Toggle-Tabelle |
+| Validator | Import-Prüfung, die ein Asset gegen Budget und Vertrag misst | Schema-Prüfung im Build |
+
+```mermaid
+flowchart LR
+    T[Objekttyp] --> K{Fertiges Asset im Katalog?}
+    K -->|nein| P[Platzhalter aus Grundkörpern]
+    K -->|ja| M[Fertiges Modell]
+    P --> V[Gleiche Namen, Masse, Pivot]
+    M --> V
+```
+
+Der Tausch ist dadurch ein Katalogeintrag, keine Codeänderung. Ein Objekt, das sich dreht, braucht schon als Platzhalter zwei Teile (Unterbau und Aufbau) plus eine Markierung — sonst sieht man der Kapsel nicht an, wohin sie zielt (Kapitel [15](15-spielbegriffe.md#ausrichtung-und-drehung)).
+
 **Fallstricke**
 
 | Fehler | Folge |
@@ -68,7 +95,11 @@ flowchart LR
 | Lizenz des KI-Dienstes nicht geprüft | Ausgaben evtl. nicht kommerziell nutzbar oder regional ausgeschlossen |
 | `.blend`- und Bilddateien ohne Git LFS | Repository wird in kurzer Zeit gigabytegross |
 | KI Python in Blender ausführen lassen, ohne vorher zu speichern | Szene beschädigt, Arbeit verloren |
+| Platzhalter mit falschen Massen | Reichweiten, Abstände und Lesbarkeit ändern sich, sobald echte Modelle kommen |
+| Darstellungsbudget nur an Grundkörpern gemessen | Bildrate bricht beim ersten echten Asset ein |
+| Teilobjekte im fertigen Modell anders benannt als im Platzhalter | Drehung oder Effekt greifen ins Leere |
+| Platzhalter nie ersetzt | Programmer Art im Release |
 
-**Im Projekt:** → [Architecture § Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline). Kunststil und Lesbarkeitsregeln: [Game Design § Art Direction](../design/presentation.md#art-direction). Warum Dreiecke und Materialien zählen: Kapitel [9](09-rendering.md#warum-low-poly-eine-kostenentscheidung-ist).
+**Im Projekt:** → [Architecture § Asset Pipeline](../architecture/asset-pipeline.md#asset-pipeline). Platzhalter und Tauschregel: [Architecture § Placeholder Assets](../architecture/placeholder-assets.md#placeholder-assets). Kunststil und Lesbarkeitsregeln: [Game Design § Art Direction](../design/presentation.md#art-direction). Warum Dreiecke und Materialien zählen: Kapitel [9](09-rendering.md#warum-low-poly-eine-kostenentscheidung-ist).
 
 ---
