@@ -18,6 +18,8 @@
 
 Each phase is a **vertical slice**: a playable increment through client, server, persistence and deployment. No phase delivers one layer alone.
 
+Phases are cut into features in [Feature Backlog](../features/README.md). P1 is [F01–F05](../features/README.md#contents).
+
 ```mermaid
 flowchart LR
     P1[P1 Walking skeleton] --> P2[P2 Territory] --> P3[P3 Army] --> P4[P4 Defense] --> P5[P5 Demons] --> P6[P6 Avatar RPG]

@@ -50,13 +50,14 @@ flowchart LR
 
 ## Documentation Set
 
-Three sets, one topic per file. Index: `docs/README.md`.
+Four sets, one topic per file. Index: `docs/README.md`.
 
 | Set | Content | Language |
 |---|---|---|
 | `docs/design/` | Gameplay rules, entities, loops, balance | English |
 | `docs/architecture/` | Technical architecture, frameworks, scaling, cost | English |
 | `docs/grundlagen/` | Foundations for developers without geodata / game-server background | **German** |
+| `docs/features/` | Delivery scope: one file per feature, numbered `F<nn>` | English |
 
 | Rule | Requirement |
 |---|---|
@@ -64,7 +65,9 @@ Three sets, one topic per file. Index: `docs/README.md`.
 | Index maintenance | A new file gets a row in its set's `README.md` contents table in the same commit |
 | Nav line | Every non-index file starts with `[← <Set>](README.md)` under its title |
 | Links | Relative paths between files; anchors must match GitHub slug rules |
-| Placement | Gameplay decisions in `design/`, technical decisions in `architecture/`, explanation only in `grundlagen/` |
+| Placement | Gameplay decisions in `design/`, technical decisions in `architecture/`, explanation only in `grundlagen/`, delivery scope only in `features/` |
+| Features decide nothing | A feature file implements recorded decisions and links to them. A feature that needs a new decision gets it recorded in the owning set first — see [docs/features/README.md](docs/features/README.md) |
+| Feature format | Goal → Implements → Scope → Out of Scope → Acceptance → Risks; index row in `docs/features/README.md` in the same commit |
 
 Target reader of `docs/grundlagen/`: a developer with a business-application background (web, backend, enterprise) and no knowledge of maps, geodata, tiles, spatial indexes, streaming, or authoritative game servers.
 
