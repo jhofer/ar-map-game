@@ -41,7 +41,7 @@ Towers are the building's armour layer. A building cannot be damaged while its t
 | Count per building | `min(4, max(1, floor(footprint_area / 50 m²)))` — one slot per 50 m² of roof, at least one, at most four |
 | Placement check | Player proximity only — no line-of-sight test (the target building is the anchor) |
 | Mobility | Fixed to the building; never moves |
-| Targeting | Auto-attacks hostiles within **40 m**, same priority order as units |
+| Targeting | Auto-attacks hostiles within **40 m**, same target order as units |
 | Shield role | **Building takes no damage while any tower on it stands** |
 | Order of destruction | All towers first, then building HP |
 | On building loss | Towers are destroyed with the building |
@@ -77,7 +77,7 @@ Consequence: taking a defended building is a two-stage job. Stacking towers buys
 
 Crafted at factories, paid in Points. A unit spawns at the factory that made it, then paths to its **station** — a fixed map position it guards a radius around. It acts like a creep: auto-engages anything hostile inside the radius, then returns.
 
-**There is exactly one player order: set the station.** Attacking is expressed by stationing a unit near the target, not by issuing an attack command. Orders are given **remotely** — no physical presence required (see Presence Rules).
+**There is exactly one unit order: set the station.** Attacking is expressed by stationing a unit near the target, not by issuing an attack command. Orders are given **remotely** — no physical presence required (see Presence Rules).
 
 | Property | Rule |
 |---|---|
@@ -87,7 +87,7 @@ Crafted at factories, paid in Points. A unit spawns at the factory that made it,
 | Engagement radius | **Per unit type**, fixed around the **station**. Launch value **40 m** for every type; not upgradable by the player |
 | Targets in radius | Hostiles only — see [Relations](factions.md#relations) |
 | Targeting | Automatic — no player input |
-| Target priority | By target type first, then nearest, then lowest entity ID — see [Target Order](#target-order) |
+| Target priority | Valid hostile avatar first, then nearest — no type ranking; see [Target Order](#target-order) |
 | When radius is clear | Return to station |
 | Player control | Set / re-set the station. Nothing else. **No cooldown** between orders; a new order replaces the current route immediately |
 | Movement | Street routes (see Pathfinding) |
@@ -96,16 +96,24 @@ Crafted at factories, paid in Points. A unit spawns at the factory that made it,
 
 ### Target Order
 
-| Rank | Target type | Why this rank |
-|---|---|---|
-| 1 | Demons | Damage everyone; the common threat is cleared first |
-| 2 | Rival units | Active damage dealers |
-| 3 | Rival avatar (aggressor only) | See [Avatar Targeting](combat.md#avatar-targeting) |
-| 4 | Rival towers | The layer that blocks the objective |
-| 5 | Rival factories | Production |
-| 6 | Rival buildings | The objective — last, so a stationed army clears the defence first |
+One rule for every automatic attacker — units, towers and demons alike. **There is no type ranking.**
 
-Within a rank: nearest by street distance; ties by lowest entity ID. The rule is deterministic so two clients and the server agree on what a unit will do.
+| Rank | Target | Detail |
+|---|---|---|
+| 1 | **A hostile avatar it may legally attack** | Demons: any avatar in range, always. Rival units and towers: only while the avatar carries the aggressor flag — see [Aggressor Rule](combat.md#aggressor-rule) |
+| 2 | **Everything else, equally** | Demons, buildings, factories, units, towers — **nearest by street distance**, ties by lowest entity ID |
+
+| Rule | Detail |
+|---|---|
+| Avatar first | An avatar that is a valid target outranks everything, at any distance inside the engagement radius |
+| No type ranking below that | A stationed army hits what is closest, not the "correct" layer |
+| Shielded buildings are skipped | A building with a standing tower on it is not a valid target at all — the towers are. Shielding stays a rule, not a priority; see [Towers](#towers) |
+| Determinism | Distance then entity ID; server and client reach the same answer |
+| Re-evaluation | On target death, on the target leaving the radius, and when an avatar becomes a valid target — never per tick, so units do not flip between two equidistant targets |
+
+The **player's own avatar does not use this order at all** — the player picks its target — see [Target Selection](combat.md#target-selection).
+
+Consequence: defenders no longer get a free ordering. A rival army standing next to a factory will chew through the factory while the towers 30 m away shoot at it; whoever positions closer to what matters decides the fight. And an avatar that opens fire becomes the single most dangerous thing on the field to stand near.
 
 ### Launch Roster
 
@@ -141,6 +149,7 @@ stateDiagram-v2
 - The radius is measured from the **station**, not from the unit's current position — a fleeing target cannot drag a unit away.
 - Hostiles outside the radius are ignored, even if adjacent to the unit.
 - A unit inside the radius still has to bring its weapon to bear: no damage until the target is inside the firing arc — see [Turning to Fire](facing.md#turning-to-fire).
+- Inside the radius the nearest hostile wins, whatever it is — except a valid avatar, which is always taken first.
 - Re-stationing is the only way to change what a unit fights.
 - Units left on a station keep working while the player is offline.
 
@@ -185,6 +194,8 @@ Two distinct kinds of action, with **different presence rules**:
 
 - The rule in one line: **be there to claim it, not to command it.**
 - **Factory vs. station:** a factory is a construct that *produces* units; a station is *where a produced unit stands*. Placing a factory creates nothing by itself — units are produced there for Points, and each is then stationed.
+
+The avatar is the exception, and it is not a unit order: the player aims their own avatar by tapping a target — see [Target Selection](combat.md#target-selection).
 
 Consequences of a one-order model:
 

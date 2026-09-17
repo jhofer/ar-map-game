@@ -45,7 +45,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity. Pokémon 
 | Factions | 3 playable + 1 NPC (demons) |
 | Loops | 3: Territory (map) + RTS + RPG |
 | Currencies | 2, non-convertible: Points (territory), Essence (demons) |
-| Combat | Auto-attack, tower-defense style; no twitch input |
+| Combat | Auto-attack, tower-defense style; no twitch input. The player's only combat input is picking the avatar's target |
 | Goal | Occupy and hold territory |
 
 ## Core Loop

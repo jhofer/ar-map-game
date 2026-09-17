@@ -86,7 +86,7 @@ The one exception to combat suppression — consensual, and with nothing at stak
 | Initiation | Challenge + accept; both avatars physically present |
 | Decline | Manual, or automatic via a player setting; the challenger sees a "declined" message |
 | Resolution | **Auto-combat**, same engine as PvE — no input |
-| Death | **None.** Loser is never knocked out |
+| Death | **None.** The loser never becomes a ghost — see [Defeat](rpg.md#defeat) |
 | Gear | No loss, no damage, no durability cost |
 | Currency | **No Essence or Points transferred or awarded** |
 | Effect on the faction war | None — territory and income are untouched |
@@ -120,7 +120,9 @@ Physical presence is required to **place** and to **take**, never to **command**
 | Fight at a hellgate | **Yes** |
 | Collect a ground drop (Essence, loot) | **Yes** |
 | Repair or rebuild a construct | **Yes** |
-| Give orders to units | **No** — fully remote |
+| Set the respawn point | **Yes** — see [Respawn Point](rpg.md#respawn-point) |
+| Revive from ghost state | **Yes** — automatic within 15 m of the respawn point |
+| Give orders to units | **No** — fully remote, and unaffected by ghost state |
 | Change avatar stance | **No** |
 
 - Rationale: the map is claimed on foot, but an army is directed from anywhere.

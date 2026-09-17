@@ -61,7 +61,7 @@ Starting values. Every value is a first guess to be tuned by metrics; none is a 
 |---|---|---|
 | Combat tick | 2 Hz | [Combat](combat.md#damage-model) |
 | Station engagement radius (all types) | 40 m | [RTS](rts.md#units) |
-| Target type priority order | Demons, units, aggressor avatar, towers, factories, buildings | [RTS](rts.md#target-order) |
+| Target order | Valid hostile avatar first, then nearest, then lowest entity ID; no type ranking | [RTS](rts.md#target-order) |
 | Unit stats (HP / DPS / range / speed) | Per archetype table | [RTS](rts.md#launch-roster) |
 | Siege bonus vs. structures | ×4 | [Combat](combat.md#damage-model) |
 | Building base HP per kind | 300 / 400 / 600 / 1 000 / 2 000 | [Territory](territory.md#points-generation) |
@@ -94,7 +94,8 @@ Starting values. Every value is a first guess to be tuned by metrics; none is a 
 | Level cap | 30 | [RPG](rpg.md#avatar-stats) |
 | XP curve | `100 × level^1.5` | [RPG](rpg.md#avatar-stats) |
 | Tier unlock level (T1 / T2 / T3) | 1 / 5 / 12 | [RPG](rpg.md#tech-access) |
-| Avatar defeat cooldown | 300 s | [RPG](rpg.md#defeat) |
+| Respawn radius | 15 m (= conquest radius) | [RPG](rpg.md#respawn-point) |
+| Respawn point change cooldown | 48 h | [RPG](rpg.md#respawn-point) |
 | Inventory size | 20 | [RPG](rpg.md#inventory-and-binding) |
 | Rarity weights per tier | Table | [RPG](rpg.md#roll-model) |
 | Affix count per rarity | 0 / 1 / 2 / 3 | [RPG](rpg.md#roll-model) |
@@ -157,12 +158,13 @@ flowchart LR
 | Conquest radius, snap tolerance | Conquest attempts rejected for distance; GPS accuracy at attempt; conquests per session |
 | Point rates, density constants | Points per session by density class (city / suburb / rural) |
 | Unit cap, factory cap | Units per player distribution; share of players at the cap |
-| Station radius, target priority | Fight duration; buildings lost per attack; units lost per fight |
+| Station radius, target order | Fight duration; buildings lost per attack; units lost per fight; share of damage taken by each target type |
 | Sight radius | Attacks started outside the defender's sight; defender response time |
 | Hellgate parameters | Gates spawned vs. closed vs. expired; time to close; Essence per hour; solo closes by avatar level |
 | Drop parameters | Drops collected vs. expired; share collected by non-killer |
 | Speed lock | Lock events per session; lock events at walking-range speeds (false positives) |
-| Stance, aggressor rule | Share of sessions in All-hostiles stance; avatar knockouts by source |
+| Stance, aggressor rule | Share of sessions in All-hostiles stance; avatar defeats by source |
+| Respawn radius, change cooldown | Ghost duration distribution; distance from defeat to respawn point; share of players who move the point at every opportunity |
 | Traverse arcs, turn rates | Share of tick time spent turning instead of firing, per archetype; time to first damage after a target enters the radius |
 | Tier gates | Level distribution at first T2 / T3 unit |
 | All | Session length, sessions per day, D1 / D7 retention, faction share per region |

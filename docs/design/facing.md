@@ -23,7 +23,7 @@ An infantry unit cannot run north and shoot south. A siege unit can.
 | **Fire gate** | An attack resolves only while the aim error is ≤ **5°**. Applies to melee and ranged alike |
 | No target | Turret returns to 0° — centred on the base |
 | Turn cost | Turning is **time, not a cooldown**: `angle / rate` seconds with no damage output |
-| Target choice | Unaffected by angle. Facing never changes *what* a unit attacks, only *when* it can — see [Target Order](rts.md#target-order) |
+| Target choice | Unaffected by angle. Facing never changes *what* is attacked, only *when* it can be — see [Target Order](rts.md#target-order) |
 | Authority | Server-side, at the region tick; the client derives the same values for rendering |
 
 ## Traverse Arcs
@@ -70,7 +70,7 @@ flowchart TD
 | Target dies mid-turn | Next target picked by the normal order; the turn continues from the current angle, never resets |
 | New station ordered mid-turn | Movement wins: the base returns to the route tangent, the turret keeps tracking within the new arc |
 | Melee | Same gate — a melee unit must face its target before it lands a hit |
-| Two targets at opposite bearings | Deterministic: the chosen target is the one the target order picks, not the one closest to the current aim |
+| Two targets at opposite bearings | Deterministic: the target order picks it — a valid avatar, else the nearest — never the one closest to the current aim |
 
 Consequence: the arc is a **positioning rule expressed as a stat**. Stationing a marksman where its guarded lane runs across its facing costs it the first seconds of every fight; stationing a siege unit anywhere costs nothing but its slow traverse.
 
@@ -84,6 +84,8 @@ The player steers the avatar's base by walking in the real world, so the fire ga
 | Base facing at or below 1.0 m/s | **Free**: the base turns toward the target like any holding unit |
 | Traverse arc | ± 90° — the avatar can fire to either side while walking, never straight backwards |
 | Fire gate while standing | Never blocks: a standing avatar always reaches its target bearing |
+| Target | The one the player selected — see [Target Selection](combat.md#target-selection) |
+| Ghost state | No target, no turret tracking; a ghost does not attack — see [Defeat](rpg.md#defeat) |
 | Weapon bands | Unchanged — range decides melee or ranged, facing decides whether the attack resolves — see [Weapon Range Bands](combat.md#weapon-range-bands) |
 
 Rationale: walking past a target and losing a second of damage is a readable cost. Walking *away* from a fight while still winning it is not.
@@ -96,7 +98,7 @@ Rationale: walking past a target and losing a second of damage is a readable cos
 | Barrel elevation | No ballistics — damage is applied per tick, not by projectile |
 | Per-limb aiming | Two segments are the whole model |
 | Recoil, lean, terrain slope | Presentation detail below what the map camera shows |
-| Facing as a player order | There is exactly one order — see [Orders](rts.md#orders) |
+| Facing as a player order | Never. The player selects a *target*; the turret follows from it — see [Target Selection](combat.md#target-selection) |
 | Backwards movement | An entity always walks the direction its base faces |
 
 Technical representation — how facing reaches the client without per-tick traffic: [Architecture § Rotation & Facing](../architecture/rotation.md#rotation--facing).

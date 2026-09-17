@@ -16,7 +16,10 @@ Decisions made 2026-09-16 to close the concept for detail specs. Rationale lives
 |---|---|---|
 | Station engagement radius: one value, per type, or upgradable | Per unit type, not upgradable; 40 m for every type at launch | [RTS § Units](rts.md#units) |
 | Re-stationing cooldown | None; a new order replaces the route immediately. Order spam is a technical rate limit | [RTS § Station Placement Rules](rts.md#station-placement-rules) |
-| Target type order | Demons → rival units → aggressor avatar → towers → factories → buildings; then nearest, then lowest ID | [RTS § Target Order](rts.md#target-order) |
+| Target type order (superseded 2026-09-17) | ~~Demons → rival units → aggressor avatar → towers → factories → buildings~~ — replaced by the rule below |  |
+| Target order (2026-09-17) | A legally attackable avatar first, then **nearest, no type ranking**; ties by lowest ID. Shielded buildings are not valid targets | [RTS § Target Order](rts.md#target-order) |
+| Avatar targeting (2026-09-17) | Player selects the target; no order for the avatar. Fallback to nearest when nothing is selected | [Combat § Target Selection](combat.md#target-selection) |
+| Aggressor rule under the new order (2026-09-17) | Unchanged — rival units and towers still need the aggressor flag to attack an avatar at all | [Combat § Aggressor Rule](combat.md#aggressor-rule) |
 | Unit roster before faction design | Three faction-symmetric archetypes (Infantry, Marksman, Siege); skins per faction | [RTS § Launch Roster](rts.md#launch-roster) |
 | Reachability of off-street targets | Street route plus one off-road leg ≤ 30 m; buildings further from a street are not conquerable | [RTS § Reachability](rts.md#reachability) |
 
@@ -83,7 +86,9 @@ Decisions made 2026-09-17.
 | Question | Decision | Recorded in |
 |---|---|---|
 | Hellgate spawn weighting, cadence, escalation, rewards | Director every 5 min; per active player; 1 gate / 6 h; tiers by nearby players; waves every 90 s; escalation every 10 min; reward table | [Factions § Hellgates](factions.md#hellgates) |
-| Avatar defeat penalty | 300 s knockout, no gear or Essence cost | [RPG § Defeat](rpg.md#defeat) |
+| Avatar defeat penalty (superseded 2026-09-17) | ~~300 s knockout~~ — replaced by the ghost state below |  |
+| Avatar defeat penalty (2026-09-17) | Ghost until the player physically reaches the respawn point; no timer, no gear or Essence cost; unit orders stay available | [RPG § Defeat](rpg.md#defeat) |
+| Respawn point (2026-09-17) | One per player, set by presence at the player's position, movable once per 48 h, revival within 15 m, never visible to anyone else | [RPG § Respawn Point](rpg.md#respawn-point) |
 | Level gating hard or soft | Hard; T1/T2/T3 at level 1/5/12 | [RPG § Tech Access](rpg.md#tech-access) |
 | Avatar solo gates | T1 stage 0 soloable at level 1 in ~10 min; T2 from level ~5; T3 needs units | [Factions § Hellgates](factions.md#hellgates) |
 | Melee and ranged bands | 8 m / 30 m base, no overlap, melee wins inside its range; range is a weapon stat | [Combat § Weapon Range Bands](combat.md#weapon-range-bands) |

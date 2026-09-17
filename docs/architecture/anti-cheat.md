@@ -22,6 +22,11 @@ Moved from the design doc; unchanged in substance.
 | Reroll scumming | Roll committed before the client is told the outcome; disconnect does not undo it |
 | Automation / botting | Movement-pattern anomaly detection on the fix stream; per-account rate limits |
 | Order spam | `SetStation` limited to 20 per 10 s per player; excess rejected with `RateLimited`. Not a gameplay cooldown — see [Game Design § Station Placement Rules](../design/rts.md#station-placement-rules) |
+| Target-switch spam | `SetTarget` rate-limited like `SetStation`; the server validates visibility, stance and range before it takes effect — see [Game Design § Target Selection](../design/combat.md#target-selection) |
+| Forged revival | Revival resolves server-side when the accepted fix is within the respawn radius; the client never asserts it |
+| Respawn point abuse | Change cooldown (48 h) held server-side per player; a move is a presence-gated action, checked like any placement |
+| Respawn point disclosure | Stored per player, never serialized into any other player's stream — a home address, treated like one |
+| Ghost bypass | Ghost state is server-side: every presence-gated intent from a ghost is rejected with `Defeated`, whatever the client shows |
 
 ## Attestation Strictness
 

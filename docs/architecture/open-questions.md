@@ -60,6 +60,9 @@ Decisions made 2026-09-16.
 | SpacetimeDB for the live plane | No — custom actor layer stays; vendor and billing risk | [Backend § Framework Evaluation](backend.md#framework-evaluation-backend) |
 | Own actor vs. Orleans on scale-out | Own shard map first | [Tech Stack § Actor Choice](tech-stack.md#actor-choice) |
 | Order spam | Technical rate limit, 20 orders per 10 s | [Anti-Cheat](anti-cheat.md#anti-cheat) |
+| Avatar target selection (2026-09-17) | New `SetTarget` intent, validated server-side for visibility, stance and range; rate-limited like `SetStation` | [Anti-Cheat](anti-cheat.md#anti-cheat) |
+| Ghost state and revival (2026-09-17) | Server-side; presence-gated intents from a ghost rejected; revival resolves from the server's own fix | [Anti-Cheat](anti-cheat.md#anti-cheat) |
+| Respawn point storage (2026-09-17) | Per-player state, never serialized into another player's stream | [Streaming § Subscription Set](streaming.md#subscription-set) |
 | Facing representation (2026-09-17) | Derived on both sides from route, `baseYaw` and `target`; no yaw per tick | [Rotation § Principle](rotation.md#principle) |
 | Facing determinism (2026-09-17) | One step function in `Game.Shared`, integrated by `dt`; client divergence is presentation only | [Rotation § Shared Step Function](rotation.md#shared-step-function) |
 | Fire gate authority (2026-09-17) | Server-side per tick; the client's angle never decides damage | [Rotation § Server Evaluation](rotation.md#server-evaluation) |
