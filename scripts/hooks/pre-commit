@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+# Pre-commit: docs check when markdown is staged; dotnet format when C# is staged and a solution exists.
+# Bypass once with: git commit --no-verify
+set -euo pipefail
+cd "$(git rev-parse --show-toplevel)"
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+
+if grep -qE '\.md$' <<<"$staged"; then
+  scripts/check-docs.sh
+fi
+
+if grep -qE '\.cs$' <<<"$staged" && { compgen -G "*.slnx" >/dev/null || compgen -G "*.sln" >/dev/null; }; then
+  dotnet format --verify-no-changes
+fi

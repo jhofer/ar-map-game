@@ -84,10 +84,10 @@ Format: `<tool> <required-prefix>`, one per line. A tool passes when its install
 
 ```
 dotnet 10.0
-node 22
-docker 27
+node 24
+docker 29
 git-lfs 3
-jq 1.7
+jq 1.8
 unity 6000
 ```
 
