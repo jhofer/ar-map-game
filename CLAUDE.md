@@ -68,6 +68,7 @@ Four sets, one topic per file. Index: `docs/README.md`.
 | Placement | Gameplay decisions in `design/`, technical decisions in `architecture/`, explanation only in `grundlagen/`, delivery scope only in `features/` |
 | Features decide nothing | A feature file implements recorded decisions and links to them. A feature that needs a new decision gets it recorded in the owning set first — see [docs/features/README.md](docs/features/README.md) |
 | Feature format | Goal → Implements → Scope → Out of Scope → Acceptance → Risks; index row in `docs/features/README.md` in the same commit |
+| Feature plans | Optional `f<nn>-<name>-plan.md`: ordered tasks with exact files, commands and *done when* checks; linked from the spec and listed under *Implementation Plans* in the features index. A plan implements its spec; on conflict the spec wins |
 
 Target reader of `docs/grundlagen/`: a developer with a business-application background (web, backend, enterprise) and no knowledge of maps, geodata, tiles, spatial indexes, streaming, or authoritative game servers.
 

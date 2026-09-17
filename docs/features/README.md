@@ -16,6 +16,14 @@ Delivery scope: what gets built, in which order, and when it counts as done. Rul
 
 F01–F06 are phase **P1, the walking skeleton**, and F06 closes it: a phase ends with a store test build against the deployed server, not a local demo. F07 opens **P2** with the live plane. No gameplay rule is implemented in any of the seven — see [Build Phases](../architecture/operations.md#build-phases).
 
+## Implementation Plans
+
+Optional per feature: ordered tasks with exact files, commands and *done when* checks, written for an implementer who follows instructions literally. A plan never changes scope — the spec wins on any conflict.
+
+| Feature | Plan |
+|---|---|
+| F01 | [f01-dev-environment-plan.md](f01-dev-environment-plan.md) |
+
 ## Dependencies
 
 ```mermaid

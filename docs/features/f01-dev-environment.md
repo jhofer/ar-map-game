@@ -2,6 +2,8 @@
 
 [← Features](README.md)
 
+Implementation plan: [f01-dev-environment-plan.md](f01-dev-environment-plan.md).
+
 **Goal:** a fresh clone on a fresh machine builds, runs and tests the whole stack with one command, before any project or game code exists.
 
 **Implements:** [Tech Stack § Tooling & Delivery](../architecture/tech-stack.md#tooling--delivery), [Version Matrix](../architecture/tech-stack.md#version-matrix), [Operations](../architecture/operations.md#operations), [CLAUDE.md § Verification Before Commit](../../CLAUDE.md).
@@ -13,7 +15,7 @@
 | Deliverable | Detail |
 |---|---|
 | `global.json` | Pins the .NET 10 SDK feature band; a mismatched SDK fails loudly, not silently |
-| `.tool-versions` | Declares every required tool and version in one file: .NET SDK, Unity 6 LTS, Docker, Git LFS, `jq` |
+| `.tool-versions` | Declares every required tool and version in one file: .NET SDK, Node 22 (for the docs check), Unity 6 LTS, Docker, Git LFS, `jq` |
 | `scripts/bootstrap.sh` | Checks each tool against `.tool-versions`, prints a table of found vs. required, installs Git LFS and the git hooks, exits non-zero on any mismatch |
 | Windows | Supported through WSL2 only; documented, not scripted twice |
 
@@ -41,7 +43,7 @@
 | Deliverable | Detail |
 |---|---|
 | `scripts/verify.sh` | Format check → build → test → docs check. The same script CI calls in F02, so "works locally" and "passes CI" cannot diverge |
-| `scripts/check-docs.sh` | Resolves every relative link and anchor in `docs/**/*.md` against GitHub slug rules, and parses every mermaid block; non-zero exit on the first failure |
+| `scripts/check-docs.sh` | Resolves every relative link and anchor in `docs/**/*.md` against GitHub slug rules, and parses every mermaid block with the real mermaid parser (`tools/docs-check/`, Node); non-zero exit on any failure |
 | `.claude/settings.json` | `SessionStart` hook running `scripts/bootstrap.sh --ci`, so a Claude Code web session can build and test without manual setup |
 | Root `README.md` | The ten-minute setup: clone → bootstrap → dev-up → verify, plus a troubleshooting table |
 
