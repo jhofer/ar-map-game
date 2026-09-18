@@ -56,6 +56,6 @@ Kacheln sind unveränderlich. Ändert sich der Datenstand, ändert sich die Vers
 | Objekte an Kachelgrenzen doppelt zählen | Gebäude erscheint zweimal oder gar nicht |
 | Cache-Busting per Query-Parameter | Manche CDNs cachen dann gar nicht |
 
-**Im Projekt:** → [Architecture § Two Delivery Planes](../architecture/README.md#two-delivery-planes) und [§ Chosen: Custom Tile Pipeline](../architecture/map-data.md#chosen-custom-tile-pipeline).
+**Im Projekt:** → [Architecture § Two Delivery Planes](../architecture/README.md#two-delivery-planes) und [§ Chosen: Custom Tile Pipeline](../architecture/map-data.md#chosen-custom-tile-pipeline). Gewählt ist die Variante **Verzeichnis statischer Dateien**: kein Tile-Server, nur Objektspeicher und CDN — [§ Delivery: No Tile Server](../architecture/map-data.md#delivery-no-tile-server).
 
 ---

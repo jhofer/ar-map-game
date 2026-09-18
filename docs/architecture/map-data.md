@@ -33,6 +33,30 @@ The game does not need a map — it needs **buildings as simulation entities**. 
 
 Fallback for a fast prototype: Mapbox Unity SDK for visuals with a server-owned entity overlay, replaced before public release. Keep the renderer behind an interface from day one.
 
+### Delivery: No Tile Server
+
+A tile is a **file**. No runtime component serves tiles: nothing to build, nothing to operate, nothing that scales with player count.
+
+| Part | Own code | What it is |
+|---|---|---|
+| Pipeline | **Yes** | Offline batch job, run per region — see [Map Data Pipeline](#map-data-pipeline) |
+| Format + codec | **Yes** | Own binary format in `Game.Shared`, written by the pipeline, read by the client — see [Tile Payload](#tile-payload) |
+| Renderer | **Yes** | Extrusion, triangulation, LOD, instancing in the client — see [Client Layers](client.md#client-layers) |
+| **Serving** | **No** | Object storage behind a CDN. `GET /v/{dataVersion}/{z}/{x}/{y}.bin`, plain HTTP, no application in the path |
+
+Why nothing has to run:
+
+| Property | Consequence |
+|---|---|
+| Immutable per data version | Cache lifetime is unbounded; a change is a new path, never an edit in place |
+| Identical for every player | No per-request computation, no per-player filtering |
+| Carries no player state | Public read is the whole access model — ownership, HP and units are never in a tile |
+| Pre-generated per region | Cost follows data versions and egress, not requests |
+
+Consequence for capacity planning: tile traffic never reaches the game server. The live plane is the only thing that scales with players — see [Two Delivery Planes](README.md#two-delivery-planes) and [Entity Streaming](streaming.md#entity-streaming).
+
+Local development substitutes MinIO for the production bucket; both speak the S3 API — see [Tech Stack § Tooling & Delivery](tech-stack.md#tooling--delivery).
+
 ## Map Data Pipeline
 
 *Grundlagen: [Koordinaten](../grundlagen/01-koordinaten.md#1-koordinaten-und-projektionen), [Geodaten](../grundlagen/03-geodaten.md#3-geodaten-quellen-modell-lizenz), [Kacheln](../grundlagen/04-kacheln.md#4-kacheln-tiles-pagination-für-die-welt).*
