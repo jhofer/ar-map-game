@@ -29,6 +29,7 @@
 | Dead Reckoning | Position fortschreiben aus Richtung und Tempo, wenn kein Messwert vorliegt |
 | Dichteklasse | City / Suburb / Rural pro H3-Zelle, nach Gebäuden pro km² |
 | Drehrate | Zulässige Winkeländerung pro Sekunde eines Unter- oder Aufbaus |
+| Direktes / indirektes Feuer | Waffe braucht eine freie Sichtlinie / schiesst im Bogen darüber hinweg |
 | Douglas-Peucker | Vereinfachung von Umrissen mit Fehlerschranke |
 | DPS | Schaden pro Sekunde |
 | Delta | Änderungsnachricht statt Vollzustand |
@@ -42,6 +43,8 @@
 | Feature (Arbeitspaket) | Nummeriertes Lieferpaket `F<nn>` mit Abnahmekriterien; **nicht** das Geoobjekt |
 | Feature (Geodaten) | Geoobjekt: Geometrie + Attribute |
 | Feuerbogen | Winkelfenster um die Zielrichtung, in dem ein Angriff überhaupt zählt |
+| Feuerposition | Erster Punkt auf einem Weg, von dem aus ein Ziel in Reichweite und in Sicht ist |
+| Flugzeit | Verzögerung zwischen Abschuss und Einschlag, aus der Distanz berechnet |
 | Feldmaske | Bitmaske im Delta: welche Felder folgen |
 | Floating Origin | Mitwandernder lokaler Nullpunkt gegen Float-Ungenauigkeit |
 | Fog of War | Spielregel, welche fremden Objekte ein Spieler sehen darf |
@@ -112,11 +115,13 @@
 | Roll | Serverseitiger Zufallsvorgang für Beute und Crafting |
 | Roster | Liste der Einheitentypen einer Fraktion |
 | Schwenkbereich (Traverse Arc) | Wie weit der Aufbau gegen den Unterbau verdreht werden darf |
+| Sichtlinie (Line of Sight) | Gerade zwischen Schütze und Ziel; ein höheres Gebäude im Weg blockiert den Schuss |
 | Skinning | Zuordnung von Vertices zu Knochen |
 | Stance | Kampfhaltung des Avatars: nur Dämonen oder alles Feindliche |
 | Slippy Map | Übliche Kachelkarte mit XYZ-Schema |
 | Slerp | Gleichmässige Interpolation zwischen zwei Drehungen |
 | Snapshot | Vollständiger Zustand eines Ausschnitts |
+| STRtree | R-Tree-Variante in NetTopologySuite; hier der Geometrieindex pro Region |
 | Telemetrie-Event | Einzelnes Spielereignis mit Details, für spätere Auswertung |
 | Testcontainers | Bibliothek, die echte Dienste (z. B. PostgreSQL) als Container für Tests startet |
 | Tier | Stufe T1–T3 von Gegenständen, Einheiten und Gates |
@@ -177,6 +182,8 @@
 | Kapitel 10 — Valhalla, Off-Road-Segment | [Backend § Routing Engine](../architecture/backend.md#routing-engine), [Game Design § Reachability](../design/rts.md#reachability) |
 | Kapitel 15 — Relation, Fog of War, Dichteklasse | [Game Design § Relations](../design/factions.md#relations), [Game Design § Density Classes](../design/world.md#density-classes), [Streaming § Vision Cache](../architecture/streaming.md#vision-cache) |
 | Kapitel 15 — Zielwahl, Aggressor, Stance | [Game Design § Target Order](../design/rts.md#target-order), [Game Design § Avatar Targeting](../design/combat.md#avatar-targeting), [Game Design § Target Selection](../design/combat.md#target-selection) |
+| Kapitel 15 — Sichtlinie, indirektes Feuer, Flugzeit | [Game Design § Line of Sight & Indirect Fire](../design/line-of-sight.md#line-of-sight--indirect-fire), [Line of Sight & Impacts](../architecture/line-of-sight.md#line-of-sight--impacts) |
+| Kapitel 5 — R-Tree als Vorfilter, Geometriebaum | [Line of Sight § Static Geometry Index](../architecture/line-of-sight.md#static-geometry-index) |
 | Kapitel 15 — Ghost, Respawnpunkt | [Game Design § Defeat](../design/rpg.md#defeat), [Anti-Cheat](../architecture/anti-cheat.md#anti-cheat) |
 | Kapitel 15 — Tier, Rarity, Affix, Roll | [Game Design § Roll Model](../design/rpg.md#roll-model), [Game Design § Tech Access](../design/rpg.md#tech-access) |
 | Glossar — ComputeBuffer, Ribbon-Mesh | [Client § Building Tint](../architecture/client.md#building-tint), [Client § Client Layers](../architecture/client.md#client-layers) |
@@ -192,6 +199,8 @@
 | Einzeldatei-Kacheln | [Protomaps / PMTiles](https://docs.protomaps.com/) |
 | Offene Gebäudedaten | [Overture Maps — Buildings](https://docs.overturemaps.org/guides/buildings/) |
 | Räumliche Abfragen | [PostGIS Reference](https://postgis.net/docs/reference.html) |
+| Geometrieoperationen in .NET | [NetTopologySuite](https://nettopologysuite.github.io/NetTopologySuite/) |
+| Navmesh und Pfadsuche (Referenz, hier nicht verwendet) | [Recast/Detour](https://recastnav.com/) |
 | OSM-Lizenz | [ODbL / OSM Copyright](https://www.openstreetmap.org/copyright) |
 | Netcode-Grundlagen | [Valve: Source Multiplayer Networking](https://developer.valvesoftware.com/wiki/Source_Multiplayer_Networking) |
 | Entity-Interpolation, Autorität | [Gabriel Gambetta: Fast-Paced Multiplayer](https://www.gabrielgambetta.com/client-server-game-architecture.html) |

@@ -17,6 +17,7 @@ One view, always the same: a 3D world map with the player's avatar on it, Pokém
 | Remote view | Map pans to own assets for orders; conquest-type actions stay radius-gated |
 | HUD | Screen-space overlay: currencies, unit orders, alerts, selected target |
 | Target selection | Tap a visible hostile to aim the avatar at it — see [Target Selection](combat.md#target-selection) |
+| Artillery shells | Drawn as an arc over the buildings between the gun and its aim point; presentation only, the server simulates no projectile — see [Indirect Fire](line-of-sight.md#indirect-fire) |
 | Ghost | A defeated avatar renders translucent; the respawn point shows as a private marker on the owner's map only — see [Defeat](rpg.md#defeat) |
 
 ## Why No Camera AR

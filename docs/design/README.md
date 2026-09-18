@@ -15,6 +15,7 @@ Post-apocalyptic location-based mobile territory-conquest game. Unity. Pokémon 
 | [rpg.md](rpg.md) | RPG Sub-Loop (Avatar) |
 | [combat.md](combat.md) | Combat |
 | [facing.md](facing.md) | Facing & Rotation |
+| [line-of-sight.md](line-of-sight.md) | Line of Sight & Indirect Fire |
 | [factions.md](factions.md) | Factions & Demons |
 | [authority.md](authority.md) | Server Authority |
 | [balance.md](balance.md) | Balance Parameters |

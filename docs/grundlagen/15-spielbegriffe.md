@@ -87,6 +87,35 @@ flowchart LR
 
 Zwei Bauarten, ein Modell: ein Panzer hat vollen Schwenkbereich und dreht langsam, eine Fussfigur hat einen engen Bereich und dreht schnell. Drehen kostet **Zeit**, nicht eine Abklingzeit.
 
+## Sichtlinie und indirektes Feuer
+
+Zwei Wege, wie ein Schuss sein Ziel erreicht — und der Unterschied ist eine Spielregel, keine Grafik.
+
+| Begriff | Bedeutung | Business-Gegenstück |
+|---|---|---|
+| Sichtlinie (Line of Sight, LOS) | Gerade zwischen Schütze und Ziel. Liegt ein Gebäude im Weg, kommt der Schuss nicht an | Vorbedingung, die den Vorgang abbricht |
+| Direktes Feuer | Waffe braucht eine freie Sichtlinie; trifft sofort | Synchroner Aufruf: geht durch oder nicht |
+| Indirektes Feuer | Waffe schiesst im Bogen darüber hinweg; braucht keine Sichtlinie | Asynchroner Auftrag mit Laufzeit |
+| Flugzeit | Zeit zwischen Abschuss und Einschlag, aus der Distanz berechnet | Verzögerte Ausführung, eingeplant beim Absenden |
+| Zielpunkt (Aim Point) | Der **Ort**, auf den gefeuert wird — festgelegt beim Abschuss, nie nachgeführt | Momentaufnahme eines Werts zum Zeitpunkt der Buchung |
+| Einschlagradius | Umkreis um den Zielpunkt, in dem der Schaden wirkt | Toleranzbereich |
+| Feuerposition (Firing Solution) | Der erste Punkt auf dem Weg, von dem aus geschossen werden **kann** | Vorberechnetes Zwischenergebnis statt Ausprobieren pro Schritt |
+| Deckung | Gebäude, das eine Sichtlinie blockiert — ohne eigene Regel, allein durch Geometrie | Nebenwirkung der Datenlage, nicht der Konfiguration |
+| Spotter (Aufklärer) | Einheit, die für eine weiter hinten stehende Waffe sieht | Delegierte Leseberechtigung |
+
+**2.5D statt 3D.** Die Welt besteht aus Grundrissen mit einer Höhe. Ob ein Gebäude blockiert, ist deshalb eine Rechnung, kein Raytracing: Schneidet die Strecke das Polygon, und liegt die Gebäudehöhe **über** der Sichtlinie an dieser Stelle? Ein Turm auf einem 20-m-Dach schiesst so über die Garage nebenan, eine Einheit am Boden nicht — dieselbe Formel, verschiedene Augenhöhen.
+
+```mermaid
+flowchart LR
+    S[Schütze] --> Q{Strecke kreuzt ein Polygon?}
+    Q -->|nein| F[Freie Sichtlinie]
+    Q -->|ja| H{Gebäude höher als die Linie dort?}
+    H -->|nein| F
+    H -->|ja| B[Blockiert — Weg zur Feuerposition suchen]
+```
+
+**Verzögerung ohne Zufall.** Indirektes Feuer trifft einen Ort, kein Objekt. Wer weggeht, bevor der Einschlag kommt, nimmt keinen Schaden — das ist **kein Würfeln**, sondern ein vorhersagbarer, ausspielbarer Ablauf. Der Unterschied ist wichtig: Zufall lässt sich nicht kontern, Timing schon.
+
 **Fallstricke**
 
 | Fehler | Folge |
@@ -103,6 +132,10 @@ Zwei Bauarten, ein Modell: ein Panzer hat vollen Schwenkbereich und dreht langsa
 | Drehung nur als Animation, ohne Regel dahinter | "Kann nicht rückwärts schiessen" ist reine Kosmetik und im Client abschaltbar |
 | Winkelgrenze ohne Toleranz | Das Objekt pendelt am Rand des Schwenkbereichs, statt zu schiessen |
 | Kürzesten Drehweg nicht über die 0°/360°-Grenze rechnen | Das Objekt dreht die lange Runde herum |
+| Sichtlinie pro Tick für jedes Paar prüfen | Dauerlast für eine Antwort, die sich kaum ändert |
+| Sichtlinie ohne Zeitpuffer an einer Hausecke | Einheit pendelt zwischen Schiessen und Laufen |
+| Nicht eroberbare Gebäude aus der Geometrie weglassen | Einheiten schiessen durch sichtbare Häuser |
+| Indirektes Feuer dem Ziel nachführen | Aus einer ausspielbaren Verzögerung wird ein garantierter Treffer |
 
 **Im Projekt:** Die Regeln zu jedem Begriff stehen im Game Design — [Combat](../design/combat.md#combat), [RTS § Target Order](../design/rts.md#target-order), [RPG § Roll Model](../design/rpg.md#roll-model), [Factions § Relations](../design/factions.md#relations), [World § Density Classes](../design/world.md#density-classes), [Facing & Rotation](../design/facing.md#facing--rotation). Werte: [Balance Parameters](../design/balance.md#balance-parameters). Technische Umsetzung der Ausrichtung: [Architecture § Rotation & Facing](../architecture/rotation.md#rotation--facing).
 

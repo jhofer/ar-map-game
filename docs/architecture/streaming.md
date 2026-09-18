@@ -102,6 +102,7 @@ sequenceDiagram
 | Entity delta (HP, state, ownership) | 8–24 B | Per changed field set, on change |
 | Route set (moving entity) | 40–200 B | On station change or retarget only |
 | Facing (`baseYaw` + `target`) | 2–3 B | On stop and on retarget; never per tick |
+| `ShellFired` (artillery) | 10–14 B | On fire only; the impact is visible as HP deltas — see [Line of Sight & Impacts](line-of-sight.md#wire-format) |
 | Progress resync | 6–10 B | Per moving entity, every ~5 s |
 | Cell snapshot (urban) | 5–15 KB | On cell enter |
 | Position fix (up) | ~24 B | 0.2–1 Hz |

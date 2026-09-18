@@ -37,6 +37,24 @@ Decisions made 2026-09-17.
 | Avatar, whose heading the player cannot steer | Base free below 1.0 m/s, course over ground above; ± 90° arc; never blocks a standing avatar | [Facing § Avatar Facing](facing.md#avatar-facing) |
 | Facing as a player order | No — the one-order model stands | [Facing § Not Modelled](facing.md#not-modelled) |
 
+### Line of Sight & Indirect Fire
+
+Decisions made 2026-09-18.
+
+| Question | Decision | Recorded in |
+|---|---|---|
+| Whether buildings block shots | Yes, for direct fire. One 2.5D test: a footprint blocks when its height is above the sight line at the crossing | [Line of Sight](line-of-sight.md#line-of-sight) |
+| Ground units vs. towers on roofs | One formula, eye height per entity class — no second rule | [Line of Sight](line-of-sight.md#line-of-sight) |
+| Whether sight radius becomes line-of-sight | **No** — fog of war stays a circle. See through a building, shoot around it | [What Line of Sight Does Not Gate](line-of-sight.md#what-line-of-sight-does-not-gate) |
+| What a unit does with a blocked target | Routes to the first firing position on its street route, inside the station radius; skips the target if none exists | [Blocked Targets Move Units](line-of-sight.md#blocked-targets-move-units) |
+| Whether artillery needs an arc-clearance test | No — a 20 m minimum range expresses it for one comparison | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| What artillery hits | A **position**, fixed at fire time; hostiles within 4 m of it when the shell lands | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| Delay | Flight time `clamp(distance / 25 m/s, 1 s, 6 s)`, rounded to the tick | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| Whether this breaks "always hits" | No — there is no roll. A vacated position is not a miss | [Why This Is Not a Miss Chance](line-of-sight.md#why-this-is-not-a-miss-chance) |
+| Friendly fire | None; hostiles only in the impact radius | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| What artillery may shoot at | Only what the **owner** can see at fire time — forward units become spotters | [Spotting](line-of-sight.md#spotting) |
+| Artillery in the launch roster | No — a second T3 archetype after the P3 metrics | [Artillery Archetype](line-of-sight.md#artillery-archetype) |
+
 ### Structures
 
 | Question | Decision | Recorded in |
@@ -111,6 +129,7 @@ Decisions made 2026-09-17.
 | Faction names, lore, visual style | Art direction work, not a rule | Asset pilot |
 | Faction-asymmetric unit stats | Needs data from the symmetric roster first | After P3 metrics |
 | Per-type sight radius | Needs more unit and tower types | After the launch roster ships |
+| Artillery archetype build-out | Needs direct-fire balance data first | After P3 metrics |
 
 ## Technical
 

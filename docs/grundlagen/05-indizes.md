@@ -43,6 +43,20 @@ flowchart LR
 
 `k` ist der Ring-Radius: `k=1` → 7 Zellen, `k=2` → 19, `k=3` → 37.
 
+## Der Index als Vorfilter für Geometrie
+
+Ein R-Tree beantwortet nicht nur „was ist in der Nähe", sondern auch „was könnte diese Strecke kreuzen" — und das ist die Grundlage der Sichtlinienprüfung.
+
+| Schritt | Was passiert | Kosten |
+|---|---|---|
+| 1 | Umgebendes Rechteck der Strecke bilden | konstant |
+| 2 | R-Tree danach abfragen → Kandidaten | O(log n), wenige Treffer |
+| 3 | Nur die Kandidaten exakt gegen die Strecke prüfen | wenige Mikrosekunden |
+
+**Analogie:** Index-Scan statt Full Table Scan. Der Baum schliesst 99 % aus, die teure exakte Prüfung läuft nur auf dem Rest. Genau das Muster, das jede Datenbank auch fährt — nur mit Rechtecken statt Zahlenbereichen.
+
+Weil Gebäude sich nicht bewegen, wird dieser Baum **einmal pro Region gebaut** und für jede Abfrage wiederverwendet. Neu gebaut wird er nur bei einem Wechsel der Datenversion.
+
 **Fallstricke**
 
 | Fehler | Folge |
@@ -51,7 +65,9 @@ flowchart LR
 | Zellauflösung zu grob | Client bekommt Daten, die er nie sieht |
 | Zelle als exakter Radius interpretiert | Zellen sind Vorfilter — die genaue Distanzprüfung kommt danach |
 | Keine Hysterese beim Zellwechsel | Ständiges Ab-/Anmelden an der Grenze |
+| Geometriebaum pro Abfrage neu bauen | Der Aufbau kostet ein Vielfaches der Abfrage |
+| Bounding-Box-Treffer als exakten Treffer werten | Ein Rechteck ist nicht das Polygon — die genaue Prüfung fehlt |
 
-**Im Projekt:** → [Architecture § Spatial Index](../architecture/streaming.md#spatial-index) und [§ Subscription Set](../architecture/streaming.md#subscription-set).
+**Im Projekt:** → [Architecture § Spatial Index](../architecture/streaming.md#spatial-index) und [§ Subscription Set](../architecture/streaming.md#subscription-set). Der Geometriebaum pro Region: [§ Static Geometry Index](../architecture/line-of-sight.md#static-geometry-index).
 
 ---
