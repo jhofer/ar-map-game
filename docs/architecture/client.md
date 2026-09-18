@@ -2,7 +2,7 @@
 
 [← Technical Architecture](README.md)
 
-*Grundlagen: [Rendering im Unity-Client](../grundlagen/09-rendering.md#9-rendering-im-unity-client), [GPS in der Praxis](../grundlagen/02-gps.md#2-gps-in-der-praxis).*
+*Grundlagen: [Rendering im Unity-Client](../grundlagen/09-rendering.md#9-rendering-im-unity-client), [GPS in der Praxis](../grundlagen/02-gps.md#2-gps-in-der-praxis), [Statische Karte und lebender Zustand](../grundlagen/16-statische-und-lebende-daten.md#16-statische-karte-und-lebender-zustand).*
 
 One view: a 3D world map with the player avatar at the GPS position. **AR Foundation is not a dependency** — no camera feed, no plane detection, no world anchors. Rationale is a design decision, see [Game Design § View & Presentation](../design/presentation.md#view--presentation).
 

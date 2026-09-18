@@ -4,7 +4,7 @@
 
 ## Map Component Evaluation
 
-*Grundlagen: [Kacheln](../grundlagen/04-kacheln.md#4-kacheln-tiles-pagination-für-die-welt), [Geodatenquellen](../grundlagen/03-geodaten.md#3-geodaten-quellen-modell-lizenz), [Rendering](../grundlagen/09-rendering.md#9-rendering-im-unity-client).*
+*Grundlagen: [Kacheln](../grundlagen/04-kacheln.md#4-kacheln-tiles-pagination-für-die-welt), [Geodatenquellen](../grundlagen/03-geodaten.md#3-geodaten-quellen-modell-lizenz), [Rendering](../grundlagen/09-rendering.md#9-rendering-im-unity-client), [Statische Karte und lebender Zustand](../grundlagen/16-statische-und-lebende-daten.md#16-statische-karte-und-lebender-zustand).*
 
 The game does not need a map — it needs **buildings as simulation entities**. Ownership, HP, and points attach to a specific building the server also knows about. That requirement eliminates most map SDKs: a rendering SDK draws its own geometry from its own IDs, which the server cannot reference or validate.
 
