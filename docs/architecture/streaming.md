@@ -123,7 +123,7 @@ The client never reconciles simulation state — it discards and re-snapshots. T
 
 ## Entity Streaming
 
-*Grundlagen: [Streaming und Interest Management](../grundlagen/07-streaming.md#7-streaming-und-interest-management), [Autoritativer Server und Tick](../grundlagen/08-server-tick.md#8-autoritativer-server-und-tick).*
+*Grundlagen: [Streaming und Interest Management](../grundlagen/07-streaming.md#7-streaming-und-interest-management), [Autoritativer Server und Tick](../grundlagen/08-server-tick.md#8-autoritativer-server-und-tick), [Statische Karte und lebender Zustand](../grundlagen/16-statische-und-lebende-daten.md#16-statische-karte-und-lebender-zustand).*
 
 How live objects reach the client and how their positions are represented.
 

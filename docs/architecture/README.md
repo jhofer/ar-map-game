@@ -114,6 +114,8 @@ flowchart TB
 
 ### Two Delivery Planes
 
+*Grundlagen: [Statische Karte und lebender Zustand](../grundlagen/16-statische-und-lebende-daten.md#16-statische-karte-und-lebender-zustand).*
+
 Separating static geometry from live state is the core of the streaming design.
 
 | | Static plane | Live plane |

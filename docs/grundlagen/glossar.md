@@ -2,7 +2,7 @@
 
 [← Grundlagen](README.md)
 
-## 16. Glossar
+## 17. Glossar
 
 | Begriff | Kurz |
 |---|---|
@@ -14,6 +14,7 @@
 | Attestation | Plattformprüfung, dass eine echte, unmanipulierte App spricht |
 | APNs / FCM | Push-Dienste von Apple und Google; der Server schickt Benachrichtigungen nur darüber |
 | Backpressure | Rückstau-Schutz bei langsamen Empfängern |
+| Auslieferungsebene (Delivery Plane) | Getrennter Weg für statische Geometrie (CDN) und lebenden Zustand (WebSocket) |
 | Balancing | Abstimmen der Spielwerte auf Fairness und Spannung |
 | Blender | Freie 3D-Software, per Python steuerbar |
 | Blender MCP | MCP-Server, über den Claude Blender fernsteuert |
@@ -34,6 +35,7 @@
 | Domain Event | Fachliches Ereignis, Quelle für Deltas, Journal und Telemetrie |
 | DuckDB | Eingebettete SQL-Engine für Parquet-Dateien |
 | Earcut | Verfahren, ein Polygon in Dreiecke zu zerlegen |
+| Entity-Klasse | Statisch verankert, platziert, beweglich oder Ereignis — bestimmt, woher Geometrie, Position und Zustand kommen |
 | ENU | Lokales Meter-Koordinatensystem (East, North, Up) |
 | FBX / glTF | Austauschformate für 3D-Modelle mit Skelett und Animation |
 | Facing | Ausrichtung eines Objekts, unabhängig von seiner Bewegungsrichtung |
@@ -138,7 +140,7 @@
 | WGS84 | Weltweites geodätisches Bezugssystem (GPS-Koordinaten) |
 | Write-Behind | Zustand im Speicher, gebündelt asynchron persistiert |
 
-## 17. Begriff → Stelle in der Architektur
+## 18. Begriff → Stelle in der Architektur
 
 | Grundlage | Architekturabschnitt |
 |---|---|
@@ -148,6 +150,7 @@
 | Kapitel 4 — Kacheln | [Two Delivery Planes](../architecture/README.md#two-delivery-planes), [Map Component Evaluation](../architecture/map-data.md#map-component-evaluation) |
 | Kapitel 4, 7 — statisch vs. live | [Tile Payload](../architecture/map-data.md#tile-payload) |
 | Kapitel 4 — Auslieferung, Tile-Server vs. statische Dateien | [Map Data § Delivery: No Tile Server](../architecture/map-data.md#delivery-no-tile-server) |
+| Kapitel 16 — zwei Ebenen, Join über Entity-ID, platzierte Objekte | [Two Delivery Planes](../architecture/README.md#two-delivery-planes), [Entity Classes](../architecture/streaming.md#entity-classes), [Client § Building Tint](../architecture/client.md#building-tint) |
 | Kapitel 5 — H3 | [Spatial Index](../architecture/streaming.md#spatial-index), [Subscription Set](../architecture/streaming.md#subscription-set) |
 | Kapitel 6 — PostGIS | [Components](../architecture/backend.md#components) |
 | Kapitel 7 — Streaming | [Message Flow](../architecture/streaming.md#message-flow), [Wire Budget](../architecture/streaming.md#wire-budget) |
@@ -179,7 +182,7 @@
 | Glossar — ComputeBuffer, Ribbon-Mesh | [Client § Building Tint](../architecture/client.md#building-tint), [Client § Client Layers](../architecture/client.md#client-layers) |
 | Glossar — APNs / FCM | [Backend § Push Notifications](../architecture/backend.md#push-notifications) |
 
-## 18. Weiterführend
+## 19. Weiterführend
 
 | Thema | Quelle |
 |---|---|
