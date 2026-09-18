@@ -19,6 +19,7 @@ Decisions that stand until a named measurement says otherwise. The decision is m
 | Wire budget estimates | Confirmed against a real region | P2 |
 | Render budget on placeholder primitives | Stress fixture at worst-case triangle and material counts | P1, re-checked per authored batch |
 | Traverse arcs and turn rates | Share of tick time spent turning, per archetype | P3 |
+| Line-of-sight cost per tick | `LineClear` p99 and per-tick total at 50 engaged units in a dense fixture region | P3 |
 | Own shard map over Orleans | Handoff reliability in the P2 load test | P2 |
 
 ## Decision Log
@@ -64,6 +65,10 @@ Decisions made 2026-09-16.
 | Avatar target selection (2026-09-17) | New `SetTarget` intent, validated server-side for visibility, stance and range; rate-limited like `SetStation` | [Anti-Cheat](anti-cheat.md#anti-cheat) |
 | Ghost state and revival (2026-09-17) | Server-side; presence-gated intents from a ghost rejected; revival resolves from the server's own fix | [Anti-Cheat](anti-cheat.md#anti-cheat) |
 | Respawn point storage (2026-09-17) | Per-player state, never serialized into another player's stream | [Streaming § Subscription Set](streaming.md#subscription-set) |
+| Line-of-sight method (2026-09-18) | 2.5D segment test against an `STRtree` of footprints per region; no physics engine, no navmesh, no PostGIS in the tick | [Line of Sight § Principle](line-of-sight.md#principle) |
+| Geometry index scope (2026-09-18) | Region plus six neighbours, all footprints including scenery, rebuilt on data version switch | [Line of Sight § Static Geometry Index](line-of-sight.md#static-geometry-index) |
+| Firing position search (2026-09-18) | Sample the existing street route every 5 m on retarget; result is an ordinary truncated `RouteSet` | [Line of Sight § Firing Position Search](line-of-sight.md#firing-position-search) |
+| Delayed shells (2026-09-18) | Pending impacts in region state, not the timer queue; a region with pending impacts does not drain | [Line of Sight § Pending Impacts](line-of-sight.md#pending-impacts) |
 | Facing representation (2026-09-17) | Derived on both sides from route, `baseYaw` and `target`; no yaw per tick | [Rotation § Principle](rotation.md#principle) |
 | Facing determinism (2026-09-17) | One step function in `Game.Shared`, integrated by `dt`; client divergence is presentation only | [Rotation § Shared Step Function](rotation.md#shared-step-function) |
 | Fire gate authority (2026-09-17) | Server-side per tick; the client's angle never decides damage | [Rotation § Server Evaluation](rotation.md#server-evaluation) |

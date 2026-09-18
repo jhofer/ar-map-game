@@ -53,8 +53,10 @@ flowchart LR
 |---|---|
 | Tick | Combat resolves at the region tick, 2 Hz |
 | Damage per tick | `DPS × tick interval`, modified by attack-speed and damage affixes |
-| Hit chance | Always hits; no evasion, no miss |
+| Hit chance | Always hits; no evasion, no miss. **No randomness anywhere** — an artillery shell that lands on empty ground is a vacated position, not a miss roll |
 | Firing arc | Attack resolves only while the target is within 5° of the attacker's aim — see [Facing & Rotation](facing.md#facing--rotation) |
+| Line of sight | Direct fire resolves only with a clear line to the target; a building in the way blocks it — see [Line of Sight](line-of-sight.md#line-of-sight) |
+| Indirect fire | Artillery ignores the line, fires at a **position**, and lands after a flight time — see [Indirect Fire](line-of-sight.md#indirect-fire) |
 | Critical | Weapon affix only: chance × 2 damage |
 | Damage reduction | Armor affix, flat percentage |
 | Siege bonus | ×4 against towers, factories, buildings, gates |
@@ -70,6 +72,8 @@ Every value is backend config — see [Balance Parameters](balance.md#balance-pa
 - Units auto-engage any hostile inside their station radius; nothing outside it (see Units).
 - Target choice: a legally attackable avatar first, then the nearest hostile of any type — see [Target Order](rts.md#target-order).
 - Facing gates the attack, never the target choice: an entity holds its target while it turns onto it — see [Turning to Fire](facing.md#turning-to-fire).
+- Line of sight gates it too: a blocked target is walked to, not dropped — the unit routes to a firing position inside its station radius, or skips the target if none exists — see [Blocked Targets Move Units](line-of-sight.md#blocked-targets-move-units).
+- Sight radius is **not** line-of-sight: a player sees through buildings and shoots around them — see [What Line of Sight Does Not Gate](line-of-sight.md#what-line-of-sight-does-not-gate).
 - No hostile engagement resolves inside a workshop safe zone (see Workshops — Neutral Ground).
 - Units vs. building: **towers must fall first** — building HP is untouchable while any tower stands (see Towers).
 - Units stationed on or near a building engage attackers independently of the tower layer.

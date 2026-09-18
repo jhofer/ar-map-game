@@ -92,6 +92,7 @@ Crafted at factories, paid in Points. A unit spawns at the factory that made it,
 | Player control | Set / re-set the station. Nothing else. **No cooldown** between orders; a new order replaces the current route immediately |
 | Movement | Street routes (see Pathfinding) |
 | Facing | Base follows the route, turret follows the target within a per-type arc — see [Facing & Rotation](facing.md#facing--rotation) |
+| Line of sight | Direct fire needs a clear line; a blocked target is approached along the streets — see [Line of Sight](line-of-sight.md#line-of-sight) |
 | Unit types | Three archetypes, identical across factions at launch (see Launch Roster); skins differ by faction |
 
 ### Target Order
@@ -109,7 +110,8 @@ One rule for every automatic attacker — units, towers and demons alike. **Ther
 | No type ranking below that | A stationed army hits what is closest, not the "correct" layer |
 | Shielded buildings are skipped | A building with a standing tower on it is not a valid target at all — the towers are. Shielding stays a rule, not a priority; see [Towers](#towers) |
 | Determinism | Distance then entity ID; server and client reach the same answer |
-| Re-evaluation | On target death, on the target leaving the radius, and when an avatar becomes a valid target — never per tick, so units do not flip between two equidistant targets |
+| Re-evaluation | On target death, on the target leaving the radius, when an avatar becomes a valid target, and on arrival at a firing position — never per tick, so units do not flip between two equidistant targets |
+| No firing solution | A target with no reachable firing position inside the station radius is skipped, and the next one is taken — see [Blocked Targets Move Units](line-of-sight.md#blocked-targets-move-units) |
 
 The **player's own avatar does not use this order at all** — the player picks its target — see [Target Selection](combat.md#target-selection).
 
@@ -129,6 +131,7 @@ Faction-symmetric at launch. Values are starting config, tuned by metrics.
 - Base speed is multiplied by the density-class speed factor — see [Density Classes](world.md#density-classes).
 - Damage is applied per tick with no miss chance; see [Damage Model](combat.md#damage-model).
 - Traverse arc and turn rates differ per archetype — Infantry and Marksman must face what they shoot, Siege does not; see [Traverse Arcs](facing.md#traverse-arcs).
+- All three are **direct fire**: they need a clear line to the target. The indirect-fire archetype arrives after the P3 metrics — see [Artillery Archetype](line-of-sight.md#artillery-archetype).
 
 ## Unit Behavior
 

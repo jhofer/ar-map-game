@@ -24,6 +24,7 @@ An infantry unit cannot run north and shoot south. A siege unit can.
 | No target | Turret returns to 0° — centred on the base |
 | Turn cost | Turning is **time, not a cooldown**: `angle / rate` seconds with no damage output |
 | Target choice | Unaffected by angle. Facing never changes *what* is attacked, only *when* it can be — see [Target Order](rts.md#target-order) |
+| Second gate | Facing is one of two conditions. The other is a clear line — see [Line of Sight](line-of-sight.md#line-of-sight) |
 | Authority | Server-side, at the region tick; the client derives the same values for rendering |
 
 ## Traverse Arcs

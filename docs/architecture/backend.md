@@ -12,7 +12,7 @@
 |---|---|---|---|
 | Gateway | TLS, session auth, attestation, rate limits, WS fan-out | Connection state | Connections |
 | Interest manager | Cell subscription sets, delta filtering | Per-session cell set | Connections |
-| Region actor | Authoritative tick for one H3 r8 region: combat, movement, accrual, conquest | Hot entity state | Active regions |
+| Region actor | Authoritative tick for one H3 r8 region: combat, movement, accrual, conquest | Hot entity state **+ a static footprint index for line of sight** — see [Line of Sight & Impacts](line-of-sight.md#static-geometry-index) | Active regions |
 | Routing service | Street-graph routes for unit movement — **Valhalla** in its own container, pedestrian costing, behind `IRouteProvider` | Preprocessed graph | Requests, cacheable |
 | Demon director | Hellgate spawn weighting by player presence, wave scheduling | Schedules | Active players |
 | Economy / inventory | Points, Essence, loot rolls, crafting, gear | Durable | Players |
@@ -40,7 +40,7 @@ stateDiagram-v2
 | Region state | Ticking | Cost | What still happens |
 |---|---|---|---|
 | Live | 2–4 Hz units/combat, 1/60 Hz accrual | CPU per region | Everything |
-| Draining | Slow tick | Low | Finish in-flight combat, persist |
+| Draining | Slow tick | Low | Finish in-flight combat, persist. A region with **pending artillery impacts** does not drain — see [Pending Impacts](line-of-sight.md#pending-impacts) |
 | Dormant | None | Storage only | Points accrual computed analytically on wake; scheduled events (gate escalation, unit arrival) held in a timer queue |
 
 This is the mechanism that satisfies C3 and C6: **cost is proportional to live regions, which is proportional to active players** — not to how much of the planet is ingested. Five players with five phones wake at most a handful of regions.

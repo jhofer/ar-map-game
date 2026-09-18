@@ -85,6 +85,25 @@ Starting values. Every value is a first guess to be tuned by metrics; none is a 
 | Avatar traverse arc / rate | ± 90° / 180 °/s | [Facing](facing.md#avatar-facing) |
 | Avatar free-base speed threshold | 1.0 m/s | [Facing](facing.md#avatar-facing) |
 
+### Line of Sight and Indirect Fire
+
+| Parameter | Value | Defined in |
+|---|---|---|
+| Eye height, ground entities | 1.7 m | [Line of Sight](line-of-sight.md#line-of-sight) |
+| Eye height, tower | building height + 3 m | [Line of Sight](line-of-sight.md#line-of-sight) |
+| Line re-test cadence / clear grace | 1 s / 1 s | [Blocked Targets Move Units](line-of-sight.md#blocked-targets-move-units) |
+| Firing-position sample step | 5 m | [Blocked Targets Move Units](line-of-sight.md#blocked-targets-move-units) |
+| Target-moved invalidation | 10 m | [Blocked Targets Move Units](line-of-sight.md#blocked-targets-move-units) |
+| Artillery minimum / maximum range | 20 m / 120 m | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| Shell speed | 25 m/s | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| Flight time bounds | 1–6 s | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| Impact radius | 4 m | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| Artillery reload | 5 s | [Indirect Fire](line-of-sight.md#indirect-fire) |
+| Artillery cost / HP / damage per shell | 2 500 / 90 / 90 (×4 vs. structures) | [Artillery Archetype](line-of-sight.md#artillery-archetype) |
+| Artillery speed / production time | 0.8 m/s / 900 s | [Artillery Archetype](line-of-sight.md#artillery-archetype) |
+| Artillery station engagement radius | 120 m | [Artillery Archetype](line-of-sight.md#artillery-archetype) |
+| Artillery traverse arc / rate / base rate | ± 180° / 30 °/s / 30 °/s | [Artillery Archetype](line-of-sight.md#artillery-archetype) |
+
 ### Avatar and Gear
 
 | Parameter | Value | Defined in |
@@ -166,6 +185,8 @@ flowchart LR
 | Stance, aggressor rule | Share of sessions in All-hostiles stance; avatar defeats by source |
 | Respawn radius, change cooldown | Ghost duration distribution; distance from defeat to respawn point; share of players who move the point at every opportunity |
 | Traverse arcs, turn rates | Share of tick time spent turning instead of firing, per archetype; time to first damage after a target enters the radius |
+| Line of sight | Share of targets skipped for having no firing position; time spent walking to one; fights where cover decided the outcome |
+| Artillery parameters | Share of shells that land on a vacated position, split by target type; towers lost to artillery vs. to direct fire |
 | Tier gates | Level distribution at first T2 / T3 unit |
 | All | Session length, sessions per day, D1 / D7 retention, faction share per region |
 
