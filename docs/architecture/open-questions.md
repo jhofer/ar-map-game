@@ -39,6 +39,7 @@ Decisions made 2026-09-16.
 | Earcut robustness | Validate and repair in the pipeline; bounding-rectangle fallback on the client | [Map Data § Geometry Processing](map-data.md#geometry-processing), [Tech Stack § Client](tech-stack.md#client) |
 | Data refresh: ownership across data versions | Keep by ID; else match by centroid ≤ 5 m and footprint IoU > 0.5; else release | [Map Data § Data Refresh](map-data.md#data-refresh) |
 | On-demand region ingest | Manual in P1; automatic per r6 cell on first fix from P2 | [Map Data § Ingest Trigger](map-data.md#ingest-trigger) |
+| Tile serving (recorded explicitly 2026-09-18) | No tile server at any stage: immutable files on object storage behind a CDN. Pipeline, format and renderer are own code; serving is not | [Map Data § Delivery](map-data.md#delivery-no-tile-server) |
 
 ### Streaming and Simulation
 

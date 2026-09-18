@@ -68,6 +68,7 @@
 | Jobs System | Unity-Arbeitsaufträge auf Worker-Threads |
 | Journal | Änderungsliste seit dem letzten Snapshot |
 | Kill Credit | Exklusiver Beuteanspruch des Spielers mit dem letzten Treffer, zeitlich begrenzt |
+| Kachelserver (Tile-Server) | Dienst, der Kacheln pro Request rendert oder ausliefert; hier **nicht** verwendet — Kacheln sind statische Dateien |
 | Kalman-Filter | Glättungsverfahren, das Messungen nach ihrer Genauigkeit gewichtet |
 | Kardinalität | Anzahl unterschiedlicher Label-Kombinationen einer Metrik |
 | LOD | Detailstufe abhängig von der Distanz |
@@ -146,6 +147,7 @@
 | Kapitel 3 — DuckDB, GeoParquet, NetTopologySuite | [Tech Stack § Map Pipeline](../architecture/tech-stack.md#map-pipeline) |
 | Kapitel 4 — Kacheln | [Two Delivery Planes](../architecture/README.md#two-delivery-planes), [Map Component Evaluation](../architecture/map-data.md#map-component-evaluation) |
 | Kapitel 4, 7 — statisch vs. live | [Tile Payload](../architecture/map-data.md#tile-payload) |
+| Kapitel 4 — Auslieferung, Tile-Server vs. statische Dateien | [Map Data § Delivery: No Tile Server](../architecture/map-data.md#delivery-no-tile-server) |
 | Kapitel 5 — H3 | [Spatial Index](../architecture/streaming.md#spatial-index), [Subscription Set](../architecture/streaming.md#subscription-set) |
 | Kapitel 6 — PostGIS | [Components](../architecture/backend.md#components) |
 | Kapitel 7 — Streaming | [Message Flow](../architecture/streaming.md#message-flow), [Wire Budget](../architecture/streaming.md#wire-budget) |
